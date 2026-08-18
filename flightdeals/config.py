@@ -20,6 +20,12 @@ from pathlib import Path
 from typing import Optional
 
 import yaml
+from dotenv import load_dotenv
+
+# Charge .env s'il existe (dev local hors Docker) ; no-op silencieux sinon. En conteneur, les
+# secrets arrivent directement via `env_file` dans docker-compose — pas de fichier .env monte,
+# donc cet appel ne fait rien la-bas, ce qui est le comportement voulu (voir README).
+load_dotenv()
 
 _HHMM_RE = re.compile(r"^([01]\d|2[0-3]):([0-5]\d)$")
 

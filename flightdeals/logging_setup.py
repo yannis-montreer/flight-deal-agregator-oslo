@@ -7,10 +7,11 @@ from __future__ import annotations
 import logging
 import os
 import sys
+import time
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-_FORMAT = "%(asctime)s %(levelname)-8s %(name)s: %(message)s"
+_FORMAT = "%(asctime)s UTC %(levelname)-8s %(name)s: %(message)s"
 
 
 def setup_logging(level: str = "INFO", max_bytes: int = 5_242_880, backup_count: int = 5) -> None:
@@ -23,6 +24,11 @@ def setup_logging(level: str = "INFO", max_bytes: int = 5_242_880, backup_count:
     root.handlers.clear()
 
     formatter = logging.Formatter(_FORMAT)
+    # logging.Formatter utilise l'heure LOCALE par defaut (time.localtime) — incoherent avec
+    # le reste du projet qui raisonne exclusivement en UTC (voir scheduler.py, plan). Sans ce
+    # correctif, un log affichant "23:40" pouvait sembler contredire un "sleeping until 02:00
+    # UTC" du meme instant si la machine tourne dans un fuseau autre que UTC.
+    formatter.converter = time.gmtime
 
     stdout_handler = logging.StreamHandler(sys.stdout)
     stdout_handler.setFormatter(formatter)
