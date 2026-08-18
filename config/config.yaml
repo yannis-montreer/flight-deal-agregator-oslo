@@ -23,6 +23,10 @@ deal:
   percentile_threshold: 0.25       # le prix actuel doit etre <= a ce percentile historique
   history_window_days: 30          # fenetre glissante d'historique consideree
   duration_tolerance_nights: 2     # tolerance +/- nuits pour considerer deux sejours "similaires"
+  max_duration_deviation_ratio: 0.5  # exclut un deal si duration_minutes (vol+escales) depasse
+                                      # la moyenne historique de CETTE destination de plus de 50%
+                                      # (ex: moyenne 8h -> exclu au-dela de 12h). Ignore si pas
+                                      # assez d'historique de duree, ou si duration_minutes absent.
 
 scoring:
   # Les poids doivent sommer a 1.0 (valide au chargement, voir config.py)

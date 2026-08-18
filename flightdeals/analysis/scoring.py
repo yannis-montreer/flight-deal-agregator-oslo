@@ -1,9 +1,12 @@
-"""Regle de declenchement d'un deal (spec section 10) et score 0-100 (spec section 11).
+"""Regle de declenchement d'un deal (spec section 10, etendue) et score 0-100 (spec section 11).
 
-Regle de declenchement (toutes les conditions requises) :
+Regle de declenchement (TOUTES les conditions requises) :
     nombre_observations >= minimum_observations
     ET discount >= minimum_discount
     ET prix_actuel <= percentile_25
+    ET duree_vol pas anormalement longue vs la moyenne historique de cette destination
+       (extension demandee par l'utilisateur post-MVP : evite les deals bon marche mais avec
+       une escale a rallonge ; voir _check_duration ci-dessous pour les garde-fous)
 
 Score deterministe et configurable (le detail exact du calcul est laisse a l'equipe technique
 par le spec ; voir plan pour la justification des poids par defaut) :
@@ -13,9 +16,14 @@ par le spec ; voir plan pour la justification des poids par defaut) :
         w.directness * directness_bonus[stops_bucket]                                        +
         w.confidence * min(1, (count - minimum_observations) / (saturation - minimum_observations)),
         0, 1)
+
+Le filtre de duree n'entre PAS dans le score (qui reste celui du spec) : il agit uniquement
+sur `triggers`, comme une condition d'exclusion supplementaire — un itineraire avec une bonne
+note peut donc quand meme etre exclu s'il a une duree aberrante.
 """
 from __future__ import annotations
 
+import statistics as _statistics
 from dataclasses import dataclass
 from typing import Optional
 
@@ -28,12 +36,17 @@ class DealEvaluation:
 
     stats est None quand l'historique est vide (aucune observation anterieure) — distinct
     d'un historique simplement insuffisant (1-6 observations), ou stats existe mais
-    triggers reste False. Dans les deux cas triggers=False et score=0."""
+    triggers reste False. Dans les deux cas triggers=False et score=0.
+
+    exclusion_reason est None quand triggers=True, sinon la PREMIERE condition qui a echoue
+    parmi : "insufficient_history" | "discount_below_threshold" | "price_above_percentile" |
+    "duration_deviation" — utile pour les logs/debug ("pourquoi ce deal n'a pas notifie ?")."""
 
     triggers: bool
     discount: float
     score: int
     stats: Optional[PriceStats]
+    exclusion_reason: Optional[str] = None
 
 
 def evaluate_deal(
@@ -42,11 +55,14 @@ def evaluate_deal(
     historical_prices: list[float],
     stats: Optional[PriceStats],
     stops_bucket: str,
+    current_duration_minutes: Optional[int],
+    historical_durations: list[int],
     minimum_discount: float,
     minimum_observations: int,
     percentile_threshold: float,
     discount_cap: float,
     confidence_saturation_count: int,
+    max_duration_deviation_ratio: float,
     weights: dict,
     directness_bonus: dict,
 ) -> DealEvaluation:
@@ -57,14 +73,19 @@ def evaluate_deal(
     if stats is None or stats.count < minimum_observations:
         # Regle spec section 10 : historique < minimum_observations -> jamais de notification.
         # Court-circuite avant tout calcul de discount/score (rien a comparer, ou pas assez).
-        return DealEvaluation(triggers=False, discount=0.0, score=0, stats=stats)
+        return DealEvaluation(triggers=False, discount=0.0, score=0, stats=stats, exclusion_reason="insufficient_history")
 
     discount = compute_discount(current_price, stats.median)
     price_at_or_below_percentile = current_price <= stats.percentile_25
     discount_sufficient = discount >= minimum_discount
+    duration_ok = _check_duration(
+        current_duration_minutes, historical_durations, minimum_observations, max_duration_deviation_ratio
+    )
 
-    triggers = discount_sufficient and price_at_or_below_percentile
+    triggers = discount_sufficient and price_at_or_below_percentile and duration_ok
 
+    # Le score est TOUJOURS calcule, meme si triggers=False (utile pour les logs/debug —
+    # voir plan, risque "cold start" : visibilite sur les deals proches du seuil).
     score = _compute_score(
         discount=discount,
         current_price=current_price,
@@ -78,7 +99,42 @@ def evaluate_deal(
         directness_bonus=directness_bonus,
     )
 
-    return DealEvaluation(triggers=triggers, discount=discount, score=score, stats=stats)
+    exclusion_reason = None
+    if not triggers:
+        if not discount_sufficient:
+            exclusion_reason = "discount_below_threshold"
+        elif not price_at_or_below_percentile:
+            exclusion_reason = "price_above_percentile"
+        else:
+            exclusion_reason = "duration_deviation"
+
+    return DealEvaluation(triggers=triggers, discount=discount, score=score, stats=stats, exclusion_reason=exclusion_reason)
+
+
+def _check_duration(
+    current_duration_minutes: Optional[int],
+    historical_durations: list[int],
+    minimum_observations: int,
+    max_duration_deviation_ratio: float,
+) -> bool:
+    """True = duree acceptable (ou impossible a juger -> ne bloque pas), False = exclue.
+
+    Deux garde-fous "fail-open" deliberes (coherents avec le reste du projet : une donnee
+    manquante ne doit jamais bloquer un vrai deal) :
+    - current_duration_minutes absent (API ne l'a pas fourni) -> pas de blocage.
+    - historique de duree encore trop court pour juger de ce qui est "normal" sur cette
+      destination -> pas de blocage (le seuil se durcit naturellement une fois assez
+      d'observations accumulees, memes minimum_observations que pour le reste)."""
+    if current_duration_minutes is None:
+        return True
+    if len(historical_durations) < minimum_observations:
+        return True
+
+    average = _statistics.mean(historical_durations)
+    if average <= 0:
+        return True
+
+    return current_duration_minutes <= average * (1 + max_duration_deviation_ratio)
 
 
 def _compute_score(

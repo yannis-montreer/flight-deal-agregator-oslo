@@ -38,6 +38,7 @@ def _make_config(**overrides) -> Config:
             percentile_threshold=0.25,
             history_window_days=30,
             duration_tolerance_nights=2,
+            max_duration_deviation_ratio=0.5,
         ),
         scoring=ScoringConfig(
             weights={"discount": 0.45, "percentile": 0.25, "directness": 0.10, "confidence": 0.20},
@@ -259,6 +260,90 @@ class TestRunOnceHappyPath:
 
         assert summary.observations_collected == 1
         assert summary.observations_stored == 0  # non exploitable, jamais stockee
+
+
+class TestRunOnceDurationFilter:
+    def test_excludes_deal_with_abnormally_long_duration_despite_great_price(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "test.db"
+        conn = get_connection(db_path)
+        # historique : prix eleve (5000) ET duree normale (900min = 15h) repetee 7 fois
+        _seed_history(conn, count=7, price=5000.0, observed_days_ago=5, duration_minutes=900)
+        conn.close()
+
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+
+        fake_client = _FakeSerpApiClient(
+            account_info={"total_searches_left": 200},
+            search_responses=[
+                # prix imbattable (3000, -40%) MAIS duree 1500min (25h) = tres au-dela de
+                # 900 * 1.5 = 1350min (seuil par defaut max_duration_deviation_ratio=0.5)
+                _explore_response([_destination(flight_price=3000, flight_duration=1500)]),
+                _explore_response([]),
+                _explore_response([]),
+            ],
+        )
+        _install_fake_serpapi(monkeypatch, fake_client)
+
+        summary = run_once(_make_config(), db_path)
+
+        assert summary.observations_stored == 1  # observation quand meme stockee
+        assert summary.deals_triggered == 0  # ...mais exclue (duree anormale)
+        assert summary.deals_notified == 0
+        assert sent_messages == []
+
+    def test_similar_duration_still_triggers_normally(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "test.db"
+        conn = get_connection(db_path)
+        _seed_history(conn, count=7, price=5000.0, observed_days_ago=5, duration_minutes=900)
+        conn.close()
+
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+
+        fake_client = _FakeSerpApiClient(
+            account_info={"total_searches_left": 200},
+            search_responses=[
+                # duree tres proche de l'historique (920 vs moyenne 900) -> ne doit pas exclure
+                _explore_response([_destination(flight_price=3000, flight_duration=920)]),
+                _explore_response([]),
+                _explore_response([]),
+            ],
+        )
+        _install_fake_serpapi(monkeypatch, fake_client)
+
+        summary = run_once(_make_config(), db_path)
+
+        assert summary.deals_triggered == 1
+        assert summary.deals_notified == 1
+        assert len(sent_messages) == 1
+
+    def test_missing_duration_data_does_not_block_a_deal(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "test.db"
+        conn = get_connection(db_path)
+        _seed_history(conn, count=7, price=5000.0, observed_days_ago=5, duration_minutes=900)
+        conn.close()
+
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+
+        destination_without_duration = _destination(flight_price=3000)
+        del destination_without_duration["flight_duration"]
+
+        fake_client = _FakeSerpApiClient(
+            account_info={"total_searches_left": 200},
+            search_responses=[
+                _explore_response([destination_without_duration]),
+                _explore_response([]),
+                _explore_response([]),
+            ],
+        )
+        _install_fake_serpapi(monkeypatch, fake_client)
+
+        summary = run_once(_make_config(), db_path)
+
+        assert summary.deals_triggered == 1  # duree absente -> filtre ne bloque pas (fail-open)
+        assert summary.deals_notified == 1
 
 
 class TestRunOnceErrorIsolation:

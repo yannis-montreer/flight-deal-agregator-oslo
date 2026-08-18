@@ -10,6 +10,7 @@ from flightdeals.db.repository import (
     increment_requests_used,
     insert_notification,
     insert_observation,
+    query_comparable_durations,
     query_comparable_prices,
 )
 
@@ -218,6 +219,74 @@ class TestQueryComparablePrices:
             upper_bound="2026-08-18T00:00:00+00:00",
         )
         assert sorted(prices) == [5000, 6000]
+
+
+class TestQueryComparableDurations:
+    def test_returns_durations_for_same_destination(self, conn):
+        insert_observation(conn, _obs(duration_minutes=800, observed_at="2026-07-15T00:00:00+00:00"))
+        insert_observation(conn, _obs(duration_minutes=850, observed_at="2026-07-16T00:00:00+00:00"))
+        insert_observation(conn, _obs(destination="BKK", duration_minutes=700, observed_at="2026-07-15T00:00:00+00:00"))
+
+        durations = query_comparable_durations(
+            conn, origin="OSL", destination="NRT", stops_bucket=None,
+            window_start="2026-07-01T00:00:00+00:00", upper_bound="2026-08-18T00:00:00+00:00",
+        )
+        assert sorted(durations) == [800, 850]  # BKK exclu (autre destination)
+
+    def test_not_scoped_by_period_or_trip_length_unlike_prices(self, conn):
+        # 2 observations de la meme destination mais periode/duree de sejour differentes :
+        # doivent quand meme remonter (la duree de vol ne depend pas de la saison, voir repository.py)
+        insert_observation(conn, _obs(
+            duration_minutes=800, travel_period_bucket="2026-07", trip_length_nights=3,
+            observed_at="2026-07-15T00:00:00+00:00",
+        ))
+        insert_observation(conn, _obs(
+            duration_minutes=810, travel_period_bucket="2027-03", trip_length_nights=20,
+            observed_at="2026-07-16T00:00:00+00:00",
+        ))
+
+        durations = query_comparable_durations(
+            conn, origin="OSL", destination="NRT", stops_bucket=None,
+            window_start="2026-07-01T00:00:00+00:00", upper_bound="2026-08-18T00:00:00+00:00",
+        )
+        assert sorted(durations) == [800, 810]
+
+    def test_excludes_null_durations(self, conn):
+        insert_observation(conn, _obs(duration_minutes=800, observed_at="2026-07-15T00:00:00+00:00"))
+        insert_observation(conn, _obs(duration_minutes=None, observed_at="2026-07-16T00:00:00+00:00"))
+
+        durations = query_comparable_durations(
+            conn, origin="OSL", destination="NRT", stops_bucket=None,
+            window_start="2026-07-01T00:00:00+00:00", upper_bound="2026-08-18T00:00:00+00:00",
+        )
+        assert durations == [800]
+
+    def test_stops_bucket_filter_only_applied_when_provided(self, conn):
+        insert_observation(conn, _obs(duration_minutes=800, stops_bucket="nonstop", observed_at="2026-07-15T00:00:00+00:00"))
+        insert_observation(conn, _obs(duration_minutes=1200, stops_bucket="one_stop", observed_at="2026-07-15T00:00:00+00:00"))
+
+        all_durations = query_comparable_durations(
+            conn, origin="OSL", destination="NRT", stops_bucket=None,
+            window_start="2026-07-01T00:00:00+00:00", upper_bound="2026-08-18T00:00:00+00:00",
+        )
+        assert sorted(all_durations) == [800, 1200]
+
+        nonstop_only = query_comparable_durations(
+            conn, origin="OSL", destination="NRT", stops_bucket="nonstop",
+            window_start="2026-07-01T00:00:00+00:00", upper_bound="2026-08-18T00:00:00+00:00",
+        )
+        assert nonstop_only == [800]
+
+    def test_respects_time_window_bounds(self, conn):
+        insert_observation(conn, _obs(duration_minutes=800, observed_at="2026-06-01T00:00:00+00:00"))  # trop vieux
+        insert_observation(conn, _obs(duration_minutes=900, observed_at="2026-08-18T03:00:00+00:00"))  # apres upper_bound
+        insert_observation(conn, _obs(duration_minutes=850, observed_at="2026-07-15T00:00:00+00:00"))  # dans la fenetre
+
+        durations = query_comparable_durations(
+            conn, origin="OSL", destination="NRT", stops_bucket=None,
+            window_start="2026-07-01T00:00:00+00:00", upper_bound="2026-08-18T00:00:00+00:00",
+        )
+        assert durations == [850]
 
 
 class TestNotifiedDealsAndDedup:

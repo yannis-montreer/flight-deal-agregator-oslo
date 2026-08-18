@@ -128,6 +128,48 @@ def query_comparable_prices(
     return [row["price"] for row in rows]
 
 
+def query_comparable_durations(
+    conn: sqlite3.Connection,
+    *,
+    origin: str,
+    destination: str,
+    stops_bucket: Optional[str],
+    window_start: str,
+    upper_bound: str,
+) -> list[int]:
+    """Durees de vol (duration_minutes) historiques pour cette destination, utilisees pour
+    detecter un itineraire anormalement long (grosse escale, routing inhabituel) par rapport
+    a ce qui est habituel sur cette route (voir analysis.scoring, filtre de duree).
+
+    Sciemment PAS filtre par travel_period_bucket/trip_length_nights (contrairement a
+    query_comparable_prices) : la duree de vol depend du routing/des escales, pas de la
+    saison ou de la duree du sejour — un historique plus large donne une moyenne plus fiable,
+    et l'atteint plus vite que le bucket (destination, periode, duree) plus etroit utilise
+    pour les prix.
+
+    stops_bucket=None desactive ce filtre (meme logique "quand disponible" que pour les prix).
+    """
+    params: dict = {
+        "origin": origin,
+        "destination": destination,
+        "window_start": window_start,
+        "upper_bound": upper_bound,
+    }
+    sql = """
+        SELECT duration_minutes FROM flight_observations
+        WHERE origin = :origin
+          AND destination = :destination
+          AND duration_minutes IS NOT NULL
+          AND observed_at >= :window_start AND observed_at < :upper_bound
+    """
+    if stops_bucket is not None:
+        params["stops_bucket"] = stops_bucket
+        sql += " AND stops_bucket = :stops_bucket"
+
+    rows = conn.execute(sql, params).fetchall()
+    return [row["duration_minutes"] for row in rows]
+
+
 def get_last_notification(
     conn: sqlite3.Connection,
     origin: str,

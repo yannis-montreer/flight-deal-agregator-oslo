@@ -55,6 +55,7 @@ class DealConfig:
     percentile_threshold: float
     history_window_days: int
     duration_tolerance_nights: int
+    max_duration_deviation_ratio: float
 
 
 @dataclass(frozen=True)
@@ -179,6 +180,11 @@ def load_config(path: "Path | str | None" = None) -> Config:
 
     if deal.minimum_observations < 1:
         raise ConfigError("deal.minimum_observations doit etre >= 1")
+
+    if deal.max_duration_deviation_ratio < 0:
+        raise ConfigError(
+            f"deal.max_duration_deviation_ratio doit etre >= 0, recu: {deal.max_duration_deviation_ratio}"
+        )
 
     if scoring.confidence_saturation_count <= deal.minimum_observations:
         raise ConfigError(

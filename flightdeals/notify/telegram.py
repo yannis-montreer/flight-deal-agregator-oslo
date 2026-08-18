@@ -41,6 +41,7 @@ class DealMessage:
     return_date: Optional[str]  # YYYY-MM-DD, None si one-way
     airline: Optional[str]
     stops: Optional[int]
+    duration_minutes: Optional[int]  # duree totale de vol (escales comprises), pas le sejour
     discount: float  # fraction, ex 0.40 pour -40%
     score: int
     source_url: Optional[str]
@@ -62,6 +63,9 @@ def render_message(deal: DealMessage) -> str:
     if deal.airline:
         lines.append(deal.airline)
     lines.append(_format_stops(deal.stops))
+    duration_label = _format_duration(deal.duration_minutes)
+    if duration_label:
+        lines.append(duration_label)
     lines.append(f"Deal score: {deal.score}/100")
     if deal.source_url:
         lines.append("Voir le vol :")
@@ -83,6 +87,15 @@ def _format_dates(departure_date: str, return_date: Optional[str]) -> str:
     if dep.month == ret.month and dep.year == ret.year:
         return f"{dep.day} → {ret.day} {_FRENCH_MONTHS[dep.month]}"
     return f"{dep.day} {_FRENCH_MONTHS[dep.month]} → {ret.day} {_FRENCH_MONTHS[ret.month]}"
+
+
+def _format_duration(duration_minutes: Optional[int]) -> Optional[str]:
+    """None si duree inconnue -> la ligne est simplement omise (voir render_message), pas
+    affichee comme "inconnue" (contrairement aux escales) : moins critique a signaler."""
+    if duration_minutes is None:
+        return None
+    hours, minutes = divmod(duration_minutes, 60)
+    return f"Duree totale: {hours}h{minutes:02d}" if minutes else f"Duree totale: {hours}h"
 
 
 def _format_stops(stops: Optional[int]) -> str:

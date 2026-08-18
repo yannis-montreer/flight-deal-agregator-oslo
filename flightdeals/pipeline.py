@@ -33,6 +33,7 @@ from flightdeals.db.repository import (
     increment_requests_used,
     insert_notification,
     insert_observation,
+    query_comparable_durations,
     query_comparable_prices,
 )
 from flightdeals.dedup import should_notify
@@ -186,6 +187,18 @@ def _evaluate_one(
     )
     stats = compute_price_stats(historical_prices)
 
+    # Meme logique anti-auto-comparaison que pour les prix (upper_bound = debut du run).
+    # Scope volontairement plus large que les prix (pas de filtre periode/duree de sejour) :
+    # voir repository.query_comparable_durations pour le raisonnement complet.
+    historical_durations = query_comparable_durations(
+        conn,
+        origin=obs.origin,
+        destination=obs.destination,
+        stops_bucket=obs.stops_bucket if obs.stops is not None else None,
+        window_start=window_start_iso,
+        upper_bound=observed_at_iso,
+    )
+
     # L'insert se fait AVANT l'evaluation mais APRES le calcul des stats : les stats ne
     # peuvent donc jamais inclure cette observation elle-meme (voir upper_bound ci-dessus),
     # et l'insert etant immediat/durable (autocommit, voir connection.py), l'observation
@@ -200,11 +213,14 @@ def _evaluate_one(
             historical_prices=historical_prices,
             stats=stats,
             stops_bucket=obs.stops_bucket,
+            current_duration_minutes=obs.duration_minutes,
+            historical_durations=historical_durations,
             minimum_discount=config.deal.minimum_discount,
             minimum_observations=config.deal.minimum_observations,
             percentile_threshold=config.deal.percentile_threshold,
             discount_cap=config.scoring.discount_cap,
             confidence_saturation_count=config.scoring.confidence_saturation_count,
+            max_duration_deviation_ratio=config.deal.max_duration_deviation_ratio,
             weights=config.scoring.weights,
             directness_bonus=config.scoring.directness_bonus,
         )
@@ -220,6 +236,14 @@ def _evaluate_one(
         return obs_id, None
 
     if not evaluation.triggers:
+        if evaluation.exclusion_reason == "duration_deviation":
+            # Cas notable a logger explicitement : toutes les conditions prix/historique
+            # etaient reunies, seule la duree de vol a exclu ce deal — sinon invisible dans
+            # les logs (contrairement aux autres raisons, courantes et peu interessantes).
+            logger.info(
+                "Deal exclu pour duree de vol anormale: %s -> %s, %s min (obs id=%d)",
+                obs.origin, obs.destination, obs.duration_minutes, obs_id,
+            )
         return obs_id, None
 
     deal_message = DealMessage(
@@ -232,6 +256,7 @@ def _evaluate_one(
         return_date=obs.return_date,
         airline=obs.airline,
         stops=obs.stops,
+        duration_minutes=obs.duration_minutes,
         discount=evaluation.discount,
         score=evaluation.score,
         source_url=obs.source_url,

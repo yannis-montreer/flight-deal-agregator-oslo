@@ -24,6 +24,7 @@ def _deal(**overrides) -> DealMessage:
         return_date="2027-01-19",
         airline="SAS",
         stops=1,
+        duration_minutes=1135,
         discount=0.40,
         score=87,
         source_url="https://www.google.com/travel/flights?example",
@@ -68,6 +69,17 @@ class TestRenderMessage:
 
     def test_no_source_url_omits_link_lines(self):
         assert "Voir le vol" not in render_message(_deal(source_url=None))
+
+    def test_duration_shown_as_hours_and_minutes(self):
+        # 1135 minutes = 18h55 (exemple reel Spike : OSL -> Tokyo)
+        assert "Duree totale: 18h55" in render_message(_deal(duration_minutes=1135))
+
+    def test_duration_exact_hours_omits_minutes(self):
+        assert "Duree totale: 4h" in render_message(_deal(duration_minutes=240))
+        assert "Duree totale: 4h00" not in render_message(_deal(duration_minutes=240))
+
+    def test_missing_duration_omits_the_line_entirely(self):
+        assert "Duree totale" not in render_message(_deal(duration_minutes=None))
 
     def test_price_formatted_with_space_thousands_separator(self):
         assert "12 345 NOK" in render_message(_deal(price=12345))
