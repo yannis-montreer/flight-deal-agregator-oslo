@@ -1,0 +1,6 @@
+[tool.pytest.ini_options]
+# Assure que "import flightdeals" fonctionne quel que soit l'invocateur (`pytest` ou
+# `python -m pytest`), sans dependre du placement d'un conftest.py pour l'effet de bord
+# sys.path. Resout depuis le repertoire de ce fichier (racine du repo).
+pythonpath = ["."]
+testpaths = ["tests"]
