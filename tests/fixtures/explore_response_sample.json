@@ -1,0 +1,1584 @@
+{
+  "search_metadata": {
+    "id": "6a84c53ca204abf8d26e00dd",
+    "status": "Success",
+    "json_endpoint": "https://serpapi.com/searches/ZzbiX0TpPsCFXicv2Uaz_A/6a84c53ca204abf8d26e00dd.json",
+    "markdown_endpoint": "https://serpapi.com/searches/ZzbiX0TpPsCFXicv2Uaz_A/6a84c53ca204abf8d26e00dd.md",
+    "created_at": "2026-08-18 20:49:00 UTC",
+    "processed_at": "2026-08-18 20:49:00 UTC",
+    "google_travel_explore_url": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAKCAQIQApgBAQ",
+    "raw_html_file": "https://serpapi.com/searches/ZzbiX0TpPsCFXicv2Uaz_A/6a84c53ca204abf8d26e00dd.html",
+    "prettify_html_file": "https://serpapi.com/searches/ZzbiX0TpPsCFXicv2Uaz_A/6a84c53ca204abf8d26e00dd.prettify",
+    "total_time_taken": 3.85
+  },
+  "search_parameters": {
+    "engine": "google_travel_explore",
+    "hl": "en",
+    "gl": "us",
+    "departure_id": "OSL",
+    "travel_duration": 2,
+    "currency": "NOK"
+  },
+  "destinations": [
+    {
+      "destination_id": "/m/01f62",
+      "name": "Barcelona",
+      "country": "Spain",
+      "gps_coordinates": {
+        "latitude": 41.3874374,
+        "longitude": 2.1686496
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSR2Zry5fT8CDZ7BzRos141fuxjtJEVf2oicTxcSGYPDETRNheDbbishAau7MbwyXyFJkgxtES2fk7TbwQ8aVuTGSxWLprnqK9yCfu0_g",
+      "destination_airport": {
+        "code": "BCN"
+      },
+      "start_date": "2026-12-03",
+      "end_date": "2026-12-09",
+      "flight_price": 886,
+      "flight_duration": 210,
+      "number_of_stops": 0,
+      "airline": "Norwegian and Vueling",
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEyLTAzagcIARIDT1NMGhUSCjIwMjYtMTItMDlyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzAxZjYy",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F01f62&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-12-03&return_date=2026-12-09&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/04jpl",
+      "name": "London",
+      "country": "United Kingdom",
+      "gps_coordinates": {
+        "latitude": 51.5072178,
+        "longitude": -0.1275862
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcR9ojtKjiILCNbB-EEQloSQgf0ztJmvJqCEPJG2ZaV1mRpcm-IyFCJ6KiunnAuYyD0ah668bgM7zlmgzUjsRcEvefiOP-egq-zdFPy-eQ",
+      "destination_airport": {
+        "code": "STN"
+      },
+      "start_date": "2026-09-13",
+      "end_date": "2026-09-22",
+      "flight_price": 488,
+      "flight_duration": 130,
+      "number_of_stops": 0,
+      "airline": "Ryanair UK",
+      "airline_code": "RK",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA5LTEzagcIARIDT1NMGhUSCjIwMjYtMDktMjJyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA0anBs",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F04jpl&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-09-13&return_date=2026-09-22&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/02m77",
+      "name": "Edinburgh",
+      "country": "United Kingdom",
+      "gps_coordinates": {
+        "latitude": 55.953252,
+        "longitude": -3.188267
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQGmc8KF6RGic2TLaQShamiiK4VuR8UfqACT_wJff63qetGVUcx8XWsy83dpxyeUCXVUO9YDmKxRCfsxFBHh-BBNFm2GSiHnVXX3DGR-w",
+      "destination_airport": {
+        "code": "EDI"
+      },
+      "start_date": "2026-08-31",
+      "end_date": "2026-09-08",
+      "flight_price": 1284,
+      "flight_duration": 110,
+      "number_of_stops": 0,
+      "airline": "Norwegian",
+      "airline_code": "DY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTMxagcIARIDT1NMGhUSCjIwMjYtMDktMDhyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzAybTc3",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F02m77&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-31&return_date=2026-09-08&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0n2z",
+      "name": "Athens",
+      "country": "Greece",
+      "gps_coordinates": {
+        "latitude": 37.9838096,
+        "longitude": 23.7275388
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQogyXj6m-TGp0s3FAMCqU7-77RCsQQ4FuuMVBLHVkalZqIn-qbF2WCSKc0yLLyqN4KkK2RpLUBGJnr6amiZ4_CzyIEOCyqghnkB8GdtQ",
+      "destination_airport": {
+        "code": "ATH"
+      },
+      "start_date": "2026-10-11",
+      "end_date": "2026-10-19",
+      "flight_price": 1559,
+      "flight_duration": 230,
+      "number_of_stops": 1,
+      "airline": "Air Serbia and Scandinavian Airlines",
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEwLTExagcIARIDT1NMGhUSCjIwMjYtMTAtMTlyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDSoLCAMSBy9tLzBuMno",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0n2z&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-10-11&return_date=2026-10-19&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/04llb",
+      "name": "Lisbon",
+      "country": "Portugal",
+      "gps_coordinates": {
+        "latitude": 38.7222524,
+        "longitude": -9.1393366
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTi-3njUkXEYdomku6zLNILg9DH5_v50zXJVvsDvf22pr60vFZIn0TCKhcPTkmQwQdLQSgml-e83PrkO4Rc-iTqJyxAbTLD2WkDu8zg4w",
+      "destination_airport": {
+        "code": "LIS"
+      },
+      "start_date": "2026-11-13",
+      "end_date": "2026-11-21",
+      "flight_price": 1551,
+      "flight_duration": 360,
+      "number_of_stops": 1,
+      "airline": "Scandinavian Airlines",
+      "airline_code": "SK",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTExLTEzagcIARIDT1NMGhUSCjIwMjYtMTEtMjFyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA0bGxi",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F04llb&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-11-13&return_date=2026-11-21&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/02cft",
+      "name": "Dublin",
+      "country": "Ireland",
+      "gps_coordinates": {
+        "latitude": 53.3498053,
+        "longitude": -6.2603097
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQv0MeqLYIcCBFKHWTvpIP3eYABuDWIZkpzBtCaWoA2_oa7Xd6SBHzrHPtk9sNrihH6Wxq3pVHcgeLd0Spy_rQhTt-d1MsjteMLdbm82A",
+      "destination_airport": {
+        "code": "DUB"
+      },
+      "start_date": "2026-10-22",
+      "end_date": "2026-10-29",
+      "flight_price": 1022,
+      "flight_duration": 140,
+      "number_of_stops": 0,
+      "airline": "Norwegian and Aer Lingus",
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEwLTIyagcIARIDT1NMGhUSCjIwMjYtMTAtMjlyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzAyY2Z0",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F02cft&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-10-22&return_date=2026-10-29&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/05qtj",
+      "name": "Paris",
+      "country": "France",
+      "gps_coordinates": {
+        "latitude": 48.8575475,
+        "longitude": 2.3513765
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQqBkfxJKf4FPkN9wibVFEjWDzIwnWCbOSCc1PtKLTbh7iXUGcunx5lB_WSR6jCDup9b1zSVKaalqcHcytus1mpsDDWoFnnaYuLS7UR5A",
+      "destination_airport": {
+        "code": "ORY"
+      },
+      "start_date": "2027-01-15",
+      "end_date": "2027-01-22",
+      "flight_price": 1047,
+      "flight_duration": 165,
+      "number_of_stops": 0,
+      "airline": "Transavia",
+      "airline_code": "TO",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI3LTAxLTE1agcIARIDT1NMGhUSCjIwMjctMDEtMjJyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA1cXRq",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F05qtj&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2027-01-15&return_date=2027-01-22&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/06c62",
+      "name": "Rome",
+      "country": "Italy",
+      "gps_coordinates": {
+        "latitude": 41.8967068,
+        "longitude": 12.4822025
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQbPDHRJ1mpe3Ciqhm0quXXrKsDcz2TFBAJZrdC9aINdpgSwAxbdlGVr0n7KCOhIkfKc3kK3BTeeb-muzbqKNxrwqugqC0U0Rh7IhLxyg",
+      "destination_airport": {
+        "code": "FCO"
+      },
+      "start_date": "2026-10-17",
+      "end_date": "2026-10-24",
+      "flight_price": 770,
+      "flight_duration": 200,
+      "number_of_stops": 0,
+      "airline": "Wizz Air",
+      "airline_code": "W4",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEwLTE3agcIARIDT1NMGhUSCjIwMjYtMTAtMjRyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA2YzYy",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F06c62&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-10-17&return_date=2026-10-24&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0k3p",
+      "name": "Amsterdam",
+      "country": "Netherlands",
+      "gps_coordinates": {
+        "latitude": 52.3675734,
+        "longitude": 4.9041389
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSMEZk-V-NynohN3IlbvWriB5IPXbgdQkfVQpdYx_KNyFdAJvxEGaX3IMjWDRkcZxtPsc_UKC3wWCFqIlqFdA241K07dShbNeCRJ4Bgtw",
+      "destination_airport": {
+        "code": "AMS"
+      },
+      "start_date": "2027-01-10",
+      "end_date": "2027-01-18",
+      "flight_price": 1451,
+      "flight_duration": 115,
+      "number_of_stops": 0,
+      "airline": "Norwegian",
+      "airline_code": "DY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI3LTAxLTEwagcIARIDT1NMGhUSCjIwMjctMDEtMThyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDSoLCAMSBy9tLzBrM3A",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0k3p&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2027-01-10&return_date=2027-01-18&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/07_pf",
+      "name": "Venice",
+      "country": "Italy",
+      "gps_coordinates": {
+        "latitude": 45.440379,
+        "longitude": 12.3159547
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQXybzmSZQ2U8gyRpB-ICGxEpXs7OMkl6hUVhBzpsnZAcAQ1PFDaxtZoTh0WRmQJpK5j64a_FNmZ0HLYx3hkToP1KZEM6gynSyFLAJEKw",
+      "destination_airport": {
+        "code": "VCE"
+      },
+      "start_date": "2026-10-24",
+      "end_date": "2026-11-01",
+      "flight_price": 1407,
+      "flight_duration": 160,
+      "number_of_stops": 1,
+      "airline": "Norwegian and Air Serbia",
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEwLTI0agcIARIDT1NMGhUSCjIwMjYtMTEtMDFyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA3X3Bm",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F07_pf&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-10-24&return_date=2026-11-01&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0156q",
+      "name": "Berlin",
+      "country": "Germany",
+      "gps_coordinates": {
+        "latitude": 52.5200066,
+        "longitude": 13.404954
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTrFo-Rf52zx3hxicgyBFixzlpQTXfApzCDlg31BL6JXke1gp2U8rX2xF7cg6Hx98moJXttM16FATcpcFr3YILO0xaAzgM3YzeuecfK4A",
+      "destination_airport": {
+        "code": "BER"
+      },
+      "start_date": "2026-08-31",
+      "end_date": "2026-09-08",
+      "flight_price": 900,
+      "flight_duration": 95,
+      "number_of_stops": 0,
+      "airline": "Norwegian",
+      "airline_code": "DY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTMxagcIARIDT1NMGhUSCjIwMjYtMDktMDhyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzAxNTZx",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0156q&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-31&return_date=2026-09-08&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/05ywg",
+      "name": "Prague",
+      "country": "Czechia",
+      "gps_coordinates": {
+        "latitude": 50.0755381,
+        "longitude": 14.4378005
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8F-KMG3jhweqYHaJbchm3x_-Gx8NF84JQHdBk9HQAzpeisls1bZqjhKSgfefZOv22KrJ-eQiSJteGAvHjEyzs--gNU6nMx_osYLlatw",
+      "destination_airport": {
+        "code": "PRG"
+      },
+      "start_date": "2026-09-05",
+      "end_date": "2026-09-11",
+      "flight_price": 1078,
+      "flight_duration": 120,
+      "number_of_stops": 0,
+      "airline": "Norwegian",
+      "airline_code": "DY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA5LTA1agcIARIDT1NMGhUSCjIwMjYtMDktMTFyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA1eXdn",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F05ywg&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-09-05&return_date=2026-09-11&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/031y2",
+      "name": "Florence",
+      "country": "Italy",
+      "gps_coordinates": {
+        "latitude": 43.7699685,
+        "longitude": 11.2576706
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQYl3u2KPEF9mn-698OBtX19WEDpT0ed1EhT12hey5VRkWMCYIvtZ_mlGmE_6Q_1CgyuxGRRGnfn9SHlntudL017v5tKQmt6AJr4pQvdA",
+      "destination_airport": {
+        "code": "FLR"
+      },
+      "start_date": "2026-11-05",
+      "end_date": "2026-11-11",
+      "flight_price": 1739,
+      "flight_duration": 305,
+      "number_of_stops": 1,
+      "airline": "KLM and Scandinavian Airlines",
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTExLTA1agcIARIDT1NMGhUSCjIwMjYtMTEtMTFyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzAzMXky",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F031y2&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-11-05&return_date=2026-11-11&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/056_y",
+      "name": "Madrid",
+      "country": "Spain",
+      "gps_coordinates": {
+        "latitude": 40.4167279,
+        "longitude": -3.7032905
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSiaNqWAE3IUqPuNUQrVgXskJXc71yyaquPJak6TnwikJRj-aoeySqD_fdKJ0S2GvCaY2imsxQV5I7Dav9boXFtPB8447h7NhsU-gJGng",
+      "destination_airport": {
+        "code": "MAD"
+      },
+      "start_date": "2026-12-03",
+      "end_date": "2026-12-10",
+      "flight_price": 1127,
+      "flight_duration": 225,
+      "number_of_stops": 0,
+      "airline": "Norwegian",
+      "airline_code": "DY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEyLTAzagcIARIDT1NMGhUSCjIwMjYtMTItMTByBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA1Nl95",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F056_y&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-12-03&return_date=2026-12-10&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0fhp9",
+      "name": "Vienna",
+      "country": "Austria",
+      "gps_coordinates": {
+        "latitude": 48.2080696,
+        "longitude": 16.3713095
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRMIYU8vv1VZzdDH4cPvyyiDbdjbZVjfqDSFUnzO9a32l4g4VUvRBsr1nFGZqxXgxiZgkBv6po68PMHh6NSIqNCqM8L4ZH7nHZEIQqxiA",
+      "destination_airport": {
+        "code": "VIE"
+      },
+      "start_date": "2026-08-31",
+      "end_date": "2026-09-09",
+      "flight_price": 1254,
+      "flight_duration": 135,
+      "number_of_stops": 0,
+      "airline": "Norwegian",
+      "airline_code": "DY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTMxagcIARIDT1NMGhUSCjIwMjYtMDktMDlyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBmaHA5",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0fhp9&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-31&return_date=2026-09-09&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/095w_",
+      "name": "Budapest",
+      "country": "Hungary",
+      "gps_coordinates": {
+        "latitude": 47.497912,
+        "longitude": 19.040235
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcS0rV5HoLeOZjEbBvMmLiJHPXGQa80uh1ibFXtJRBjq-iD4A7YJwwlJzomhDntpHZm2IJXyhmDbsC77l74ABeUgbu2GuirxKkP1Pnq8XA",
+      "destination_airport": {
+        "code": "BUD"
+      },
+      "start_date": "2026-10-25",
+      "end_date": "2026-11-02",
+      "flight_price": 728,
+      "flight_duration": 155,
+      "number_of_stops": 0,
+      "airline": "Wizz Air",
+      "airline_code": "W6",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEwLTI1agcIARIDT1NMGhUSCjIwMjYtMTEtMDJyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA5NXdf",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F095w_&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-10-25&return_date=2026-11-02&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/09949m",
+      "name": "Istanbul",
+      "country": "Türkiye",
+      "gps_coordinates": {
+        "latitude": 41.0082376,
+        "longitude": 28.9783589
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcTCxBjNwAoLrTOKowDJwZyOgqpPqpGuPY1umCd0ey6x2mma7s1rFxR63gC-wiSQxRp8LzzpwbK_vjhTOg",
+      "destination_airport": {
+        "code": "SAW"
+      },
+      "start_date": "2027-01-22",
+      "end_date": "2027-01-31",
+      "flight_price": 1946,
+      "flight_duration": 240,
+      "number_of_stops": 0,
+      "airline": "Pegasus",
+      "airline_code": "PC",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI3LTAxLTIyagcIARIDT1NMGhUSCjIwMjctMDEtMzFyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzA5OTQ5bQ",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F09949m&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2027-01-22&return_date=2027-01-31&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/04v3q",
+      "name": "Malta",
+      "country": "Malta",
+      "gps_coordinates": {
+        "latitude": 35.937496,
+        "longitude": 14.375416
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQ-z_olp6K0ffhaDb3XLl38zqmmdD7QaS_QWU-E72HNrHLzUERBqJZeU1P7cks4PVVNnsJXhNxXy_yVrhKYFYQbhIlolkhFIAtclP3LZA",
+      "destination_airport": {
+        "code": "MLA"
+      },
+      "start_date": "2026-08-29",
+      "end_date": "2026-09-05",
+      "flight_price": 1376,
+      "flight_duration": 230,
+      "number_of_stops": 0,
+      "airline": "Norwegian",
+      "airline_code": "DY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTI5agcIARIDT1NMGhUSCjIwMjYtMDktMDVyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA0djNx",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F04v3q&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-29&return_date=2026-09-05&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/070t9",
+      "name": "Santorini",
+      "country": "Greece",
+      "gps_coordinates": {
+        "latitude": 36.3931562,
+        "longitude": 25.4615092
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQ6OQ143mXHrW6p0pePDsw5ZDLeuMzIppuzJOmbEhH2eXzzQZnyRdnBMYcnLY8jhWjUO4uNK22HVnMSiN7lQ2Enbg_R8lkH5Hnl_vqajQ",
+      "destination_airport": {
+        "code": "JTR"
+      },
+      "start_date": "2026-11-08",
+      "end_date": "2026-11-14",
+      "flight_price": 2876,
+      "flight_duration": 535,
+      "number_of_stops": 1,
+      "airline": "Aegean",
+      "airline_code": "A3",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTExLTA4agcIARIDT1NMGhUSCjIwMjYtMTEtMTRyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA3MHQ5",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F070t9&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-11-08&return_date=2026-11-14&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/01lfy",
+      "name": "Copenhagen",
+      "country": "Denmark",
+      "gps_coordinates": {
+        "latitude": 55.6760968,
+        "longitude": 12.5683371
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTikL2szROvPIPRfMGcRxOlgjS46XyFdec5NOCpc9kkY5Mz1kaK0q2Qf9lriMZluOlrzw7sUwHv6GPq-FEzRaKNLCXXXXkuta2aouYlTg",
+      "destination_airport": {
+        "code": "CPH"
+      },
+      "start_date": "2026-11-07",
+      "end_date": "2026-11-13",
+      "flight_price": 1426,
+      "flight_duration": 75,
+      "number_of_stops": 0,
+      "airline": "Norwegian and Norwegian",
+      "airline_code": "D8",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTExLTA3agcIARIDT1NMGhUSCjIwMjYtMTEtMTNyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzAxbGZ5",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F01lfy&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-11-07&return_date=2026-11-13&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0947l",
+      "name": "Milan",
+      "country": "Italy",
+      "gps_coordinates": {
+        "latitude": 45.468503,
+        "longitude": 9.1824027
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSLJv3t_EuAFFBnBY-w2C-c9ceu7OiVJaqEp8G_NYf9u57k4sPpA3_NopX-vOApDaJs988YwlgRBDRwK16i_s2ch7_p70dyJB5z27DTNg",
+      "destination_airport": {
+        "code": "MXP"
+      },
+      "start_date": "2026-10-10",
+      "end_date": "2026-10-16",
+      "flight_price": 952,
+      "flight_duration": 160,
+      "number_of_stops": 0,
+      "airline": "Norwegian",
+      "airline_code": "DY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEwLTEwagcIARIDT1NMGhUSCjIwMjYtMTAtMTZyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA5NDds",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0947l&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-10-10&return_date=2026-10-16&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0fbwq",
+      "name": "Dubrovnik",
+      "country": "Croatia",
+      "gps_coordinates": {
+        "latitude": 42.6506606,
+        "longitude": 18.0944238
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQPngpnZYa7mJeXbr5mVem90Fvs9bvJ0IbBLT3MytW8sNGMO-KLYudnEvINd3drJvgyUaNkqgm8uynyshQy_g4pONh9fLZewJ8JgtVaDw",
+      "destination_airport": {
+        "code": "DBV"
+      },
+      "start_date": "2026-08-29",
+      "end_date": "2026-09-05",
+      "flight_price": 1565,
+      "flight_duration": 175,
+      "number_of_stops": 0,
+      "airline": "Norwegian",
+      "airline_code": "DY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTI5agcIARIDT1NMGhUSCjIwMjYtMDktMDVyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBmYndx",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0fbwq&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-29&return_date=2026-09-05&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/02h6_6p",
+      "name": "Munich",
+      "country": "Germany",
+      "gps_coordinates": {
+        "latitude": 48.1351253,
+        "longitude": 11.5819806
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcS_6gtApFe2tOHhproeOzj1XVyhkFzg96JJsnC-RjAX7pMyNitfWlL6RELvi3k25802wTvN3Lioy44KcolaJemEEOcnstK-UpGifLdi_w",
+      "destination_airport": {
+        "code": "MUC"
+      },
+      "start_date": "2026-10-05",
+      "end_date": "2026-10-14",
+      "flight_price": 1320,
+      "flight_duration": 135,
+      "number_of_stops": 0,
+      "airline": "Norwegian",
+      "airline_code": "DY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEwLTA1agcIARIDT1NMGhUSCjIwMjYtMTAtMTRyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBECoOCAMSCi9tLzAyaDZfNnA",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F02h6_6p&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-10-05&return_date=2026-10-14&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/054rw",
+      "name": "Marrakesh",
+      "country": "Morocco",
+      "gps_coordinates": {
+        "latitude": 31.6225224,
+        "longitude": -7.9898258
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS4xPitBemrORgzU_JgBPaKv1fHZzcaismbck8VZbEXWDiU2vxwmp4SlYt4fw_Dz7dJi7R267RQqeU5es6bieTs-ovPidY1Wlr0p1eBoQ",
+      "destination_airport": {
+        "code": "RAK"
+      },
+      "start_date": "2026-12-03",
+      "end_date": "2026-12-10",
+      "flight_price": 1373,
+      "flight_duration": 290,
+      "number_of_stops": 0,
+      "airline": "Norwegian",
+      "airline_code": "DY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEyLTAzagcIARIDT1NMGhUSCjIwMjYtMTItMTByBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA1NHJ3",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F054rw&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-12-03&return_date=2026-12-10&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/06mxs",
+      "name": "Stockholm",
+      "country": "Sweden",
+      "gps_coordinates": {
+        "latitude": 59.3327036,
+        "longitude": 18.0656255
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRB4KEKu6hQmsQsjgEX9sZdXk-XeOh_AkvQo3kgPwPcAgA23X3hw-aeOBRhgSf67xkLoVVceIgm0OYx7gIDcRE9RK9FWbMa39en6aXaew",
+      "destination_airport": {
+        "code": "ARN"
+      },
+      "start_date": "2026-11-09",
+      "end_date": "2026-11-15",
+      "flight_price": 957,
+      "flight_duration": 80,
+      "number_of_stops": 0,
+      "airline": "Ethiopian",
+      "airline_code": "ET",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTExLTA5agcIARIDT1NMGhUSCjIwMjYtMTEtMTVyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA2bXhz",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F06mxs&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-11-09&return_date=2026-11-15&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/09f3c",
+      "name": "Seville",
+      "country": "Spain",
+      "gps_coordinates": {
+        "latitude": 37.3890924,
+        "longitude": -5.9844589
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT8jpZgilUelUwc6D5N2sSpLtqC0yTCvDUiCbqZoGTQnShWM5IAApjyRp59PGEkIyqiHSeyVh8zCu-tekW-hPSRMF2ZpW-5jlFS9EdNLw",
+      "destination_airport": {
+        "code": "SVQ"
+      },
+      "start_date": "2026-10-31",
+      "end_date": "2026-11-06",
+      "flight_price": 1990,
+      "flight_duration": 445,
+      "number_of_stops": 1,
+      "airline": "Transavia, KLM, and Scandinavian Airlines",
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEwLTMxagcIARIDT1NMGhUSCjIwMjYtMTEtMDZyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA5ZjNj",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F09f3c&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-10-31&return_date=2026-11-06&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0pmn7",
+      "name": "Porto",
+      "country": "Portugal",
+      "gps_coordinates": {
+        "latitude": 41.1579438,
+        "longitude": -8.6291053
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRVJGYgm2p3tZ7Wqsm8Jrw6hnHiwvT9Ymhm4G0RcePvYqwWrjWCxW1CFko2Hv-oqa1-Mv-9UOFVRS3_FVx176rDUHgKRo_m3LYsmbyPIQ",
+      "destination_airport": {
+        "code": "OPO"
+      },
+      "start_date": "2026-11-26",
+      "end_date": "2026-12-04",
+      "flight_price": 1477,
+      "flight_duration": 350,
+      "number_of_stops": 1,
+      "airline": "Scandinavian Airlines",
+      "airline_code": "SK",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTExLTI2agcIARIDT1NMGhUSCjIwMjYtMTItMDRyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBwbW43",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0pmn7&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-11-26&return_date=2026-12-04&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/02gtbh",
+      "name": "Mykonos",
+      "country": "Greece",
+      "gps_coordinates": {
+        "latitude": 37.4414601,
+        "longitude": 25.3667218
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcRQfJTKBNS1BnMT8zOTrD6UhswoPSIWsRZXqofG-kG2VwWHE8DrXrHsLY825-wpoqkwsRkXfirFF9zISQG7Uh46E758rSkkz_00b_2uhw",
+      "destination_airport": {
+        "code": "JMK"
+      },
+      "start_date": "2026-09-21",
+      "end_date": "2026-09-28",
+      "flight_price": 3600,
+      "flight_duration": 310,
+      "number_of_stops": 1,
+      "airline": "Air Serbia",
+      "airline_code": "JU",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA5LTIxagcIARIDT1NMGhUSCjIwMjYtMDktMjhyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzAyZ3RiaA",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F02gtbh&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-09-21&return_date=2026-09-28&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/08966",
+      "name": "Zürich",
+      "country": "Switzerland",
+      "gps_coordinates": {
+        "latitude": 47.3768866,
+        "longitude": 8.541694
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQa8T7B_x1IiqSq46kDfePp_hqEcKKQPV6jVElPOOfhnSQRCSEBpLQJJUyIpMO_t3_fGaNeGKay7u8jLfB02lYM_KQ7rWmhHlsHPRNJiQ",
+      "destination_airport": {
+        "code": "ZRH"
+      },
+      "start_date": "2026-11-06",
+      "end_date": "2026-11-13",
+      "flight_price": 1541,
+      "flight_duration": 150,
+      "number_of_stops": 0,
+      "airline": "Scandinavian Airlines",
+      "airline_code": "SK",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTExLTA2agcIARIDT1NMGhUSCjIwMjYtMTEtMTNyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA4OTY2",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F08966&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-11-06&return_date=2026-11-13&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/052bw",
+      "name": "Manchester",
+      "country": "United Kingdom",
+      "gps_coordinates": {
+        "latitude": 53.4807593,
+        "longitude": -2.2426305
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSUyB-QI7_s3KKcMDZIMp7STSYjexpORme6EcVaJ6z2DXBvioPJPBMwxpz--zloc9rGtQPGoADwsG1w5inklog06vF4P4ezABhP8JyquQ",
+      "destination_airport": {
+        "code": "MAN"
+      },
+      "start_date": "2026-10-12",
+      "end_date": "2026-10-19",
+      "flight_price": 656,
+      "flight_duration": 120,
+      "number_of_stops": 0,
+      "airline": "easyJet",
+      "airline_code": "U2",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEwLTEyagcIARIDT1NMGhUSCjIwMjYtMTAtMTlyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA1MmJ3",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F052bw&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-10-12&return_date=2026-10-19&travel_duration=2"
+    },
+    {
+      "destination_id": "/g/1233f22n",
+      "name": "Naples",
+      "country": "Italy",
+      "gps_coordinates": {
+        "latitude": 40.8517746,
+        "longitude": 14.2681244
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/licensed-image?q=tbn:ANd9GcTqG5ywCaWZL7Yjf7LU_zRbxz0q2MYKtFSKzgfCxBghmbbSJthI-RWe3idQ3odcCWJXa9sENUMFTb-shqMTpdma20Jt2qFbLaPx28WG2g",
+      "destination_airport": {
+        "code": "NAP"
+      },
+      "start_date": "2026-10-17",
+      "end_date": "2026-10-23",
+      "flight_price": 1520,
+      "flight_duration": 370,
+      "number_of_stops": 1,
+      "airline": "Air Serbia and Scandinavian Airlines",
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEwLTE3agcIARIDT1NMGhUSCjIwMjYtMTAtMjNyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBESoPCAMSCy9nLzEyMzNmMjJu",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fg%2F1233f22n&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-10-17&return_date=2026-10-23&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0hyxv",
+      "name": "Glasgow",
+      "country": "United Kingdom",
+      "gps_coordinates": {
+        "latitude": 55.8616704,
+        "longitude": -4.2583345
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSXohfsPr9PeBY76NZbh8LSvRyeio-dHcLUqNVQJUVAZizHiw8qWLiTK1sPcFfZ-a1Bm_3d92RfXgnE_qyD0_AhRNx2wJIckhRS_lw6aQ",
+      "destination_airport": {
+        "code": "GLA"
+      },
+      "start_date": "2026-11-01",
+      "end_date": "2026-11-07",
+      "flight_price": 2065,
+      "flight_duration": 255,
+      "number_of_stops": 1,
+      "airline": "KLM",
+      "airline_code": "KL",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTExLTAxagcIARIDT1NMGhUSCjIwMjYtMTEtMDdyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBoeXh2",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0hyxv&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-11-01&return_date=2026-11-07&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0491y",
+      "name": "Kraków",
+      "country": "Poland",
+      "gps_coordinates": {
+        "latitude": 50.0646501,
+        "longitude": 19.9449799
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFJmpHfqhMHzYj8BESFpR9Z8gwMptit1U8EuYzbNOXDoQO486gP3A4D8hRWPGjIEAlMbzJLYH__RCEoXiW4EClduwwGVIsuzwMddWkcA",
+      "destination_airport": {
+        "code": "KRK"
+      },
+      "start_date": "2026-09-14",
+      "end_date": "2026-09-23",
+      "flight_price": 524,
+      "flight_duration": 130,
+      "number_of_stops": 0,
+      "airline": "Norwegian and Wizz Air",
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA5LTE0agcIARIDT1NMGhUSCjIwMjYtMDktMjNyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA0OTF5",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0491y&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-09-14&return_date=2026-09-23&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/01b85",
+      "name": "Bordeaux",
+      "country": "France",
+      "gps_coordinates": {
+        "latitude": 44.8416106,
+        "longitude": -0.5810938
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcT-E0Wp1CSrOIzSfL7Ed1irGj6CvzcpP4t6wvbpV0I3A32COycBlJ5pDtcBBnut52bmYsaWlmzvZy3PVV-aez8cXYoApI16QmuPrG1-9w",
+      "destination_airport": {
+        "code": "BOD"
+      },
+      "start_date": "2026-09-20",
+      "end_date": "2026-09-26",
+      "flight_price": 1893,
+      "flight_duration": 275,
+      "number_of_stops": 1,
+      "airline": "KLM",
+      "airline_code": "KL",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA5LTIwagcIARIDT1NMGhUSCjIwMjYtMDktMjZyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzAxYjg1",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F01b85&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-09-20&return_date=2026-09-26&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0h3tv",
+      "name": "València",
+      "country": "Spain",
+      "gps_coordinates": {
+        "latitude": 39.4738338,
+        "longitude": -0.3756348
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQgZ_gjHrXaC67LG5tkAwE946mpzdFkUnyCiUqMLnewZhycbIUUm2TZPbiEgv11qzCvh9HgiwQoUd7-mxqd_ljxY2Nvm0MZU7WGY38_Pg",
+      "destination_airport": {
+        "code": "VLC"
+      },
+      "start_date": "2026-09-12",
+      "end_date": "2026-09-19",
+      "flight_price": 1228,
+      "flight_duration": 230,
+      "number_of_stops": 0,
+      "airline": "Norwegian",
+      "airline_code": "DY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA5LTEyagcIARIDT1NMGhUSCjIwMjYtMDktMTlyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBoM3R2",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0h3tv&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-09-12&return_date=2026-09-19&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/03hrz",
+      "name": "Hamburg",
+      "country": "Germany",
+      "gps_coordinates": {
+        "latitude": 53.5488282,
+        "longitude": 9.9871703
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT_xzXPEdEKSnZpgLW8sZWEKQ7kH_ztE4dmaKENLdd6l1GP_VNq5DscYlRirKP0NNKAP211ztAXSJeFB-8boyit8Fe-bs6MkQvHEHdllA",
+      "destination_airport": {
+        "code": "HAM"
+      },
+      "start_date": "2026-09-07",
+      "end_date": "2026-09-15",
+      "flight_price": 946,
+      "flight_duration": 85,
+      "number_of_stops": 0,
+      "airline": "Norwegian",
+      "airline_code": "DY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA5LTA3agcIARIDT1NMGhUSCjIwMjYtMDktMTVyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzAzaHJ6",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F03hrz&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-09-07&return_date=2026-09-15&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0cp6w",
+      "name": "Nice",
+      "country": "France",
+      "gps_coordinates": {
+        "latitude": 43.7101728,
+        "longitude": 7.2619532
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTVrd4pIWyp53uW7opuAsZZF94y5I1TULlSoiUOgEh8dY5ztx83s0l7uejpIucv6hfZCD6_3PZoeA502bplg1X94c8pt2eL7GfT4NvsCg",
+      "destination_airport": {
+        "code": "NCE"
+      },
+      "start_date": "2026-12-10",
+      "end_date": "2026-12-17",
+      "flight_price": 1257,
+      "flight_duration": 175,
+      "number_of_stops": 0,
+      "airline": "Norwegian",
+      "airline_code": "DY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEyLTEwagcIARIDT1NMGhUSCjIwMjYtMTItMTdyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBjcDZ3",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0cp6w&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-12-10&return_date=2026-12-17&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0b1mf",
+      "name": "Salzburg",
+      "country": "Austria",
+      "gps_coordinates": {
+        "latitude": 47.8014154,
+        "longitude": 13.0448441
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRB7jTFciRN_LmU3dnlBI9PmHKjcxvoryiGZCvBw62WrsKgRGqwCFVPOgwOs39l_K6hQyMZscO6aMPyO-SNsF8wF5y8oeKLiDQs3AUMjA",
+      "destination_airport": {
+        "code": "SZG"
+      },
+      "start_date": "2026-10-08",
+      "end_date": "2026-10-14",
+      "flight_price": 2082,
+      "flight_duration": 390,
+      "number_of_stops": 1,
+      "airline": "Lufthansa",
+      "airline_code": "LH",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEwLTA4agcIARIDT1NMGhUSCjIwMjYtMTAtMTRyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBiMW1m",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0b1mf&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-10-08&return_date=2026-10-14&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/03khn",
+      "name": "Helsinki",
+      "country": "Finland",
+      "gps_coordinates": {
+        "latitude": 60.1698557,
+        "longitude": 24.938379
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTPjQdIDgZqKhCVbqZkFl6B_YCKJjqf5T5EBKv5Q5rQtTEEK7Jg8SSuFtXxxNU4bVDIKLaGPWRQhyRl6VAGZQzqYQ4BnlzeZHQ6VvgHAw",
+      "destination_airport": {
+        "code": "HEL"
+      },
+      "start_date": "2026-10-11",
+      "end_date": "2026-10-20",
+      "flight_price": 1177,
+      "flight_duration": 85,
+      "number_of_stops": 0,
+      "airline": "Norwegian",
+      "airline_code": "DY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEwLTExagcIARIDT1NMGhUSCjIwMjYtMTAtMjByBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzAza2hu",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F03khn&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-10-11&return_date=2026-10-20&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/01w2v",
+      "name": "Cairo",
+      "country": "Egypt",
+      "gps_coordinates": {
+        "latitude": 30.0444196,
+        "longitude": 31.2357116
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQU3q3k80DuiXDVTsSnKfIzVRhwiAJTQV0sHsrMPVepmfNUOOy0pkY5Af2cxnS4vkWm1WXU6lK7zU6UMg82qBD1Poqbm-MI3CX5-6OsQw",
+      "destination_airport": {
+        "code": "CAI"
+      },
+      "start_date": "2027-01-25",
+      "end_date": "2027-02-02",
+      "flight_price": 4370,
+      "flight_duration": 300,
+      "number_of_stops": 1,
+      "airline": "Aegean and Air Cairo",
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI3LTAxLTI1agcIARIDT1NMGhUSCjIwMjctMDItMDJyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzAxdzJ2",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F01w2v&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2027-01-25&return_date=2027-02-02&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/09jq0",
+      "name": "Granada",
+      "country": "Spain",
+      "gps_coordinates": {
+        "latitude": 37.1824607,
+        "longitude": -3.6011676
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTYEO_F7A9Cppu2iF314xuyHZ3KGLtjMzYnX1pfKb9oaaYugedtI4nvgzrACcZD8DYGHFFQc8FEjYO3SiHFOd5Io6SuBatK0Dju0HjlTg",
+      "start_date": "2027-01-10",
+      "end_date": "2027-01-16",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI3LTAxLTEwagcIARIDT1NMGhUSCjIwMjctMDEtMTZyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA5anEw",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F09jq0&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2027-01-10&return_date=2027-01-16&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/04_z1",
+      "name": "Madeira",
+      "country": "Portugal",
+      "gps_coordinates": {
+        "latitude": 32.7607074,
+        "longitude": -16.9594723
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQtDPgfnLMFTHGKtW187bEHbJPGnXRBFQQB4roD2doVwnG81gkb3_Ud9Sv2bzj5nnbTP42bOudRw0Tufs8LceqJW1amxCWzdat1hhQ0jA",
+      "destination_airport": {
+        "code": "FNC"
+      },
+      "start_date": "2026-12-05",
+      "end_date": "2026-12-12",
+      "flight_price": 2420,
+      "flight_duration": 320,
+      "number_of_stops": 0,
+      "airline": "Norwegian",
+      "airline_code": "DY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEyLTA1agcIARIDT1NMGhUSCjIwMjYtMTItMTJyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA0X3ox",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F04_z1&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-12-05&return_date=2026-12-12&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/04swd",
+      "name": "Moscow",
+      "country": "Russia",
+      "gps_coordinates": {
+        "latitude": 55.7568721,
+        "longitude": 37.6150527
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQ3lV9uJAkxDXFb-k89GjlWBQEfhuWeSlvZFv4W744sFc0mSKIU09WoM3anW5In9SPQJuHz6M0XL6RWuy8aySOZpjmcTNNNkaKIyLXASA",
+      "destination_airport": {
+        "code": "SVO"
+      },
+      "start_date": "2026-10-01",
+      "end_date": "2026-10-07",
+      "flight_price": 5402,
+      "flight_duration": 735,
+      "number_of_stops": 1,
+      "airline": "Air Serbia",
+      "airline_code": "JU",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEwLTAxagcIARIDT1NMGhUSCjIwMjYtMTAtMDdyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA0c3dk",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F04swd&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-10-01&return_date=2026-10-07&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/01_hhp",
+      "name": "Antalya",
+      "country": "Türkiye",
+      "gps_coordinates": {
+        "latitude": 36.8968908,
+        "longitude": 30.7133233
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSnI3Japv2PHXdSYu-aAyQBgPZI8vyodwhqjEYQfDyFgJ1fcW9lUPbUQwZftahWvgLuTbhH_3th__01xgpJsx4xTZK3iuK-AMCx-eye5A",
+      "destination_airport": {
+        "code": "AYT"
+      },
+      "start_date": "2026-12-05",
+      "end_date": "2026-12-12",
+      "flight_price": 1521,
+      "flight_duration": 245,
+      "number_of_stops": 0,
+      "airline": "Norwegian",
+      "airline_code": "DY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEyLTA1agcIARIDT1NMGhUSCjIwMjYtMTItMTJyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzAxX2hocA",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F01_hhp&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-12-05&return_date=2026-12-12&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/096gm",
+      "name": "Bucharest",
+      "country": "Romania",
+      "gps_coordinates": {
+        "latitude": 44.4267674,
+        "longitude": 26.1025384
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcSLZsVSQvaRd2U8HwapnhcrcCxvi3M57w1a1ZcJCtrCBOTSMKts3lobnABAiFPVbR6wrJ9FrmKDpvS0j8f6tzIIo_om28sHQV7v2MyuHw",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA5Nmdt",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F096gm&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/01s8wm",
+      "name": "Lanzarote",
+      "country": "Spain",
+      "gps_coordinates": {
+        "latitude": 29.0468535,
+        "longitude": -13.5899733
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQ0Z1qcyLmGnQu6EHVG1EZrIu3PvTL5R3pjCiR-O-4XHsXNEYhaLHTq36VrAgE0vMRZizFHu6i1xZigutbVqjahjbJj2QNCv8vIcdWreA",
+      "destination_airport": {
+        "code": "ACE"
+      },
+      "start_date": "2026-11-15",
+      "end_date": "2026-11-21",
+      "flight_price": 2054,
+      "flight_duration": 575,
+      "number_of_stops": 1,
+      "airline": "Vueling",
+      "airline_code": "VY",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTExLTE1agcIARIDT1NMGhUSCjIwMjYtMTEtMjFyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzAxczh3bQ",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F01s8wm&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-11-15&return_date=2026-11-21&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0bm4j",
+      "name": "Tbilisi",
+      "country": "Georgia",
+      "gps_coordinates": {
+        "latitude": 41.6938026,
+        "longitude": 44.8015168
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5fMqjP2qanEDSBj7ueHPTc357jN4MkZi8HDb5v7Z68UryWJsGIiNUpcMtYHp7sVtxXxBEnbQbIY8fjCLuNTsJ3_SlxdrKQJEDau_BwA",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBibTRq",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0bm4j&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/07qzv",
+      "name": "Tel Aviv-Yafo",
+      "country": "Israel",
+      "gps_coordinates": {
+        "latitude": 32.0852999,
+        "longitude": 34.7817676
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSqI8bgo5ZgBB3l8Oa990L2J1eTctzKs7h5ucHCnZ4cvH3Ret7bigBcHw4vMsOnvJjlF0MuTDIX1KuYz7X-Q0ojwBgHvKz6fc0eNa-dZw",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA3cXp2",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F07qzv&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/06pr6",
+      "name": "Saint Petersburg",
+      "country": "Russia",
+      "gps_coordinates": {
+        "latitude": 59.9310584,
+        "longitude": 30.3609097
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSRDMTIfIbSjT6Tj6DmIBcHTE8KVBmtRiQrTafyVdBLxnEaqPDGX2imvmltRoqOuNynFWWLB_HGJr8ZHRR9yue2Hxs06sCh8ye4AkyuKg",
+      "destination_airport": {
+        "code": "LED"
+      },
+      "start_date": "2026-10-08",
+      "end_date": "2026-10-14",
+      "flight_price": 5925,
+      "flight_duration": 735,
+      "number_of_stops": 1,
+      "airline": "Turkish Airlines",
+      "airline_code": "TK",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEwLTA4agcIARIDT1NMGhUSCjIwMjYtMTAtMTRyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA2cHI2",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F06pr6&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-10-08&return_date=2026-10-14&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/01gf5",
+      "name": "Baku",
+      "country": "Azerbaijan",
+      "gps_coordinates": {
+        "latitude": 40.4092617,
+        "longitude": 49.8670924
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTBrtd_3GZcdhJy_9GSUZni7zFkxnjwxaoLq9OzUcHV_dccFVP3B9nfFtKf0BEqcg1jruM2czq4TXw5aMl_dLMP1lNMzSD-psXHq9YWSw",
+      "destination_airport": {
+        "code": "GYD"
+      },
+      "start_date": "2026-10-19",
+      "end_date": "2026-10-25",
+      "flight_price": 3263,
+      "flight_duration": 445,
+      "number_of_stops": 1,
+      "airline": "LOT",
+      "airline_code": "LO",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTEwLTE5agcIARIDT1NMGhUSCjIwMjYtMTAtMjVyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzAxZ2Y1",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F01gf5&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-10-19&return_date=2026-10-25&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0jyw",
+      "name": "Ankara",
+      "country": "Türkiye",
+      "gps_coordinates": {
+        "latitude": 39.9333635,
+        "longitude": 32.8597419
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTfOVnAhmufYxCyciDcdqcZut2BAMWYQhTx1sDBHr3iKY3qReLLsIZC8XAo5gpL9-Vj0VN9sp6CEG6CwuRhchBN9HY_6FjzflOaPg7vLA",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDSoLCAMSBy9tLzBqeXc",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0jyw&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0fsmy",
+      "name": "Tashkent",
+      "country": "Uzbekistan",
+      "gps_coordinates": {
+        "latitude": 41.2982211,
+        "longitude": 69.2385223
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQA8i7cAg_5GT78C0ciF1cM-ly6BiS_ojUVXMMr6drRYdStr40B90277pTgsMCGul1IEbR6ZDAc4atr4D6HN9laieRaaJeaT3hmLsKqBg",
+      "destination_airport": {
+        "code": "TAS"
+      },
+      "start_date": "2026-08-31",
+      "end_date": "2026-09-07",
+      "flight_price": 6625,
+      "flight_duration": 680,
+      "number_of_stops": 1,
+      "airline": "Air Baltic and Uzbekistan",
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTMxagcIARIDT1NMGhUSCjIwMjYtMDktMDdyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBmc215",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0fsmy&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-31&return_date=2026-09-07&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0151s1",
+      "name": "Almaty",
+      "country": "Kazakhstan",
+      "gps_coordinates": {
+        "latitude": 43.2379761,
+        "longitude": 76.8828618
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcR8iDoh59ddyzKl4KpDTbZMB5nZzWIzPoHXHEhF6j5LF-er9e4arKtTln2lYA-WuD2Z23ZsHkv3IaTY8X4k7_H0sz7pZENVvOOpEEYVqA",
+      "destination_airport": {
+        "code": "ALA"
+      },
+      "start_date": "2026-08-28",
+      "end_date": "2026-09-03",
+      "flight_price": 6165,
+      "flight_duration": 830,
+      "number_of_stops": 1,
+      "airline": "Qatar Airways",
+      "airline_code": "QR",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTI4agcIARIDT1NMGhUSCjIwMjYtMDktMDNyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzAxNTFzMQ",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0151s1&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-28&return_date=2026-09-03&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0dl3g",
+      "name": "Samarkand",
+      "country": "Uzbekistan",
+      "gps_coordinates": {
+        "latitude": 39.6507963,
+        "longitude": 66.9653502
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSuIk0_5fkQUMmNO2gqREdHQtiS5DKasou1pmK18DdpOi_pzl-uwah--FhE0-ZpwVjKqFSpErZw_5-sZ1QfYHTeDVqO52FH3D84ubCeGw",
+      "destination_airport": {
+        "code": "SKD"
+      },
+      "start_date": "2026-08-20",
+      "end_date": "2026-08-26",
+      "flight_price": 12674,
+      "flight_duration": 1810,
+      "number_of_stops": 1,
+      "airline": "Turkish Airlines",
+      "airline_code": "TK",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTIwagcIARIDT1NMGhUSCjIwMjYtMDgtMjZyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBkbDNn",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0dl3g&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-20&return_date=2026-08-26&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0889d",
+      "name": "Yerevan",
+      "country": "Armenia",
+      "gps_coordinates": {
+        "latitude": 40.1872023,
+        "longitude": 44.515209
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcScMAviCBERc0zu47JMT6KudIQzJjeZqN7VKzNKEo8U1VR_rKw3G3W-0iYu6QXcdss_Aic-EdNSc0dq8KJQret-6LDBKFImLqEg5_YR1w",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA4ODlk",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0889d&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0ftlx",
+      "name": "Tehran",
+      "country": "Iran",
+      "gps_coordinates": {
+        "latitude": 35.7218583,
+        "longitude": 51.3346954
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSE4XzJ3-jox0HepD9O5KomPQPnuWx3ClgVoliBalJu3shkAEawZWYi-M4YltQCNIzSMcKVSDWIXucwru13GOVroOYQmrDyLJXemqgOsw",
+      "destination_airport": {
+        "code": "IKA"
+      },
+      "start_date": "2026-11-01",
+      "end_date": "2026-11-09",
+      "flight_price": 6738,
+      "flight_duration": 725,
+      "number_of_stops": 2,
+      "airline": "Lufthansa and Austrian",
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTExLTAxagcIARIDT1NMGhUSCjIwMjYtMTEtMDlyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBmdGx4",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0ftlx&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-11-01&return_date=2026-11-09&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0ftn8",
+      "name": "Tunis",
+      "country": "Tunisia",
+      "gps_coordinates": {
+        "latitude": 36.8064948,
+        "longitude": 10.1815316
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRImzJCT5LUuRSBF73kd8g1-R-tVs2H8AvgSIWCOGRsew_4HNkfpGUX3Z62eaF_1xXUgHOJzozo-KZoZUst8FPfb8g6g842RTRZoQWsjQ",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBmdG44",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0ftn8&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0c63w",
+      "name": "Trapani",
+      "country": "Italy",
+      "gps_coordinates": {
+        "latitude": 38.0174282,
+        "longitude": 12.5364464
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcTMTX__QfgAdXSXuiAsalZI69BOSALSNCDBE5mwmkgjVd1XVxwwZQDiBKd-6bKCkjck6T9zsVXuu_Bb0QaF8bQuoHIXVqyNBc1H7OqlwA",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBjNjN3",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0c63w&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/01jmlw",
+      "name": "Lhasa",
+      "country": "China",
+      "gps_coordinates": {
+        "latitude": 29.6526199,
+        "longitude": 91.13775
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcSjkmQGXwL5LwS_LIMnTwqm95S7-RERsRDLXrwva10E6WB1nUJA4FZRk0fUfRQKd3nnFp3LBKz9prIDfdLtnamH29bOM5UZ453gFXcpAg",
+      "start_date": "2026-08-20",
+      "end_date": "2026-08-26",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTIwagcIARIDT1NMGhUSCjIwMjYtMDgtMjZyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzAxam1sdw",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F01jmlw&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-20&return_date=2026-08-26&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0rtv",
+      "name": "Algiers",
+      "country": "Algeria",
+      "gps_coordinates": {
+        "latitude": 36.753768,
+        "longitude": 3.0587561
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRpMYjp9WAWQFoy_CuuLi28BtsRXjYYcczdXlB3RZ6tRkgl8pME_DnGVXjeptu9BbzpXTrKaFvVcyfsWnXxXStHyDeZ1AWC7C3DakF83g",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDSoLCAMSBy9tLzBydHY",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0rtv&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/01gk3x",
+      "name": "Isfahan",
+      "country": "Iran",
+      "gps_coordinates": {
+        "latitude": 32.6538966,
+        "longitude": 51.6659656
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcQwakxOitW8qCd-ni_IJjGONuLvWsVBR7rBET6-YCURz2311yI6ijeKgu8Oe3FsvU9mMUpcQj-oFf1Gpkcchug6yKOuFNeoBfZyPvXW3w",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzAxZ2szeA",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F01gk3x&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0dlxj",
+      "name": "Minsk",
+      "country": "Belarus",
+      "gps_coordinates": {
+        "latitude": 53.9006011,
+        "longitude": 27.558972
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQgP0PJI10vAc1_O9B5qiUP1My_2etV-ihSP7QbdKYEMoRGNYzpPbieEqAiGly_2oBGdm1wkyHQh5b08t5dgSb2SYQgF9xCyAmxaTUd5Rk",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBkbHhq",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0dlxj&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/01cr28",
+      "name": "Kazan",
+      "country": "Russia",
+      "gps_coordinates": {
+        "latitude": 55.7878944,
+        "longitude": 49.1233293
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcRoDcTmzgZUHmtfRlpje-RvB1Qg5ueT4bJ1_P8jLMDiNzurU-qizbaOQIHcCyQpQe2Ykeu8jWd1of8z7liIECJSECE-WdJ7700XkwojNw",
+      "start_date": "2026-08-20",
+      "end_date": "2026-08-26",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTIwagcIARIDT1NMGhUSCjIwMjYtMDgtMjZyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzAxY3IyOA",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F01cr28&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-20&return_date=2026-08-26&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/01fqm",
+      "name": "Baghdad",
+      "country": "Iraq",
+      "gps_coordinates": {
+        "latitude": 33.315241,
+        "longitude": 44.3660671
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcReaS1g62AHmVnk4VOPoVS2ivQnaLzTUDrcinfWS8gNfRXAg-ORLgXlajh-r8wQp2trjIQd2xCSnxjW8BNGFXvGol_pCfXZNLwb0Mtokg",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzAxZnFt",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F01fqm&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0hkpn",
+      "name": "Yekaterinburg",
+      "country": "Russia",
+      "gps_coordinates": {
+        "latitude": 56.8430993,
+        "longitude": 60.6454086
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcTiYHBvQm115OU9l8EnGIS4dG7QfYNWj9A07OxtmFMMAg-89DgagmLt57tBmmcVp-4DgH08084peB2ipjfGL2zHNrYMIwiYKnvEcBWKcg",
+      "destination_airport": {
+        "code": "SVX"
+      },
+      "start_date": "2026-08-20",
+      "end_date": "2026-08-26",
+      "flight_price": 46903,
+      "flight_duration": 3660,
+      "number_of_stops": 2,
+      "airline": "flydubai and Air Serbia",
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTIwagcIARIDT1NMGhUSCjIwMjYtMDgtMjZyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBoa3Bu",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0hkpn&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-20&return_date=2026-08-26&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/09wc5",
+      "name": "Shiraz",
+      "country": "Iran",
+      "gps_coordinates": {
+        "latitude": 29.5926119,
+        "longitude": 52.5835646
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSkPan1f6jGvbHc2oZjseXashMqzNKND1NRIz-7D6LhlAYnjVKzrTVJiwOwLH-EgvFLysqFxf8Suwpk9Eg4i5rXSwCMCed2FRPCUF2G0w",
+      "start_date": "2026-09-17",
+      "end_date": "2026-09-24",
+      "number_of_stops": 0,
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA5LTE3agcIARIDT1NMGhUSCjIwMjYtMDktMjRyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzA5d2M1",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F09wc5&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-09-17&return_date=2026-09-24&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/01c8t6",
+      "name": "Ürümqi",
+      "country": "China",
+      "gps_coordinates": {
+        "latitude": 43.8266299,
+        "longitude": 87.61688
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQG7GdzgUFPXs__gKaBVRzQaJyESgnuqLvTQ2PKS1DtS6k70TghaCiYlvLODQcqYelNGewNj-hgj_pjCSM7n1Df_nnW-VeC8V0We0h8MQ",
+      "start_date": "2026-08-20",
+      "end_date": "2026-08-26",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTIwagcIARIDT1NMGhUSCjIwMjYtMDgtMjZyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzAxYzh0Ng",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F01c8t6&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-20&return_date=2026-08-26&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0fmsx",
+      "name": "Ashgabat",
+      "country": "Turkmenistan",
+      "gps_coordinates": {
+        "latitude": 37.9600766,
+        "longitude": 58.3260629
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQhplnijGFbcHayCILVluspZMDbw80hy2ui_Jvi2Q0Fzvy9ZMmab5AbZ4Q6E_-yM0H83sPQ1Y4kQOYK9KvYT5Ffrv36Ov3cz_rvebfw4Q",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBmbXN4",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0fmsx&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0gzyb",
+      "name": "Novosibirsk",
+      "country": "Russia",
+      "gps_coordinates": {
+        "latitude": 54.9832693,
+        "longitude": 82.8963831
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/licensed-image?q=tbn:ANd9GcQPxSEHpxsi0dXaDzTbCxLaNFN0OdNnKNTa-Zt1A1nSQzGvpkYQzgigH8aywBPl2A3nt_oLZRa8S7RHh-9jn2sKmkWALlSH2YATZ_hEyg",
+      "destination_airport": {
+        "code": "OVB"
+      },
+      "start_date": "2026-08-20",
+      "end_date": "2026-08-26",
+      "flight_price": 23474,
+      "flight_duration": 1915,
+      "number_of_stops": 1,
+      "airline": "Emirates and flydubai",
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTIwagcIARIDT1NMGhUSCjIwMjYtMDgtMjZyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBnenli",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0gzyb&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-20&return_date=2026-08-26&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0hclr",
+      "name": "Nizhny Novgorod",
+      "country": "Russia",
+      "gps_coordinates": {
+        "latitude": 56.3268684,
+        "longitude": 44.0058793
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcR0rFlqipU2yDru_Dh7jRaqM-F-PgRMdzkTXybJSfA5Ozb88xavMI2a0JevBX2WPQuPuZ2vl1aGAadmcpdhAYoLFUFhl1J8TaYFbvMZaQ",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBoY2xy",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0hclr&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0gxgf",
+      "name": "Omsk",
+      "country": "Russia",
+      "gps_coordinates": {
+        "latitude": 54.9913545,
+        "longitude": 73.3645204
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQrOzqcy-OvNINMDbQXnw3fCeZMeeVACtrBTaOAArl8FUXfnp-NyRnzBJNIuGP5ySm7nFCBog9hvW6rfJJwoJwgKSDYRNliwY1NDpF1zw",
+      "start_date": "2026-08-20",
+      "end_date": "2026-08-26",
+      "number_of_stops": 0,
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTIwagcIARIDT1NMGhUSCjIwMjYtMDgtMjZyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBneGdm",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0gxgf&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-20&return_date=2026-08-26&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0jlsq",
+      "name": "Samara",
+      "country": "Russia",
+      "gps_coordinates": {
+        "latitude": 53.203772,
+        "longitude": 50.1606382
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRY__xzmle13evpS7zvmfxAXbmFA5gAxLhbJU46dPbXbkA2B49z2SY4hp1Sp-X7pAR54uWSmGXpub3sa7Qjva-ZeLkF9KTzQGYXvWc1Mw",
+      "start_date": "2026-08-20",
+      "end_date": "2026-08-26",
+      "number_of_stops": 0,
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTIwagcIARIDT1NMGhUSCjIwMjYtMDgtMjZyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBqbHNx",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0jlsq&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-20&return_date=2026-08-26&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/02bqz1",
+      "name": "Turpan",
+      "country": "China",
+      "gps_coordinates": {
+        "latitude": 42.9512999,
+        "longitude": 89.1895399
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/licensed-image?q=tbn:ANd9GcTv70U23w_axeLT9bY127_-2pBVetCRSdspXgh0PFrPZLtuBrltZejeOJeMFDsd69AVlOYEJVH0Ftbj50mXQgfR91_CSaPCnOs7hV745w",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzAyYnF6MQ",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F02bqz1&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/01kg39",
+      "name": "Chelyabinsk",
+      "country": "Russia",
+      "gps_coordinates": {
+        "latitude": 55.1644419,
+        "longitude": 61.4368431
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTKnJTZ1RtivONbBYPGfTF8UjCLQcJprsns73gqk08cBflFsYc2ChT-bKKGn2F21et-4oDXOGFWULve3uVx2KXdK0udVsMUWj6-jGkjAA",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzAxa2czOQ",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F01kg39&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/022j97",
+      "name": "Perm",
+      "country": "Russia",
+      "gps_coordinates": {
+        "latitude": 58.0091683,
+        "longitude": 56.2269674
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/images?q=tbn:ANd9GcQGdKglSqZNZX2nTIP_AZ6YxyJsuF4Gt4ygQ4NYcZMHQZNfD94WnQ1bJeQn1EUF8KjtQNqJ_wXXThk5Rb32_GgYOAuB6XypMbQAHt7Swg",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzAyMmo5Nw",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F022j97&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/02f3_s",
+      "name": "Tyumen",
+      "country": "Russia",
+      "gps_coordinates": {
+        "latitude": 57.1553394,
+        "longitude": 65.5618636
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT-q6w-SCCwbfFN5KpgMn56_aPjF8zGHDaQbghGW57ktfpQF8Nt5kBimzacL2LH2tuyEZZp-aY94YwNrPXocPkDjQ7rfNwvz-3l5TVnAQ",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzAyZjNfcw",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F02f3_s&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/06rfnp",
+      "name": "Nukus",
+      "country": "Uzbekistan",
+      "gps_coordinates": {
+        "latitude": 42.461891,
+        "longitude": 59.6166312
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/licensed-image?q=tbn:ANd9GcTknn5qh2ir6-iJYdkbdQ8QAOeOvEoNo23SrZztP_b-wEM11E1GjEEI4S74PxThT7Lf1FjCFCleroa7dR8dtBi20IjMtiIncP4ffAmKZQ",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzA2cmZucA",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F06rfnp&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0h3ry",
+      "name": "Tomsk",
+      "country": "Russia",
+      "gps_coordinates": {
+        "latitude": 56.4884295,
+        "longitude": 84.9480469
+      },
+      "thumbnail": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ0xDrgTJsFrqwjc1zSPoASHE7Dq_x9UQPGkwpGWY0v_3TOnQyugLpkJLqQ43m85voNKdw4WT42KxhoHk7yXSAufUYkh-KsL9kA62vrFg",
+      "start_date": "2026-08-20",
+      "end_date": "2026-08-26",
+      "number_of_stops": 0,
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTIwagcIARIDT1NMGhUSCjIwMjYtMDgtMjZyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDioMCAMSCC9tLzBoM3J5",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0h3ry&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-20&return_date=2026-08-26&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/02dw02",
+      "name": "Barnaul",
+      "country": "Russia",
+      "gps_coordinates": {
+        "latitude": 53.3497499,
+        "longitude": 83.7835737
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTT0o2kKAAM2A9-JMHAdh_PBKQ-O5M-aKg-xjB6P-cNzmFbln6gVmEcjvBSbX4t60hDnbuLIPQ1oPdWAdWlckZhvxVMtomL6yXGBKap8A",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzAyZHcwMg",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F02dw02&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/02fgkc",
+      "name": "Oskemen",
+      "country": "Kazakhstan",
+      "gps_coordinates": {
+        "latitude": 49.9749295,
+        "longitude": 82.6017244
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/licensed-image?q=tbn:ANd9GcROORKDt5Zx37UEU0rNJ7uwX7hnHvvD5l-IdBcAELWPQzDhfptyqm-pDiC0z3d2vF7nN2-JjtUisYbFgVKU7vwVxI1x4k9c8MuRPsi8AQ",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzAyZmdrYw",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F02fgkc&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/05rpqm",
+      "name": "Urgench",
+      "country": "Uzbekistan",
+      "gps_coordinates": {
+        "latitude": 41.5345323,
+        "longitude": 60.6248891
+      },
+      "thumbnail": "https://encrypted-tbn2.gstatic.com/licensed-image?q=tbn:ANd9GcSEXHcZv82eKe4lLLmG4sW2vtKsfCjCIdNUihvS8ueECE4HpXSuDTgC9MXszDFoAhH2ymUxt30kIn4ezj0Fc9oOTXvrKoL9YYikuaCPHQ",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzA1cnBxbQ",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F05rpqm&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0151sx",
+      "name": "Atyrau",
+      "country": "Kazakhstan",
+      "gps_coordinates": {
+        "latitude": 47.0944959,
+        "longitude": 51.9238373
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/licensed-image?q=tbn:ANd9GcRRmftu2eoFD0UdoyW7WNbkVj_pdagnqJv-vkCljxX60auO-Px3iG2E4cEj0-GYBKA__NZkTkMbG-mk6XkqUnilZFhlJJi_CJLaabqoqdo",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoJagcIARIDT1NMGglyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzAxNTFzeA",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0151sx&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/06sn5d",
+      "name": "Surgut",
+      "country": "Russia",
+      "gps_coordinates": {
+        "latitude": 61.2545849,
+        "longitude": 73.3961699
+      },
+      "thumbnail": "https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcTFTJRlV5MOiNJCvR62K6BfZYcJV0gs2NFHRxFkvSwnX09QbnEIUe8QEdV_HW2IBUVj6tmxE7FKGhU2GWVO-N_o-vzUxebTyHRpyx2STQ",
+      "start_date": "2026-08-20",
+      "end_date": "2026-08-26",
+      "number_of_stops": 0,
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTIwagcIARIDT1NMGhUSCjIwMjYtMDgtMjZyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDyoNCAMSCS9tLzA2c241ZA",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F06sn5d&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-20&return_date=2026-08-26&travel_duration=2"
+    },
+    {
+      "destination_id": "/m/0zv5",
+      "name": "Abakan",
+      "country": "Russia",
+      "gps_coordinates": {
+        "latitude": 53.7175644,
+        "longitude": 91.4293172
+      },
+      "thumbnail": "https://encrypted-tbn3.gstatic.com/licensed-image?q=tbn:ANd9GcSxzZCIvuE1mbrTsUC_Eb9wWrRO26UHS2ocL5NCn_oAx64Xc5wwtGcR4vSASU6xvpBdWuCeZj1rO79qeOSIe58XKCIH90CFrpUaXFXwjg",
+      "start_date": "2026-08-20",
+      "end_date": "2026-08-26",
+      "number_of_stops": 0,
+      "airline_code": "multi",
+      "link": "https://www.google.com/travel/explore?hl=en&gl=us&curr=NOK&tfs=CBwQAxoVEgoyMDI2LTA4LTIwagcIARIDT1NMGhUSCjIwMjYtMDgtMjZyBwgBEgNPU0xAAUgBcAGCAQsI____________AZgBAbIBDSoLCAMSBy9tLzB6djU",
+      "serpapi_link": "https://serpapi.com/search.json?arrival_id=%2Fm%2F0zv5&currency=NOK&departure_id=OSL&engine=google_travel_explore&gl=us&hl=en&outbound_date=2026-08-20&return_date=2026-08-26&travel_duration=2"
+    }
+  ]
+}

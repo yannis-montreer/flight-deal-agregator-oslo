@@ -1,0 +1,45 @@
+# Configuration fonctionnelle du Flight Deal Aggregator OSL.
+# Aucune donnee sensible ici — les secrets vivent dans .env (voir .env.example).
+# Ce fichier est relu au debut de CHAQUE run (voir flightdeals/config.py), donc les
+# seuils peuvent etre ajustes sans reconstruire l'image Docker : editer + redemarrer suffit.
+
+origin: OSL
+currency: NOK
+
+collection:
+  enabled: true
+  schedule: "02:00"          # HH:MM, TOUJOURS en UTC (jamais heure locale)
+
+serpapi:
+  monthly_budget: 200        # cible MVP (quota gratuit reel ~250/mois, marge gardee)
+  min_budget_reserve: 5      # si moins de X requetes restantes ce mois -> le run du jour est skippe
+  travel_durations: [1, 2, 3]  # enum SerpApi google_travel_explore: 1=weekend, 2=~1 semaine, 3=~2 semaines
+  arrival_area_id: null      # null = destination "partout" (defaut API). Le Spike peut suggerer de restreindre
+                              # a une region (kgmid Freebase) si "partout" s'avere trop instable jour apres jour.
+
+deal:
+  minimum_discount: 0.30           # discount = 1 - prix_actuel / mediane_historique
+  minimum_observations: 7          # sous ce seuil -> jamais de notification (evite les faux positifs)
+  percentile_threshold: 0.25       # le prix actuel doit etre <= a ce percentile historique
+  history_window_days: 30          # fenetre glissante d'historique consideree
+  duration_tolerance_nights: 2     # tolerance +/- nuits pour considerer deux sejours "similaires"
+
+scoring:
+  # Les poids doivent sommer a 1.0 (valide au chargement, voir config.py)
+  weights: { discount: 0.45, percentile: 0.25, directness: 0.10, confidence: 0.20 }
+  discount_cap: 0.60                     # au-dela, la composante discount du score sature a 1.0
+  confidence_saturation_count: 30        # nombre d'observations au-dela duquel la confiance sature a 1.0
+  directness_bonus: { nonstop: 1.0, one_stop: 0.5, multi_stop: 0.0, unknown: 0.5 }
+
+dedup:
+  further_drop_threshold: 0.10     # re-notifier si le prix rebaisse d'au moins 10% de plus que la derniere notif
+  reappear_gap_days: 14            # re-notifier si le deal reapparait apres au moins 14 jours d'absence
+
+notification:
+  telegram: true
+  send_delay_seconds: 1.0          # throttle entre deux envois Telegram consecutifs dans le meme run
+
+logging:
+  level: INFO
+  max_bytes: 5242880               # 5 MB avant rotation
+  backup_count: 5

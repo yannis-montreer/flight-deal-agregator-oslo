@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Secrets — never commit
+.env
+
+# Runtime data (local SQLite + logs, persisted via the Docker bind mount)
+data/*.db
+data/*.db-wal
+data/*.db-shm
+data/logs/*.log*
+!data/.gitkeep
+!data/logs/.gitkeep
+
+# Spike raw dumps are throwaway and can be large/numerous — keep the folder, not the bulk
+spike/responses/*.json
+!spike/responses/.gitkeep
+
+# OS
+.DS_Store
+Thumbs.db

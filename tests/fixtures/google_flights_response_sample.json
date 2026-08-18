@@ -1,0 +1,1433 @@
+{
+  "search_metadata": {
+    "id": "6a84c546ad9ecf4a3fc1aead",
+    "status": "Success",
+    "json_endpoint": "https://serpapi.com/searches/Fs9mKUpbYQB552tlhLDuRA/6a84c546ad9ecf4a3fc1aead.json",
+    "markdown_endpoint": "https://serpapi.com/searches/Fs9mKUpbYQB552tlhLDuRA/6a84c546ad9ecf4a3fc1aead.md",
+    "created_at": "2026-08-18 20:49:10 UTC",
+    "processed_at": "2026-08-18 20:49:10 UTC",
+    "google_flights_url": "https://www.google.com/travel/flights?hl=en&gl=us&curr=NOK&tfs=CBwQAhoeEgoyMDI2LTEwLTAyagcIARIDT1NMcgcIARIDTlJUGh4SCjIwMjYtMTAtMDlqBwgBEgNOUlRyBwgBEgNPU0xAAUgBcAGYAQE&tfu=EgIIAQ",
+    "raw_html_file": "https://serpapi.com/searches/Fs9mKUpbYQB552tlhLDuRA/6a84c546ad9ecf4a3fc1aead.html",
+    "prettify_html_file": "https://serpapi.com/searches/Fs9mKUpbYQB552tlhLDuRA/6a84c546ad9ecf4a3fc1aead.prettify",
+    "total_time_taken": 1.01
+  },
+  "search_parameters": {
+    "engine": "google_flights",
+    "hl": "en",
+    "gl": "us",
+    "type": "1",
+    "departure_id": "OSL",
+    "arrival_id": "NRT",
+    "outbound_date": "2026-10-02",
+    "return_date": "2026-10-09",
+    "currency": "NOK"
+  },
+  "best_flights": [
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Oslo lufthavn",
+            "id": "OSL",
+            "time": "2026-10-02 20:30"
+          },
+          "arrival_airport": {
+            "name": "Helsinki Airport",
+            "id": "HEL",
+            "time": "2026-10-02 22:55"
+          },
+          "duration": 85,
+          "airplane": "Airbus A320",
+          "airline": "Finnair",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AY.png",
+          "travel_class": "Economy",
+          "flight_number": "AY 918",
+          "ticket_also_sold_by": [
+            "JAL"
+          ],
+          "legroom": "31 in",
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "Carbon emissions estimate: 91 kg"
+          ]
+        },
+        {
+          "departure_airport": {
+            "name": "Helsinki Airport",
+            "id": "HEL",
+            "time": "2026-10-03 00:10"
+          },
+          "arrival_airport": {
+            "name": "Kansai International Airport",
+            "id": "KIX",
+            "time": "2026-10-03 19:00"
+          },
+          "duration": 770,
+          "airplane": "Airbus A350",
+          "airline": "Finnair",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AY.png",
+          "travel_class": "Economy",
+          "flight_number": "AY 69",
+          "ticket_also_sold_by": [
+            "JAL"
+          ],
+          "legroom": "31 in",
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "In-seat USB outlet",
+            "On-demand video",
+            "Carbon emissions estimate: 523 kg"
+          ],
+          "overnight": true
+        },
+        {
+          "departure_airport": {
+            "name": "Kansai International Airport",
+            "id": "KIX",
+            "time": "2026-10-03 21:00"
+          },
+          "arrival_airport": {
+            "name": "Narita International Airport",
+            "id": "NRT",
+            "time": "2026-10-03 22:25"
+          },
+          "duration": 85,
+          "airplane": "Airbus A320",
+          "airline": "Jetstar",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/GK.png",
+          "travel_class": "Economy",
+          "flight_number": "GK 238",
+          "ticket_also_sold_by": [
+            "JAL"
+          ],
+          "legroom": "29 in",
+          "extensions": [
+            "Below average legroom (29 in)",
+            "Carbon emissions estimate: 75 kg"
+          ]
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 75,
+          "name": "Helsinki Airport",
+          "id": "HEL"
+        },
+        {
+          "duration": 120,
+          "name": "Kansai International Airport",
+          "id": "KIX"
+        }
+      ],
+      "total_duration": 1135,
+      "carbon_emissions": {
+        "this_flight": 691000,
+        "typical_for_this_route": 701000,
+        "difference_percent": -1
+      },
+      "price": 14938,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+      "departure_token": "WyJDalJJZVV0d2NXNTBhbVpHV1hOQlFXSjRTR2RDUnkwdExTMHRMUzB0TFhscFltSnJOa0ZCUVVGQlIzRkZlRlZqUkdVdFZYbEJFaEJCV1RreE9IeEJXVFk1ZkVkTE1qTTRHZ29JMm5RUUFCb0RUazlMT0J4d3BkY0oiLFtbIk9TTCIsIjIwMjYtMTAtMDIiLCJIRUwiLG51bGwsIkFZIiwiOTE4Il0sWyJIRUwiLCIyMDI2LTEwLTAzIiwiS0lYIixudWxsLCJBWSIsIjY5Il0sWyJLSVgiLCIyMDI2LTEwLTAzIiwiTlJUIixudWxsLCJHSyIsIjIzOCJdXV0="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Oslo lufthavn",
+            "id": "OSL",
+            "time": "2026-10-02 12:50"
+          },
+          "arrival_airport": {
+            "name": "Helsinki Airport",
+            "id": "HEL",
+            "time": "2026-10-02 15:15"
+          },
+          "duration": 85,
+          "airplane": "Airbus A319",
+          "airline": "Finnair",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AY.png",
+          "travel_class": "Economy",
+          "flight_number": "AY 914",
+          "ticket_also_sold_by": [
+            "JAL"
+          ],
+          "legroom": "31 in",
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "Carbon emissions estimate: 101 kg"
+          ]
+        },
+        {
+          "departure_airport": {
+            "name": "Helsinki Airport",
+            "id": "HEL",
+            "time": "2026-10-02 17:45"
+          },
+          "arrival_airport": {
+            "name": "Narita International Airport",
+            "id": "NRT",
+            "time": "2026-10-03 13:05"
+          },
+          "duration": 800,
+          "airplane": "Airbus A350",
+          "airline": "Finnair",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AY.png",
+          "travel_class": "Economy",
+          "flight_number": "AY 73",
+          "ticket_also_sold_by": [
+            "JAL"
+          ],
+          "legroom": "31 in",
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "In-seat USB outlet",
+            "On-demand video",
+            "Carbon emissions estimate: 520 kg"
+          ],
+          "overnight": true
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 150,
+          "name": "Helsinki Airport",
+          "id": "HEL"
+        }
+      ],
+      "total_duration": 1035,
+      "carbon_emissions": {
+        "this_flight": 622000,
+        "typical_for_this_route": 701000,
+        "difference_percent": -11
+      },
+      "price": 17120,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AY.png",
+      "departure_token": "WyJDalJJZVV0d2NXNTBhbVpHV1hOQlFXSjRTR2RDUnkwdExTMHRMUzB0TFhscFltSnJOa0ZCUVVGQlIzRkZlRlZqUkdVdFZYbEJFZ3BCV1RreE5IeEJXVGN6R2dzSTRJVUJFQUFhQTA1UFN6Z2NjS2lNQ3c9PSIsW1siT1NMIiwiMjAyNi0xMC0wMiIsIkhFTCIsbnVsbCwiQVkiLCI5MTQiXSxbIkhFTCIsIjIwMjYtMTAtMDIiLCJOUlQiLG51bGwsIkFZIiwiNzMiXV1d"
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Oslo lufthavn",
+            "id": "OSL",
+            "time": "2026-10-02 13:45"
+          },
+          "arrival_airport": {
+            "name": "Suvarnabhumi Airport",
+            "id": "BKK",
+            "time": "2026-10-03 06:15"
+          },
+          "duration": 690,
+          "airplane": "Airbus A350",
+          "airline": "THAI",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/TG.png",
+          "travel_class": "Economy",
+          "flight_number": "TG 955",
+          "legroom": "32 in",
+          "extensions": [
+            "Above average legroom (32 in)",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 579 kg"
+          ],
+          "overnight": true
+        },
+        {
+          "departure_airport": {
+            "name": "Suvarnabhumi Airport",
+            "id": "BKK",
+            "time": "2026-10-03 07:45"
+          },
+          "arrival_airport": {
+            "name": "Narita International Airport",
+            "id": "NRT",
+            "time": "2026-10-03 15:55"
+          },
+          "duration": 370,
+          "airplane": "Boeing 777",
+          "airline": "THAI",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/TG.png",
+          "travel_class": "Economy",
+          "flight_number": "TG 676",
+          "legroom": "32 in",
+          "extensions": [
+            "Above average legroom (32 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 444 kg"
+          ]
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 90,
+          "name": "Suvarnabhumi Airport",
+          "id": "BKK"
+        }
+      ],
+      "total_duration": 1150,
+      "carbon_emissions": {
+        "this_flight": 1024000,
+        "typical_for_this_route": 701000,
+        "difference_percent": 46
+      },
+      "price": 17460,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/TG.png",
+      "departure_token": "WyJDalJJZVV0d2NXNTBhbVpHV1hOQlFXSjRTR2RDUnkwdExTMHRMUzB0TFhscFltSnJOa0ZCUVVGQlIzRkZlRlZqUkdVdFZYbEJFZ3RVUnprMU5YeFVSelkzTmhvTENMU0lBUkFBR2dOT1QwczRISERDcUFzPSIsW1siT1NMIiwiMjAyNi0xMC0wMiIsIkJLSyIsbnVsbCwiVEciLCI5NTUiXSxbIkJLSyIsIjIwMjYtMTAtMDMiLCJOUlQiLG51bGwsIlRHIiwiNjc2Il1dXQ=="
+    }
+  ],
+  "other_flights": [
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Oslo lufthavn",
+            "id": "OSL",
+            "time": "2026-10-02 13:45"
+          },
+          "arrival_airport": {
+            "name": "Suvarnabhumi Airport",
+            "id": "BKK",
+            "time": "2026-10-03 06:15"
+          },
+          "duration": 690,
+          "airplane": "Airbus A350",
+          "airline": "THAI",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/TG.png",
+          "travel_class": "Economy",
+          "flight_number": "TG 955",
+          "legroom": "32 in",
+          "extensions": [
+            "Above average legroom (32 in)",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 579 kg"
+          ],
+          "overnight": true
+        },
+        {
+          "departure_airport": {
+            "name": "Suvarnabhumi Airport",
+            "id": "BKK",
+            "time": "2026-10-03 21:55"
+          },
+          "arrival_airport": {
+            "name": "Narita International Airport",
+            "id": "NRT",
+            "time": "2026-10-04 06:20"
+          },
+          "duration": 385,
+          "airplane": "Airbus A330",
+          "airline": "THAI",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/TG.png",
+          "travel_class": "Economy",
+          "flight_number": "TG 640",
+          "legroom": "32 in",
+          "extensions": [
+            "Above average legroom (32 in)",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 345 kg"
+          ],
+          "overnight": true
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 940,
+          "name": "Suvarnabhumi Airport",
+          "id": "BKK"
+        }
+      ],
+      "total_duration": 2015,
+      "carbon_emissions": {
+        "this_flight": 926000,
+        "typical_for_this_route": 701000,
+        "difference_percent": 32
+      },
+      "price": 14899,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/TG.png",
+      "departure_token": "WyJDalJJZVV0d2NXNTBhbVpHV1hOQlFXSjRTR2RDUnkwdExTMHRMUzB0TFhscFltSnJOa0ZCUVVGQlIzRkZlRlZqUkdVdFZYbEJFZ3RVUnprMU5YeFVSelkwTUJvS0NMTjBFQUFhQTA1UFN6Z2NjSWZVQ1E9PSIsW1siT1NMIiwiMjAyNi0xMC0wMiIsIkJLSyIsbnVsbCwiVEciLCI5NTUiXSxbIkJLSyIsIjIwMjYtMTAtMDMiLCJOUlQiLG51bGwsIlRHIiwiNjQwIl1dXQ=="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Oslo lufthavn",
+            "id": "OSL",
+            "time": "2026-10-02 14:35"
+          },
+          "arrival_airport": {
+            "name": "Dubai International Airport",
+            "id": "DXB",
+            "time": "2026-10-02 23:25"
+          },
+          "duration": 410,
+          "airplane": "Airbus A350",
+          "airline": "Emirates",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/EK.png",
+          "travel_class": "Economy",
+          "flight_number": "EK 160",
+          "legroom": "32 in",
+          "extensions": [
+            "Above average legroom (32 in)",
+            "Wi-Fi for a fee",
+            "In-seat USB outlet",
+            "On-demand video",
+            "Carbon emissions estimate: 330 kg"
+          ]
+        },
+        {
+          "departure_airport": {
+            "name": "Dubai International Airport",
+            "id": "DXB",
+            "time": "2026-10-03 10:00"
+          },
+          "arrival_airport": {
+            "name": "Singapore Changi Airport",
+            "id": "SIN",
+            "time": "2026-10-03 21:45"
+          },
+          "duration": 465,
+          "airplane": "Airbus A380",
+          "airline": "Emirates",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/EK.png",
+          "travel_class": "Economy",
+          "flight_number": "EK 352",
+          "legroom": "32 in",
+          "extensions": [
+            "Above average legroom (32 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 418 kg"
+          ],
+          "often_delayed_by_over_30_min": true
+        },
+        {
+          "departure_airport": {
+            "name": "Singapore Changi Airport",
+            "id": "SIN",
+            "time": "2026-10-04 08:05"
+          },
+          "arrival_airport": {
+            "name": "Narita International Airport",
+            "id": "NRT",
+            "time": "2026-10-04 16:10"
+          },
+          "duration": 425,
+          "airplane": "Boeing 767",
+          "airline": "JAL",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/JL.png",
+          "travel_class": "Economy",
+          "flight_number": "JL 712",
+          "legroom": "33 in",
+          "extensions": [
+            "Above average legroom (33 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 479 kg"
+          ]
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 635,
+          "name": "Dubai International Airport",
+          "id": "DXB"
+        },
+        {
+          "duration": 620,
+          "name": "Singapore Changi Airport",
+          "id": "SIN"
+        }
+      ],
+      "total_duration": 2555,
+      "carbon_emissions": {
+        "this_flight": 1229000,
+        "typical_for_this_route": 701000,
+        "difference_percent": 75
+      },
+      "price": 14909,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+      "departure_token": "WyJDalJJZVV0d2NXNTBhbVpHV1hOQlFXSjRTR2RDUnkwdExTMHRMUzB0TFhscFltSnJOa0ZCUVVGQlIzRkZlRlZqUkdVdFZYbEJFaEZGU3pFMk1IeEZTek0xTW54S1REY3hNaG9LQ0wxMEVBQWFBMDVQU3pnY2NQSFVDUT09IixbWyJPU0wiLCIyMDI2LTEwLTAyIiwiRFhCIixudWxsLCJFSyIsIjE2MCJdLFsiRFhCIiwiMjAyNi0xMC0wMyIsIlNJTiIsbnVsbCwiRUsiLCIzNTIiXSxbIlNJTiIsIjIwMjYtMTAtMDQiLCJOUlQiLG51bGwsIkpMIiwiNzEyIl1dXQ=="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Oslo lufthavn",
+            "id": "OSL",
+            "time": "2026-10-02 20:30"
+          },
+          "arrival_airport": {
+            "name": "Helsinki Airport",
+            "id": "HEL",
+            "time": "2026-10-02 22:55"
+          },
+          "duration": 85,
+          "airplane": "Airbus A320",
+          "airline": "Finnair",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AY.png",
+          "travel_class": "Economy",
+          "flight_number": "AY 918",
+          "legroom": "31 in",
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "Carbon emissions estimate: 91 kg"
+          ]
+        },
+        {
+          "departure_airport": {
+            "name": "Helsinki Airport",
+            "id": "HEL",
+            "time": "2026-10-03 07:40"
+          },
+          "arrival_airport": {
+            "name": "Frankfurt Airport",
+            "id": "FRA",
+            "time": "2026-10-03 09:20"
+          },
+          "duration": 160,
+          "airplane": "Airbus A319",
+          "airline": "Finnair",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AY.png",
+          "travel_class": "Economy",
+          "flight_number": "AY 1411",
+          "legroom": "31 in",
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "Carbon emissions estimate: 170 kg"
+          ]
+        },
+        {
+          "departure_airport": {
+            "name": "Frankfurt Airport",
+            "id": "FRA",
+            "time": "2026-10-03 20:10"
+          },
+          "arrival_airport": {
+            "name": "Narita International Airport",
+            "id": "NRT",
+            "time": "2026-10-04 16:15"
+          },
+          "duration": 785,
+          "airplane": "Boeing 787",
+          "airline": "JAL",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/JL.png",
+          "travel_class": "Economy",
+          "flight_number": "JL 408",
+          "ticket_also_sold_by": [
+            "Finnair"
+          ],
+          "legroom": "33 in",
+          "extensions": [
+            "Above average legroom (33 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 601 kg"
+          ],
+          "overnight": true
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 525,
+          "name": "Helsinki Airport",
+          "id": "HEL"
+        },
+        {
+          "duration": 650,
+          "name": "Frankfurt Airport",
+          "id": "FRA"
+        }
+      ],
+      "total_duration": 2205,
+      "carbon_emissions": {
+        "this_flight": 863000,
+        "typical_for_this_route": 701000,
+        "difference_percent": 23
+      },
+      "price": 15937,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+      "departure_token": "WyJDalJJZVV0d2NXNTBhbVpHV1hOQlFXSjRTR2RDUnkwdExTMHRMUzB0TFhscFltSnJOa0ZCUVVGQlIzRkZlRlZqUkdVdFZYbEJFaEpCV1RreE9IeEJXVEUwTVRGOFNrdzBNRGdhQ2dqQmZCQUFHZ05PVDBzNEhIQ1ZxZ289IixbWyJPU0wiLCIyMDI2LTEwLTAyIiwiSEVMIixudWxsLCJBWSIsIjkxOCJdLFsiSEVMIiwiMjAyNi0xMC0wMyIsIkZSQSIsbnVsbCwiQVkiLCIxNDExIl0sWyJGUkEiLCIyMDI2LTEwLTAzIiwiTlJUIixudWxsLCJKTCIsIjQwOCJdXV0="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Oslo lufthavn",
+            "id": "OSL",
+            "time": "2026-10-02 15:00"
+          },
+          "arrival_airport": {
+            "name": "Adolfo Suárez Madrid-Barajas Airport",
+            "id": "MAD",
+            "time": "2026-10-02 18:45"
+          },
+          "duration": 225,
+          "airplane": "Airbus A320",
+          "airline": "Iberia",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/IB.png",
+          "travel_class": "Economy",
+          "flight_number": "IB 954",
+          "legroom": "28 in",
+          "extensions": [
+            "Below average legroom (28 in)",
+            "Wi-Fi for a fee",
+            "In-seat USB outlet",
+            "Carbon emissions estimate: 197 kg"
+          ]
+        },
+        {
+          "departure_airport": {
+            "name": "Adolfo Suárez Madrid-Barajas Airport",
+            "id": "MAD",
+            "time": "2026-10-03 12:30"
+          },
+          "arrival_airport": {
+            "name": "Narita International Airport",
+            "id": "NRT",
+            "time": "2026-10-04 09:30"
+          },
+          "duration": 840,
+          "airplane": "Airbus A350",
+          "airline": "Iberia",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/IB.png",
+          "travel_class": "Economy",
+          "flight_number": "IB 281",
+          "legroom": "31 in",
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 526 kg"
+          ],
+          "overnight": true,
+          "often_delayed_by_over_30_min": true
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 1065,
+          "name": "Adolfo Suárez Madrid-Barajas Airport",
+          "id": "MAD"
+        }
+      ],
+      "total_duration": 2130,
+      "carbon_emissions": {
+        "this_flight": 724000,
+        "typical_for_this_route": 701000,
+        "difference_percent": 3
+      },
+      "price": 16398,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/IB.png",
+      "departure_token": "WyJDalJJZVV0d2NXNTBhbVpHV1hOQlFXSjRTR2RDUnkwdExTMHRMUzB0TFhscFltSnJOa0ZCUVVGQlIzRkZlRlZqUkdVdFZYbEJFZ3RKUWprMU5IeEpRakk0TVJvTENJNkFBUkFBR2dOT1QwczRISEMxMEFvPSIsW1siT1NMIiwiMjAyNi0xMC0wMiIsIk1BRCIsbnVsbCwiSUIiLCI5NTQiXSxbIk1BRCIsIjIwMjYtMTAtMDMiLCJOUlQiLG51bGwsIklCIiwiMjgxIl1dXQ=="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Oslo lufthavn",
+            "id": "OSL",
+            "time": "2026-10-02 12:50"
+          },
+          "arrival_airport": {
+            "name": "Helsinki Airport",
+            "id": "HEL",
+            "time": "2026-10-02 15:15"
+          },
+          "duration": 85,
+          "airplane": "Airbus A319",
+          "airline": "Finnair",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AY.png",
+          "travel_class": "Economy",
+          "flight_number": "AY 914",
+          "legroom": "31 in",
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "Carbon emissions estimate: 101 kg"
+          ]
+        },
+        {
+          "departure_airport": {
+            "name": "Helsinki Airport",
+            "id": "HEL",
+            "time": "2026-10-02 16:55"
+          },
+          "arrival_airport": {
+            "name": "Frankfurt Airport",
+            "id": "FRA",
+            "time": "2026-10-02 18:35"
+          },
+          "duration": 160,
+          "airplane": "Airbus A320",
+          "airline": "Finnair",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AY.png",
+          "travel_class": "Economy",
+          "flight_number": "AY 1415",
+          "legroom": "31 in",
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "Carbon emissions estimate: 156 kg"
+          ]
+        },
+        {
+          "departure_airport": {
+            "name": "Frankfurt Airport",
+            "id": "FRA",
+            "time": "2026-10-02 20:10"
+          },
+          "arrival_airport": {
+            "name": "Narita International Airport",
+            "id": "NRT",
+            "time": "2026-10-03 16:15"
+          },
+          "duration": 785,
+          "airplane": "Boeing 787",
+          "airline": "JAL",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/JL.png",
+          "travel_class": "Economy",
+          "flight_number": "JL 408",
+          "ticket_also_sold_by": [
+            "Finnair"
+          ],
+          "legroom": "33 in",
+          "extensions": [
+            "Above average legroom (33 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 601 kg"
+          ],
+          "overnight": true
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 100,
+          "name": "Helsinki Airport",
+          "id": "HEL"
+        },
+        {
+          "duration": 95,
+          "name": "Frankfurt Airport",
+          "id": "FRA"
+        }
+      ],
+      "total_duration": 1225,
+      "carbon_emissions": {
+        "this_flight": 859000,
+        "typical_for_this_route": 701000,
+        "difference_percent": 23
+      },
+      "price": 16937,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/multi.png",
+      "departure_token": "WyJDalJJZVV0d2NXNTBhbVpHV1hOQlFXSjRTR2RDUnkwdExTMHRMUzB0TFhscFltSnJOa0ZCUVVGQlIzRkZlRlZqUkdVdFZYbEJFaEpCV1RreE5IeEJXVEUwTVRWOFNrdzBNRGdhQ3dpcGhBRVFBQm9EVGs5TE9CeHdrZjBLIixbWyJPU0wiLCIyMDI2LTEwLTAyIiwiSEVMIixudWxsLCJBWSIsIjkxNCJdLFsiSEVMIiwiMjAyNi0xMC0wMiIsIkZSQSIsbnVsbCwiQVkiLCIxNDE1Il0sWyJGUkEiLCIyMDI2LTEwLTAyIiwiTlJUIixudWxsLCJKTCIsIjQwOCJdXV0="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Oslo lufthavn",
+            "id": "OSL",
+            "time": "2026-10-02 08:50"
+          },
+          "arrival_airport": {
+            "name": "Hamad International Airport",
+            "id": "DOH",
+            "time": "2026-10-02 16:20"
+          },
+          "duration": 390,
+          "airplane": "Boeing 787",
+          "airline": "Qatar Airways",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/QR.png",
+          "travel_class": "Economy",
+          "flight_number": "QR 180",
+          "legroom": "31 in",
+          "extensions": [
+            "Average legroom (31 in)",
+            "Free Wi-Fi",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 364 kg"
+          ]
+        },
+        {
+          "departure_airport": {
+            "name": "Hamad International Airport",
+            "id": "DOH",
+            "time": "2026-10-02 20:35"
+          },
+          "arrival_airport": {
+            "name": "Narita International Airport",
+            "id": "NRT",
+            "time": "2026-10-03 12:55"
+          },
+          "duration": 620,
+          "airplane": "Boeing 777",
+          "airline": "Qatar Airways",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/QR.png",
+          "travel_class": "Economy",
+          "flight_number": "QR 808",
+          "legroom": "31 in",
+          "extensions": [
+            "Average legroom (31 in)",
+            "Free Wi-Fi",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 613 kg"
+          ],
+          "overnight": true
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 255,
+          "name": "Hamad International Airport",
+          "id": "DOH"
+        }
+      ],
+      "total_duration": 1265,
+      "carbon_emissions": {
+        "this_flight": 977000,
+        "typical_for_this_route": 701000,
+        "difference_percent": 39
+      },
+      "price": 17049,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/QR.png",
+      "departure_token": "WyJDalJJZVV0d2NXNTBhbVpHV1hOQlFXSjRTR2RDUnkwdExTMHRMUzB0TFhscFltSnJOa0ZCUVVGQlIzRkZlRlZqUkdVdFZYbEJFZ3RSVWpFNE1IeFJVamd3T0JvTENKbUZBUkFBR2dOT1QwczRISEMyaGdzPSIsW1siT1NMIiwiMjAyNi0xMC0wMiIsIkRPSCIsbnVsbCwiUVIiLCIxODAiXSxbIkRPSCIsIjIwMjYtMTAtMDIiLCJOUlQiLG51bGwsIlFSIiwiODA4Il1dXQ=="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Oslo lufthavn",
+            "id": "OSL",
+            "time": "2026-10-02 08:35"
+          },
+          "arrival_airport": {
+            "name": "Helsinki Airport",
+            "id": "HEL",
+            "time": "2026-10-02 10:55"
+          },
+          "duration": 80,
+          "airplane": "Airbus A321 (Sharklets)",
+          "airline": "Finnair",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AY.png",
+          "travel_class": "Economy",
+          "flight_number": "AY 912",
+          "legroom": "30 in",
+          "extensions": [
+            "Average legroom (30 in)",
+            "Wi-Fi for a fee",
+            "Carbon emissions estimate: 93 kg"
+          ]
+        },
+        {
+          "departure_airport": {
+            "name": "Helsinki Airport",
+            "id": "HEL",
+            "time": "2026-10-02 17:45"
+          },
+          "arrival_airport": {
+            "name": "Narita International Airport",
+            "id": "NRT",
+            "time": "2026-10-03 13:05"
+          },
+          "duration": 800,
+          "airplane": "Airbus A350",
+          "airline": "Finnair",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AY.png",
+          "travel_class": "Economy",
+          "flight_number": "AY 73",
+          "ticket_also_sold_by": [
+            "JAL"
+          ],
+          "legroom": "31 in",
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "In-seat USB outlet",
+            "On-demand video",
+            "Carbon emissions estimate: 520 kg"
+          ],
+          "overnight": true
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 410,
+          "name": "Helsinki Airport",
+          "id": "HEL"
+        }
+      ],
+      "total_duration": 1290,
+      "carbon_emissions": {
+        "this_flight": 614000,
+        "typical_for_this_route": 701000,
+        "difference_percent": -12
+      },
+      "price": 17077,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/AY.png",
+      "departure_token": "WyJDalJJZVV0d2NXNTBhbVpHV1hOQlFXSjRTR2RDUnkwdExTMHRMUzB0TFhscFltSnJOa0ZCUVVGQlIzRkZlRlZqUkdVdFZYbEJFZ3BCV1RreE1ueEJXVGN6R2dzSXRZVUJFQUFhQTA1UFN6Z2NjTitJQ3c9PSIsW1siT1NMIiwiMjAyNi0xMC0wMiIsIkhFTCIsbnVsbCwiQVkiLCI5MTIiXSxbIkhFTCIsIjIwMjYtMTAtMDIiLCJOUlQiLG51bGwsIkFZIiwiNzMiXV1d"
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Oslo lufthavn",
+            "id": "OSL",
+            "time": "2026-10-02 19:45"
+          },
+          "arrival_airport": {
+            "name": "Warsaw Frederic Chopin",
+            "id": "WAW",
+            "time": "2026-10-02 21:40"
+          },
+          "duration": 115,
+          "airplane": "Boeing 737MAX 8 Passenger",
+          "airline": "LOT",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/LO.png",
+          "travel_class": "Economy",
+          "flight_number": "LO 484",
+          "legroom": "29 in",
+          "extensions": [
+            "Below average legroom (29 in)",
+            "In-seat power & USB outlets",
+            "Carbon emissions estimate: 91 kg"
+          ]
+        },
+        {
+          "departure_airport": {
+            "name": "Warsaw Frederic Chopin",
+            "id": "WAW",
+            "time": "2026-10-02 22:50"
+          },
+          "arrival_airport": {
+            "name": "Narita International Airport",
+            "id": "NRT",
+            "time": "2026-10-03 18:25"
+          },
+          "duration": 755,
+          "airplane": "Boeing 787",
+          "airline": "LOT",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/LO.png",
+          "travel_class": "Economy",
+          "flight_number": "LO 79",
+          "legroom": "32 in",
+          "extensions": [
+            "Above average legroom (32 in)",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 393 kg"
+          ],
+          "overnight": true
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 70,
+          "name": "Warsaw Frederic Chopin",
+          "id": "WAW"
+        }
+      ],
+      "total_duration": 940,
+      "carbon_emissions": {
+        "this_flight": 486000,
+        "typical_for_this_route": 701000,
+        "difference_percent": -31
+      },
+      "price": 19689,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/LO.png",
+      "departure_token": "WyJDalJJZVV0d2NXNTBhbVpHV1hOQlFXSjRTR2RDUnkwdExTMHRMUzB0TFhscFltSnJOa0ZCUVVGQlIzRkZlRlZqUkdVdFZYbEJFZ3BNVHpRNE5IeE1UemM1R2dzSTZaa0JFQUFhQTA1UFN6Z2NjTGpoREE9PSIsW1siT1NMIiwiMjAyNi0xMC0wMiIsIldBVyIsbnVsbCwiTE8iLCI0ODQiXSxbIldBVyIsIjIwMjYtMTAtMDIiLCJOUlQiLG51bGwsIkxPIiwiNzkiXV1d"
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Oslo lufthavn",
+            "id": "OSL",
+            "time": "2026-10-02 06:30"
+          },
+          "arrival_airport": {
+            "name": "Amsterdam Airport Schiphol",
+            "id": "AMS",
+            "time": "2026-10-02 08:20"
+          },
+          "duration": 110,
+          "airplane": "Boeing 737",
+          "airline": "KLM",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/KL.png",
+          "travel_class": "Economy",
+          "flight_number": "KL 1196",
+          "ticket_also_sold_by": [
+            "Scandinavian Airlines"
+          ],
+          "legroom": "30 in",
+          "extensions": [
+            "Average legroom (30 in)",
+            "In-seat USB outlet",
+            "Carbon emissions estimate: 84 kg"
+          ]
+        },
+        {
+          "departure_airport": {
+            "name": "Amsterdam Airport Schiphol",
+            "id": "AMS",
+            "time": "2026-10-02 10:40"
+          },
+          "arrival_airport": {
+            "name": "Narita International Airport",
+            "id": "NRT",
+            "time": "2026-10-03 07:10"
+          },
+          "duration": 810,
+          "airplane": "Boeing 787",
+          "airline": "KLM",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/KL.png",
+          "travel_class": "Economy",
+          "flight_number": "KL 865",
+          "ticket_also_sold_by": [
+            "Scandinavian Airlines"
+          ],
+          "legroom": "31 in",
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "In-seat power & USB outlets",
+            "On-demand video",
+            "Carbon emissions estimate: 524 kg"
+          ],
+          "overnight": true
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 140,
+          "name": "Amsterdam Airport Schiphol",
+          "id": "AMS"
+        }
+      ],
+      "total_duration": 1060,
+      "carbon_emissions": {
+        "this_flight": 608000,
+        "typical_for_this_route": 701000,
+        "difference_percent": -13
+      },
+      "price": 21398,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/KL.png",
+      "departure_token": "WyJDalJJZVV0d2NXNTBhbVpHV1hOQlFXSjRTR2RDUnkwdExTMHRMUzB0TFhscFltSnJOa0ZCUVVGQlIzRkZlRlZqUkdVdFZYbEJFZ3hMVERFeE9UWjhTMHc0TmpVYUN3aVdwd0VRQUJvRFRrOUxPQnh3bmU4TiIsW1siT1NMIiwiMjAyNi0xMC0wMiIsIkFNUyIsbnVsbCwiS0wiLCIxMTk2Il0sWyJBTVMiLCIyMDI2LTEwLTAyIiwiTlJUIixudWxsLCJLTCIsIjg2NSJdXV0="
+    },
+    {
+      "flights": [
+        {
+          "departure_airport": {
+            "name": "Oslo lufthavn",
+            "id": "OSL",
+            "time": "2026-10-02 19:00"
+          },
+          "arrival_airport": {
+            "name": "Istanbul Airport",
+            "id": "IST",
+            "time": "2026-10-02 23:40"
+          },
+          "duration": 220,
+          "airplane": "Airbus A321neo",
+          "airline": "Turkish Airlines",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/TK.png",
+          "travel_class": "Economy",
+          "flight_number": "TK 1754",
+          "legroom": "30 in",
+          "extensions": [
+            "Average legroom (30 in)",
+            "Wi-Fi for a fee",
+            "In-seat USB outlet",
+            "On-demand video",
+            "Carbon emissions estimate: 189 kg"
+          ]
+        },
+        {
+          "departure_airport": {
+            "name": "Istanbul Airport",
+            "id": "IST",
+            "time": "2026-10-03 01:55"
+          },
+          "arrival_airport": {
+            "name": "Narita International Airport",
+            "id": "NRT",
+            "time": "2026-10-03 19:10"
+          },
+          "duration": 675,
+          "airplane": "Boeing 787",
+          "airline": "Turkish Airlines",
+          "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/TK.png",
+          "travel_class": "Economy",
+          "flight_number": "TK 300",
+          "legroom": "31 in",
+          "extensions": [
+            "Average legroom (31 in)",
+            "Wi-Fi for a fee",
+            "In-seat USB outlet",
+            "On-demand video",
+            "Carbon emissions estimate: 505 kg"
+          ],
+          "overnight": true
+        }
+      ],
+      "layovers": [
+        {
+          "duration": 135,
+          "name": "Istanbul Airport",
+          "id": "IST"
+        }
+      ],
+      "total_duration": 1030,
+      "carbon_emissions": {
+        "this_flight": 695000,
+        "typical_for_this_route": 701000,
+        "difference_percent": -1
+      },
+      "price": 28536,
+      "type": "Round trip",
+      "airline_logo": "https://www.gstatic.com/flights/airline_logos/70px/TK.png",
+      "departure_token": "WyJDalJJZVV0d2NXNTBhbVpHV1hOQlFXSjRTR2RDUnkwdExTMHRMUzB0TFhscFltSnJOa0ZCUVVGQlIzRkZlRlZqUkdVdFZYbEJFZ3hVU3pFM05UUjhWRXN6TURBYUN3ajQzZ0VRQUJvRFRrOUxPQnh3dEw4UyIsW1siT1NMIiwiMjAyNi0xMC0wMiIsIklTVCIsbnVsbCwiVEsiLCIxNzU0Il0sWyJJU1QiLCIyMDI2LTEwLTAzIiwiTlJUIixudWxsLCJUSyIsIjMwMCJdXV0="
+    }
+  ],
+  "price_insights": {
+    "lowest_price": 14899,
+    "price_level": "typical",
+    "typical_price_range": [
+      10500,
+      15000
+    ],
+    "price_history": [
+      [
+        1781820000,
+        13128
+      ],
+      [
+        1781906400,
+        13132
+      ],
+      [
+        1781992800,
+        13215
+      ],
+      [
+        1782079200,
+        13215
+      ],
+      [
+        1782165600,
+        13215
+      ],
+      [
+        1782252000,
+        13227
+      ],
+      [
+        1782338400,
+        13227
+      ],
+      [
+        1782424800,
+        13324
+      ],
+      [
+        1782511200,
+        13340
+      ],
+      [
+        1782597600,
+        13529
+      ],
+      [
+        1782684000,
+        13353
+      ],
+      [
+        1782770400,
+        13360
+      ],
+      [
+        1782856800,
+        13360
+      ],
+      [
+        1782943200,
+        13542
+      ],
+      [
+        1783029600,
+        13542
+      ],
+      [
+        1783116000,
+        13849
+      ],
+      [
+        1783202400,
+        13849
+      ],
+      [
+        1783288800,
+        13849
+      ],
+      [
+        1783375200,
+        13846
+      ],
+      [
+        1783461600,
+        13429
+      ],
+      [
+        1783548000,
+        13102
+      ],
+      [
+        1783634400,
+        13087
+      ],
+      [
+        1783720800,
+        13064
+      ],
+      [
+        1783807200,
+        13708
+      ],
+      [
+        1783893600,
+        13384
+      ],
+      [
+        1783980000,
+        13345
+      ],
+      [
+        1784066400,
+        13339
+      ],
+      [
+        1784152800,
+        13301
+      ],
+      [
+        1784239200,
+        12960
+      ],
+      [
+        1784325600,
+        12954
+      ],
+      [
+        1784412000,
+        13669
+      ],
+      [
+        1784498400,
+        12954
+      ],
+      [
+        1784584800,
+        12943
+      ],
+      [
+        1784671200,
+        12943
+      ],
+      [
+        1784757600,
+        13252
+      ],
+      [
+        1784844000,
+        12914
+      ],
+      [
+        1784930400,
+        12905
+      ],
+      [
+        1785016800,
+        13225
+      ],
+      [
+        1785103200,
+        12905
+      ],
+      [
+        1785189600,
+        12896
+      ],
+      [
+        1785276000,
+        13620
+      ],
+      [
+        1785362400,
+        13646
+      ],
+      [
+        1785448800,
+        13675
+      ],
+      [
+        1785535200,
+        14282
+      ],
+      [
+        1785621600,
+        14282
+      ],
+      [
+        1785708000,
+        14282
+      ],
+      [
+        1785794400,
+        11963
+      ],
+      [
+        1785880800,
+        14276
+      ],
+      [
+        1785967200,
+        14630
+      ],
+      [
+        1786053600,
+        14625
+      ],
+      [
+        1786140000,
+        14625
+      ],
+      [
+        1786226400,
+        14636
+      ],
+      [
+        1786312800,
+        14636
+      ],
+      [
+        1786399200,
+        14619
+      ],
+      [
+        1786485600,
+        14927
+      ],
+      [
+        1786572000,
+        13164
+      ],
+      [
+        1786658400,
+        14915
+      ],
+      [
+        1786744800,
+        14915
+      ],
+      [
+        1786831200,
+        14922
+      ],
+      [
+        1786917600,
+        13833
+      ],
+      [
+        1787004000,
+        14899
+      ]
+    ]
+  },
+  "airports": [
+    {
+      "departure": [
+        {
+          "airport": {
+            "id": "OSL",
+            "name": "Oslo lufthavn"
+          },
+          "city": "Oslo",
+          "country": "Norway",
+          "country_code": "NO",
+          "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQ3VNUpih1nif6AajWdtEOUqHO1cbjnrJ8SYg1gJi091bqk6LdPL6TyJRgbUs77vgSbH-Q-rBzA70I2gQ",
+          "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTrxQT65WjouoxpgOt5BFDL5q9_N1vLCUgzF5rh1_qioaIBVCThwokvLwM7eT9hqZw6fF48-ANQopTQVVeOLgyWjYLdjVyd74UDp0p79cg"
+        }
+      ],
+      "arrival": [
+        {
+          "airport": {
+            "id": "NRT",
+            "name": "Narita International Airport"
+          },
+          "city": "Tokyo",
+          "country": "Japan",
+          "country_code": "JP",
+          "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTqHkzEeI2bSglPzmSGZL7bxXmn0wJgOn2ZtEN8I47uBnzY1CnHzGtD-YseJXqyexcAcw_uJp-D5HTkCg",
+          "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRLnIToEgwiM_jV3cbw5eQZoUAIg6XqdrJAiClDyyg0w-JBSRN5ZeOT-iFb3SvwkwP1uoBCmT-gKE5VcyCYf-xq4guL4NAFICSaNyOnYOA"
+        }
+      ]
+    },
+    {
+      "departure": [
+        {
+          "airport": {
+            "id": "NRT",
+            "name": "Narita International Airport"
+          },
+          "city": "Tokyo",
+          "country": "Japan",
+          "country_code": "JP",
+          "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTqHkzEeI2bSglPzmSGZL7bxXmn0wJgOn2ZtEN8I47uBnzY1CnHzGtD-YseJXqyexcAcw_uJp-D5HTkCg",
+          "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcRLnIToEgwiM_jV3cbw5eQZoUAIg6XqdrJAiClDyyg0w-JBSRN5ZeOT-iFb3SvwkwP1uoBCmT-gKE5VcyCYf-xq4guL4NAFICSaNyOnYOA"
+        }
+      ],
+      "arrival": [
+        {
+          "airport": {
+            "id": "OSL",
+            "name": "Oslo lufthavn"
+          },
+          "city": "Oslo",
+          "country": "Norway",
+          "country_code": "NO",
+          "image": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcQ3VNUpih1nif6AajWdtEOUqHO1cbjnrJ8SYg1gJi091bqk6LdPL6TyJRgbUs77vgSbH-Q-rBzA70I2gQ",
+          "thumbnail": "https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcTrxQT65WjouoxpgOt5BFDL5q9_N1vLCUgzF5rh1_qioaIBVCThwokvLwM7eT9hqZw6fF48-ANQopTQVVeOLgyWjYLdjVyd74UDp0p79cg"
+        }
+      ]
+    }
+  ]
+}
