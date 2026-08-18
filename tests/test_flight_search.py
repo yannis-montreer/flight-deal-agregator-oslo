@@ -14,7 +14,7 @@ from flightdeals.collectors.flight_search import (
     fetch_all_explore_destinations,
     fetch_explore_destinations,
 )
-from flightdeals.collectors.serpapi_client import QuotaExceededError, SerpApiClient
+from flightdeals.collectors.serpapi_client import SerpApiClient
 
 FIXTURES_DIR = Path(__file__).parent / "fixtures"
 
@@ -65,6 +65,18 @@ class TestParseExploreEntry:
         obs = _parse_explore_entry(entry, origin="OSL", currency="NOK")
         assert obs.destination is None
 
+    def test_non_numeric_price_is_not_exploitable(self):
+        # un champ flight_price au format inattendu ne doit jamais atteindre la DB/le scoring
+        entry = {
+            "destination_airport": {"code": "NRT"},
+            "name": "Tokyo",
+            "start_date": "2027-01-12",
+            "flight_price": "not-a-number",
+        }
+        obs = _parse_explore_entry(entry, origin="OSL", currency="NOK")
+        assert obs.price == "not-a-number"  # parse tel quel...
+        assert not obs.is_exploitable  # ...mais correctement signale comme non exploitable
+
 
 class TestFetchExploreDestinations:
     def test_returns_one_observation_per_destination(self, explore_fixture):
@@ -89,7 +101,7 @@ class TestFetchExploreDestinations:
 
 
 class TestFetchAllExploreDestinations:
-    def test_quota_exceeded_propagates_and_stops_remaining_durations(self, explore_fixture):
+    def test_quota_exceeded_stops_remaining_durations_but_keeps_partial_results(self, explore_fixture):
         call_count = 0
 
         def handler(request: httpx.Request) -> httpx.Response:
@@ -102,9 +114,10 @@ class TestFetchAllExploreDestinations:
         client = SerpApiClient(api_key="test-key")
         client._client = httpx.Client(transport=httpx.MockTransport(handler))
 
-        with pytest.raises(QuotaExceededError):
-            fetch_all_explore_destinations(client, origin="OSL", currency="NOK", travel_durations=[1, 2, 3])
-        assert call_count == 2  # 1ere duree OK, 2e leve le quota -> propage, 3e jamais tentee
+        observations = fetch_all_explore_destinations(client, origin="OSL", currency="NOK", travel_durations=[1, 2, 3])
+        assert call_count == 2  # 1ere duree OK, 2e leve le quota -> boucle stoppee, 3e jamais tentee
+        # les observations de la 1ere duree (reussie) sont conservees, pas perdues
+        assert len(observations) == len(explore_fixture["destinations"])
 
     def test_generic_error_on_one_duration_does_not_abort_others(self, explore_fixture):
         call_count = 0

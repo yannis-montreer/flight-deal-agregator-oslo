@@ -39,8 +39,19 @@ class RawObservation:
     def is_exploitable(self) -> bool:
         """Une entree sans prix n'est pas exploitable pour la detection de deal — frequent sur
         le bucket ~2 semaines (10/84 seulement lors du Spike, voir spike/SPIKE_NOTES.md), ce
-        n'est pas une erreur de parsing, juste une absence de cache prix cote Google."""
-        return self.price is not None and self.destination is not None and self.departure_date is not None
+        n'est pas une erreur de parsing, juste une absence de cache prix cote Google.
+
+        Verifie explicitement que price est numerique (pas juste non-None) : le format
+        SerpApi n'etant pas un contrat stable, un champ flight_price au format inattendu
+        (chaine, etc.) doit etre traite comme "pas de prix exploitable" ICI, avant d'atteindre
+        la DB ou le calcul de score — plutot que de laisser une valeur invalide se propager et
+        faire planter (ou pire, corrompre silencieusement) une comparaison statistique future."""
+        return (
+            isinstance(self.price, (int, float))
+            and not isinstance(self.price, bool)  # bool est une sous-classe d'int en Python
+            and self.destination is not None
+            and self.departure_date is not None
+        )
 
 
 def _parse_explore_entry(entry: dict, *, origin: str, currency: str) -> RawObservation:
@@ -113,9 +124,13 @@ def fetch_all_explore_destinations(
     arrival_area_id: Optional[str] = None,
 ) -> list[RawObservation]:
     """Enchaine les N requetes explore (une par duree configuree) — fonction appelee par
-    pipeline.run_once() (jalon M8). QuotaExceededError PROPAGE volontairement (pas attrapee
-    ici) pour que pipeline.py arrete tous les appels SerpApi restants du jour ; toute autre
-    erreur sur une duree donnee est loguee et n'empeche pas les durees suivantes."""
+    pipeline.run_once() (jalon M8).
+
+    Si le quota est depasse en cours de route, la boucle s'arrete la (pas de retry, pas de
+    tentative sur les durees restantes) MAIS les observations deja collectees lors des
+    durees precedentes de ce meme appel sont conservees et retournees, jamais perdues (spec
+    section 14 : une erreur ne doit pas faire perdre ce qui a deja ete collecte). Toute
+    autre erreur sur une duree donnee est loguee et n'empeche pas les durees suivantes."""
     all_observations: list[RawObservation] = []
     for duration in travel_durations:
         try:
@@ -129,7 +144,13 @@ def fetch_all_explore_destinations(
                 )
             )
         except QuotaExceededError:
-            raise
+            logger.warning(
+                "Quota SerpApi depasse pendant la collecte (travel_duration=%d) - arret de la "
+                "collecte pour le reste du run, %d observation(s) deja collectee(s) conservee(s)",
+                duration,
+                len(all_observations),
+            )
+            break
         except SerpApiError:
             logger.exception(
                 "Echec de la collecte pour travel_duration=%d (ignore, les autres durees continuent)",
