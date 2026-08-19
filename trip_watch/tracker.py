@@ -6,6 +6,7 @@ exacte (destination + dates)."""
 from __future__ import annotations
 
 import logging
+import statistics
 from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -30,6 +31,8 @@ class DailyResult:
     stops: Optional[int]
     price_level: Optional[str]
     error: Optional[str]
+    search_url: Optional[str]        # lien Google Flights (meme recherche, dates prefiltrees)
+    typical_avg_price: Optional[float]  # moyenne de price_insights.price_history (~60j), pas juste la fourchette basse/haute
 
 
 def departure_dates(center: date, tolerance_days: int) -> list[date]:
@@ -61,10 +64,11 @@ def _search_one(
         "currency": currency,
     }
 
-    def _error(message: str, price_level: Optional[str] = None) -> DailyResult:
+    def _error(message: str, price_level: Optional[str] = None, search_url: Optional[str] = None) -> DailyResult:
         return DailyResult(
             departure_date=outbound_date.isoformat(), return_date=return_date.isoformat(),
             price=None, currency=currency, airline=None, stops=None, price_level=price_level, error=message,
+            search_url=search_url, typical_avg_price=None,
         )
 
     try:
@@ -72,14 +76,30 @@ def _search_one(
     except (QuotaExceededError, SerpApiError) as exc:
         return _error(str(exc))
 
+    # Lien vers la recherche (memes origine/destination/dates) sur Google Flights — PAS un
+    # lien de reservation d'un vol precis (l'API n'en expose pas), mais le plus proche
+    # equivalent disponible : cliquer dessus rouvre les memes resultats en direct.
+    search_url = (data.get("search_metadata") or {}).get("google_flights_url")
     insights = data.get("price_insights") or {}
     candidates = data.get("best_flights") or data.get("other_flights") or []
     if not candidates:
-        return _error(data.get("error") or "aucun vol trouve", price_level=insights.get("price_level"))
+        return _error(
+            data.get("error") or "aucun vol trouve", price_level=insights.get("price_level"), search_url=search_url
+        )
 
     best = candidates[0]
     legs = best.get("flights", [])
     airlines = ", ".join(sorted({leg.get("airline", "?") for leg in legs})) if legs else None
+
+    # Moyenne reelle sur l'historique fourni par SerpApi (price_history, ~60j de points
+    # quotidiens), plus fin que typical_price_range qui n'est qu'une fourchette [bas, haut].
+    history = insights.get("price_history") or []
+    typical_prices = [
+        entry[1] for entry in history
+        if isinstance(entry, (list, tuple)) and len(entry) == 2
+        and isinstance(entry[1], (int, float)) and not isinstance(entry[1], bool)
+    ]
+    typical_avg_price = statistics.mean(typical_prices) if typical_prices else None
 
     return DailyResult(
         departure_date=outbound_date.isoformat(),
@@ -90,6 +110,8 @@ def _search_one(
         stops=max(len(legs) - 1, 0) if legs else None,
         price_level=insights.get("price_level"),
         error=None,
+        search_url=search_url,
+        typical_avg_price=typical_avg_price,
     )
 
 
@@ -166,26 +188,39 @@ def run_daily_check(config: TripWatchConfig, db_path: "Path | str") -> None:
     _send_daily_digest(config, best_result, best_is_new_min, duration_days, remaining_searches)
 
 
+def _format_date_fr(iso_date: str) -> str:
+    return date.fromisoformat(iso_date).strftime("%d/%m/%Y")
+
+
+def _format_price(price: float) -> str:
+    return f"{round(price):,}".replace(",", " ")
+
+
 def _format_daily_digest(
     config: TripWatchConfig, result: DailyResult, is_new_min: bool, duration_days: int,
     remaining_searches: Optional[int],
 ) -> str:
-    price_label = f"{round(result.price):,}".replace(",", " ")
     lines = [
         f"\U0001F30E Suivi {config.destination_name} — sejour de {duration_days}j",
-        f"Meilleur prix du jour : {result.departure_date} → {result.return_date}",
-        f"{price_label} {result.currency}",
+        f"Meilleur prix du jour : {_format_date_fr(result.departure_date)} → {_format_date_fr(result.return_date)}",
+        f"{_format_price(result.price)} {result.currency}",
     ]
     if result.airline:
         lines.append(result.airline)
     if result.stops is not None:
         lines.append("Vol direct" if result.stops == 0 else f"{result.stops} escale(s)")
     if result.price_level:
-        lines.append(f"Evaluation Google : prix {result.price_level}")
+        eval_line = f"Evaluation Google : prix {result.price_level}"
+        if result.typical_avg_price is not None:
+            eval_line += f" (moyenne habituelle ~{_format_price(result.typical_avg_price)} {result.currency})"
+        lines.append(eval_line)
     if remaining_searches is not None:
         # Visibilite sur le quota du compte SerpApi utilise (potentiellement pas le notre —
         # demande utilisateur : pas d'acces au dashboard du compte tiers fournissant la cle).
         lines.append(f"Quota SerpApi restant : {remaining_searches} recherches")
+    if result.search_url:
+        lines.append("Voir sur Google Flights :")
+        lines.append(result.search_url)
     if is_new_min:
         lines.insert(0, "\U0001F525 NOUVEAU MINIMUM pour cette combinaison exacte de dates !")
 

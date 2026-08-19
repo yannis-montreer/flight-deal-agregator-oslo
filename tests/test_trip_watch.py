@@ -3,6 +3,7 @@ proportionnee a un outil temporaire et purpose-built, mais couvre la logique non
 (rotation de duree sans etat, detection de nouveau minimum, isolation SerpApi/Telegram)."""
 from __future__ import annotations
 
+import re
 from datetime import date
 
 import httpx
@@ -123,8 +124,10 @@ class _FakeConfig:
         self.telegram_chat_id = "12345"
 
 
-def _flight_response(price: float, price_level: str = "typical") -> dict:
-    return {
+def _flight_response(
+    price: float, price_level: str = "typical", *, search_url: str | None = None, price_history=None
+) -> dict:
+    response = {
         "best_flights": [
             {
                 "price": price,
@@ -136,6 +139,11 @@ def _flight_response(price: float, price_level: str = "typical") -> dict:
         ],
         "price_insights": {"price_level": price_level, "lowest_price": price},
     }
+    if search_url is not None:
+        response["search_metadata"] = {"google_flights_url": search_url}
+    if price_history is not None:
+        response["price_insights"]["price_history"] = price_history
+    return response
 
 
 class TestRunDailyCheck:
@@ -183,7 +191,7 @@ class TestRunDailyCheck:
         assert count == 5  # les 5 dates de depart, toutes stockees
 
         assert len(sent_messages) == 1
-        assert "2027-01-15" in sent_messages[0]  # la date au prix le plus bas (7000)
+        assert "15/01/2027" in sent_messages[0]  # la date au prix le plus bas (7000), format jj/mm/aaaa
         assert "7 000 NOK" in sent_messages[0]
         assert "NOUVEAU MINIMUM" in sent_messages[0]  # 1ere observation -> forcement un minimum
 
@@ -334,3 +342,173 @@ class TestRunDailyCheck:
 
         assert len(sent_messages) == 1  # le digest part quand meme
         assert "Quota SerpApi" not in sent_messages[0]  # juste omis, pas de crash
+
+    def test_dates_rendered_as_dd_mm_yyyy_not_iso(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "trip_watch.db"
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, json=_flight_response(8000))
+
+        class _ClientAdapter:
+            def __init__(self, api_key):
+                self._client = httpx.Client(transport=httpx.MockTransport(handler))
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                return False
+
+            def search(self, params):
+                return self._client.get("https://serpapi.com/search.json", params=params).json()
+
+        monkeypatch.setattr("trip_watch.tracker.SerpApiClient", _ClientAdapter)
+        sent_messages = []
+        monkeypatch.setattr("trip_watch.tracker.send_message", lambda token, chat_id, text: sent_messages.append(text))
+
+        run_daily_check(_FakeConfig(), db_path)
+
+        # prix identique sur les 5 dates -> peu importe laquelle "gagne", seul le FORMAT compte ici
+        assert re.search(r"\b\d{2}/\d{2}/2027\b", sent_messages[0])
+        assert not re.search(r"\b2027-\d{2}-\d{2}\b", sent_messages[0])  # plus de format ISO brut
+
+    def test_search_url_included_when_present(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "trip_watch.db"
+        url = "https://www.google.com/travel/flights?curr=NOK&tfs=example"
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, json=_flight_response(8000, search_url=url))
+
+        class _ClientAdapter:
+            def __init__(self, api_key):
+                self._client = httpx.Client(transport=httpx.MockTransport(handler))
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                return False
+
+            def search(self, params):
+                return self._client.get("https://serpapi.com/search.json", params=params).json()
+
+        monkeypatch.setattr("trip_watch.tracker.SerpApiClient", _ClientAdapter)
+        sent_messages = []
+        monkeypatch.setattr("trip_watch.tracker.send_message", lambda token, chat_id, text: sent_messages.append(text))
+
+        run_daily_check(_FakeConfig(), db_path)
+
+        assert url in sent_messages[0]
+        assert "Voir sur Google Flights" in sent_messages[0]
+
+    def test_search_url_omitted_when_absent(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "trip_watch.db"
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, json=_flight_response(8000))  # pas de search_metadata
+
+        class _ClientAdapter:
+            def __init__(self, api_key):
+                self._client = httpx.Client(transport=httpx.MockTransport(handler))
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                return False
+
+            def search(self, params):
+                return self._client.get("https://serpapi.com/search.json", params=params).json()
+
+        monkeypatch.setattr("trip_watch.tracker.SerpApiClient", _ClientAdapter)
+        sent_messages = []
+        monkeypatch.setattr("trip_watch.tracker.send_message", lambda token, chat_id, text: sent_messages.append(text))
+
+        run_daily_check(_FakeConfig(), db_path)
+
+        assert "Voir sur Google Flights" not in sent_messages[0]
+
+    def test_typical_avg_price_shown_alongside_price_level(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "trip_watch.db"
+        history = [[1781820000, 8000], [1781906400, 9000], [1781992800, 10000]]  # moyenne = 9000
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, json=_flight_response(8000, price_history=history))
+
+        class _ClientAdapter:
+            def __init__(self, api_key):
+                self._client = httpx.Client(transport=httpx.MockTransport(handler))
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                return False
+
+            def search(self, params):
+                return self._client.get("https://serpapi.com/search.json", params=params).json()
+
+        monkeypatch.setattr("trip_watch.tracker.SerpApiClient", _ClientAdapter)
+        sent_messages = []
+        monkeypatch.setattr("trip_watch.tracker.send_message", lambda token, chat_id, text: sent_messages.append(text))
+
+        run_daily_check(_FakeConfig(), db_path)
+
+        assert "Evaluation Google : prix typical (moyenne habituelle ~9 000 NOK)" in sent_messages[0]
+
+    def test_typical_avg_price_omitted_without_history(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "trip_watch.db"
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, json=_flight_response(8000))  # pas de price_history
+
+        class _ClientAdapter:
+            def __init__(self, api_key):
+                self._client = httpx.Client(transport=httpx.MockTransport(handler))
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                return False
+
+            def search(self, params):
+                return self._client.get("https://serpapi.com/search.json", params=params).json()
+
+        monkeypatch.setattr("trip_watch.tracker.SerpApiClient", _ClientAdapter)
+        sent_messages = []
+        monkeypatch.setattr("trip_watch.tracker.send_message", lambda token, chat_id, text: sent_messages.append(text))
+
+        run_daily_check(_FakeConfig(), db_path)
+
+        assert "moyenne habituelle" not in sent_messages[0]
+        assert "Evaluation Google : prix typical" in sent_messages[0]
+
+    def test_malformed_price_history_entries_are_ignored_not_fatal(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "trip_watch.db"
+        # 2 entrees invalides (prix non numerique, entree tronquee) + 1 valide -> ne doit pas planter
+        history = [[1781820000, "N/A"], [1781906400], [1781992800, 10000]]
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, json=_flight_response(8000, price_history=history))
+
+        class _ClientAdapter:
+            def __init__(self, api_key):
+                self._client = httpx.Client(transport=httpx.MockTransport(handler))
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                return False
+
+            def search(self, params):
+                return self._client.get("https://serpapi.com/search.json", params=params).json()
+
+        monkeypatch.setattr("trip_watch.tracker.SerpApiClient", _ClientAdapter)
+        sent_messages = []
+        monkeypatch.setattr("trip_watch.tracker.send_message", lambda token, chat_id, text: sent_messages.append(text))
+
+        run_daily_check(_FakeConfig(), db_path)  # ne doit pas lever
+
+        assert "moyenne habituelle ~10 000 NOK" in sent_messages[0]  # seule l'entree valide comptee
