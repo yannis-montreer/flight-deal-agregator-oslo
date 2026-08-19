@@ -35,6 +35,7 @@ ENV FLIGHTDEALS_DB_PATH=/data/flightdeals.db \
 # minutes l'affichage sur un process a faible debit de sortie comme celui-ci (~1 log/jour).
 
 # Image partagee par les 2 services (flightdeals + trip_watch, voir docker-compose.yml) :
-# le service trip_watch surcharge cet ENTRYPOINT via `command: ["python", "-m", "trip_watch"]`
-# plutot que de dupliquer un 2e Dockerfile/build pour un si petit outil annexe.
+# le service trip_watch surcharge cet ENTRYPOINT via `entrypoint: [...]` (PAS `command:`,
+# qui s'ajouterait a celui-ci au lieu de le remplacer) plutot que de dupliquer un 2e
+# Dockerfile/build pour un si petit outil annexe.
 ENTRYPOINT ["python", "-m", "flightdeals"]

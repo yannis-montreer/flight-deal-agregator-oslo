@@ -22,7 +22,13 @@ services:
   trip-watch-santiago:
     build: .
     restart: unless-stopped
-    command: ["python", "-m", "trip_watch"]
+    # `entrypoint:`, PAS `command:` — command s'ajoute a l'ENTRYPOINT du Dockerfile au lieu
+    # de le remplacer (seul CMD est remplace par command). Bug reel trouve en verifiant les
+    # logs au premier demarrage : le conteneur executait silencieusement "python -m
+    # flightdeals python -m trip_watch", donc en pratique juste flightdeals (arguments
+    # excedentaires ignores) - avec la cle et le bot Telegram du systeme PRINCIPAL. entrypoint
+    # remplace correctement l'ENTRYPOINT de l'image.
+    entrypoint: ["python", "-m", "trip_watch"]
     env_file:
       - .env
     environment:
@@ -35,6 +41,8 @@ services:
       - ./trip_watch/config.yaml:/app/trip_watch/config.yaml:ro
 
 # Les deux conteneurs restent autonomes sans compose : `docker run -d --restart unless-stopped
-# --env-file .env -v ./data:/data flightdeals` (ou avec `--entrypoint python ... -m trip_watch`)
-# fonctionne seul (config baked-in dans l'image), conformement a la contrainte "pas de
-# dependance a un orchestrateur externe" (voir plan). Pas de `ports:` : purs workers de fond.
+# --env-file .env -v ./data:/data flightdeals` fonctionne seul (config baked-in dans l'image),
+# conformement a la contrainte "pas de dependance a un orchestrateur externe" (voir plan).
+# Pour trip_watch en standalone : `docker run -d --restart unless-stopped --env-file .env
+# -v ./data:/data --entrypoint python flightdeals -m trip_watch`. Pas de `ports:` : purs
+# workers de fond.
