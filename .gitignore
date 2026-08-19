@@ -21,6 +21,10 @@ data/logs/*.log*
 spike/responses/*.json
 !spike/responses/.gitkeep
 
+# Resultats de recherches ad-hoc (scripts/search_custom_route.py) : donnees de voyage
+# personnelles (potentiellement d'un tiers), jamais commitees
+scripts/search_results/
+
 # OS
 .DS_Store
 Thumbs.db
