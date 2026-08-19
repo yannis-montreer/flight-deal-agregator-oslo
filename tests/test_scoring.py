@@ -16,6 +16,10 @@ COMMON_KWARGS = dict(
     discount_cap=0.60,
     confidence_saturation_count=30,
     max_duration_deviation_ratio=0.5,
+    # Fourchette large par defaut : les tests qui ne testent pas specifiquement le filtre de
+    # duree de sejour n'ont pas a s'en soucier (voir TestTripLengthFilter pour les tests dedies).
+    min_trip_length_nights=0,
+    max_trip_length_nights=9999,
     weights=WEIGHTS,
     directness_bonus=DIRECTNESS_BONUS,
 )
@@ -25,15 +29,18 @@ def _history(prices):
     return prices, compute_price_stats(prices)
 
 
-def _evaluate(*, current_duration_minutes=None, historical_durations=None, **kwargs):
+def _evaluate(*, trip_length_nights=10, current_duration_minutes=None, historical_durations=None, **kwargs):
     """Enveloppe evaluate_deal avec les kwargs communs + des valeurs par defaut "aucune
-    donnee de duree" pour les tests qui ne testent pas specifiquement le filtre de duree
-    (fail-open par design : pas de duree -> ne bloque jamais, voir TestDurationExclusion)."""
+    donnee de duree" / "duree de sejour neutre (10 nuits, dans la fourchette large par
+    defaut)" pour les tests qui ne testent pas specifiquement ces filtres (fail-open par
+    design : pas de duree de vol -> ne bloque jamais, voir TestDurationExclusion). `kwargs`
+    peut surcharger n'importe quelle valeur de COMMON_KWARGS (ex: min/max_trip_length_nights)."""
+    merged = {**COMMON_KWARGS, **kwargs}
     return evaluate_deal(
+        trip_length_nights=trip_length_nights,
         current_duration_minutes=current_duration_minutes,
         historical_durations=historical_durations or [],
-        **COMMON_KWARGS,
-        **kwargs,
+        **merged,
     )
 
 
@@ -87,6 +94,65 @@ class TestTriggerConditions:
         result = _evaluate(current_price=700, historical_prices=prices, stats=stats, stops_bucket="nonstop")
         assert result.discount == pytest.approx(0.30)
         assert result.triggers is True  # bornes inclusives (>=, <=), conforme au spec
+
+
+class TestTripLengthFilter:
+    """min_trip_length_nights=6, max_trip_length_nights=14 (valeurs demandees par
+    l'utilisateur) passes explicitement ici plutot que via le defaut large de COMMON_KWARGS."""
+
+    def test_within_range_triggers(self):
+        prices, stats = _history([5000] * 7)
+        result = _evaluate(
+            current_price=3000, historical_prices=prices, stats=stats, stops_bucket="nonstop",
+            trip_length_nights=10, min_trip_length_nights=6, max_trip_length_nights=14,
+        )
+        assert result.triggers is True
+
+    def test_too_short_excludes_even_with_great_price(self):
+        prices, stats = _history([5000] * 7)
+        result = _evaluate(
+            current_price=3000, historical_prices=prices, stats=stats, stops_bucket="nonstop",
+            trip_length_nights=2,  # weekend, sous le minimum de 6
+            min_trip_length_nights=6, max_trip_length_nights=14,
+        )
+        assert result.triggers is False
+        assert result.exclusion_reason == "trip_length_out_of_range"
+        assert result.score > 0  # le score reste calcule malgre l'exclusion
+
+    def test_too_long_excludes_even_with_great_price(self):
+        prices, stats = _history([5000] * 7)
+        result = _evaluate(
+            current_price=3000, historical_prices=prices, stats=stats, stops_bucket="nonstop",
+            trip_length_nights=30,  # ~1 mois, au-dela du maximum de 14
+            min_trip_length_nights=6, max_trip_length_nights=14,
+        )
+        assert result.triggers is False
+        assert result.exclusion_reason == "trip_length_out_of_range"
+
+    def test_exact_boundaries_are_inclusive(self):
+        prices, stats = _history([5000] * 7)
+        low = _evaluate(
+            current_price=3000, historical_prices=prices, stats=stats, stops_bucket="nonstop",
+            trip_length_nights=6, min_trip_length_nights=6, max_trip_length_nights=14,
+        )
+        high = _evaluate(
+            current_price=3000, historical_prices=prices, stats=stats, stops_bucket="nonstop",
+            trip_length_nights=14, min_trip_length_nights=6, max_trip_length_nights=14,
+        )
+        assert low.triggers is True
+        assert high.triggers is True
+
+    def test_none_trip_length_is_excluded_not_allowed_through(self):
+        # contrairement au filtre de duree de vol (fail-open), l'absence de duree de sejour
+        # (vol one-way, pas de date de retour) est traitee comme HORS fourchette : la
+        # demande porte explicitement sur "la duree de A/R"
+        prices, stats = _history([5000] * 7)
+        result = _evaluate(
+            current_price=3000, historical_prices=prices, stats=stats, stops_bucket="nonstop",
+            trip_length_nights=None, min_trip_length_nights=6, max_trip_length_nights=14,
+        )
+        assert result.triggers is False
+        assert result.exclusion_reason == "trip_length_out_of_range"
 
 
 class TestDurationExclusion:

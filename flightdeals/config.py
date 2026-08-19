@@ -46,6 +46,7 @@ class SerpApiConfig:
     min_budget_reserve: int
     travel_durations: tuple
     arrival_area_id: Optional[str]
+    month: Optional[int]  # 1-12 = Jan-Dec (enum SerpApi), None/absent = 6 prochains mois
 
 
 @dataclass(frozen=True)
@@ -56,6 +57,8 @@ class DealConfig:
     history_window_days: int
     duration_tolerance_nights: int
     max_duration_deviation_ratio: float
+    min_trip_length_nights: int
+    max_trip_length_nights: int
 
 
 @dataclass(frozen=True)
@@ -144,6 +147,7 @@ def load_config(path: "Path | str | None" = None) -> Config:
             min_budget_reserve=raw["serpapi"]["min_budget_reserve"],
             travel_durations=tuple(raw["serpapi"]["travel_durations"]),
             arrival_area_id=raw["serpapi"].get("arrival_area_id"),
+            month=raw["serpapi"].get("month"),
         )
         deal = DealConfig(**raw["deal"])
         scoring = ScoringConfig(
@@ -185,6 +189,15 @@ def load_config(path: "Path | str | None" = None) -> Config:
     if deal.max_duration_deviation_ratio < 0:
         raise ConfigError(
             f"deal.max_duration_deviation_ratio doit etre >= 0, recu: {deal.max_duration_deviation_ratio}"
+        )
+
+    if serpapi.month is not None and not (1 <= serpapi.month <= 12):
+        raise ConfigError(f"serpapi.month doit etre entre 1 et 12 (ou absent), recu: {serpapi.month}")
+
+    if deal.min_trip_length_nights < 0 or deal.max_trip_length_nights < deal.min_trip_length_nights:
+        raise ConfigError(
+            f"deal.min_trip_length_nights ({deal.min_trip_length_nights}) doit etre >= 0 et "
+            f"<= deal.max_trip_length_nights ({deal.max_trip_length_nights})"
         )
 
     if scoring.confidence_saturation_count <= deal.minimum_observations:

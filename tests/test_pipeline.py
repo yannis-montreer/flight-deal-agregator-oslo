@@ -30,7 +30,8 @@ def _make_config(**overrides) -> Config:
         currency="NOK",
         collection=CollectionConfig(enabled=True, schedule="02:00"),
         serpapi=SerpApiConfig(
-            monthly_budget=200, min_budget_reserve=5, travel_durations=(1, 2, 3), arrival_area_id=None
+            monthly_budget=200, min_budget_reserve=5, travel_durations=(1, 2, 3),
+            arrival_area_id=None, month=None,
         ),
         deal=DealConfig(
             minimum_discount=0.30,
@@ -39,6 +40,11 @@ def _make_config(**overrides) -> Config:
             history_window_days=30,
             duration_tolerance_nights=2,
             max_duration_deviation_ratio=0.5,
+            # Fourchette large par defaut (les observations de test font 7 nuits) : la
+            # plupart des tests de ce fichier ne testent pas ce filtre specifiquement -
+            # voir TestTripLengthFilter plus bas pour les tests dedies avec 6/14 explicites.
+            min_trip_length_nights=0,
+            max_trip_length_nights=9999,
         ),
         scoring=ScoringConfig(
             weights={"discount": 0.45, "percentile": 0.25, "directness": 0.10, "confidence": 0.20},
@@ -348,6 +354,96 @@ class TestRunOnceDurationFilter:
 
         assert summary.deals_triggered == 1  # duree absente -> filtre ne bloque pas (fail-open)
         assert summary.deals_notified == 1
+
+
+def _config_with_trip_length_range(min_nights: int, max_nights: int) -> Config:
+    return _make_config(
+        deal=DealConfig(
+            minimum_discount=0.30, minimum_observations=7, percentile_threshold=0.25,
+            history_window_days=30, duration_tolerance_nights=2, max_duration_deviation_ratio=0.5,
+            min_trip_length_nights=min_nights, max_trip_length_nights=max_nights,
+        )
+    )
+
+
+class TestRunOnceTripLengthFilter:
+    """min_trip_length_nights=6, max_trip_length_nights=14 (valeurs demandees par
+    l'utilisateur) : exclut les weekends (~2 nuits) et les longs sejours (~1 mois)."""
+
+    def test_weekend_trip_excluded_despite_great_price(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "test.db"
+        conn = get_connection(db_path)
+        # historique sur le MEME sejour court (2 nuits) pour que le seul obstacle soit la duree
+        _seed_history(conn, count=7, price=5000.0, observed_days_ago=5,
+                       return_date="2027-01-14", trip_length_nights=2)
+        conn.close()
+
+        fake_client = _FakeSerpApiClient(
+            account_info={"total_searches_left": 200},
+            search_responses=[
+                _explore_response([_destination(flight_price=3000, end_date="2027-01-14")]),  # 2 nuits
+                _explore_response([]),
+                _explore_response([]),
+            ],
+        )
+        _install_fake_serpapi(monkeypatch, fake_client)
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+
+        summary = run_once(_config_with_trip_length_range(6, 14), db_path)
+
+        assert summary.observations_stored == 1  # stockee quand meme
+        assert summary.deals_triggered == 0  # ...mais exclue (2 nuits < minimum 6)
+        assert sent_messages == []
+
+    def test_month_long_trip_excluded_despite_great_price(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "test.db"
+        conn = get_connection(db_path)
+        _seed_history(conn, count=7, price=5000.0, observed_days_ago=5,
+                       return_date="2027-02-11", trip_length_nights=30)
+        conn.close()
+
+        fake_client = _FakeSerpApiClient(
+            account_info={"total_searches_left": 200},
+            search_responses=[
+                _explore_response([_destination(flight_price=3000, end_date="2027-02-11")]),  # 30 nuits
+                _explore_response([]),
+                _explore_response([]),
+            ],
+        )
+        _install_fake_serpapi(monkeypatch, fake_client)
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+
+        summary = run_once(_config_with_trip_length_range(6, 14), db_path)
+
+        assert summary.observations_stored == 1
+        assert summary.deals_triggered == 0  # 30 nuits > maximum 14
+        assert sent_messages == []
+
+    def test_trip_within_range_triggers_normally(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "test.db"
+        conn = get_connection(db_path)
+        _seed_history(conn, count=7, price=5000.0, observed_days_ago=5)  # 7 nuits par defaut, dans [6,14]
+        conn.close()
+
+        fake_client = _FakeSerpApiClient(
+            account_info={"total_searches_left": 200},
+            search_responses=[
+                _explore_response([_destination(flight_price=3000)]),  # 7 nuits par defaut
+                _explore_response([]),
+                _explore_response([]),
+            ],
+        )
+        _install_fake_serpapi(monkeypatch, fake_client)
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+
+        summary = run_once(_config_with_trip_length_range(6, 14), db_path)
+
+        assert summary.deals_triggered == 1
+        assert summary.deals_notified == 1
+        assert len(sent_messages) == 1
 
 
 class TestRunOnceErrorIsolation:

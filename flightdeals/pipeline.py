@@ -79,6 +79,7 @@ def run_once(config: Config, db_path: "Path | str") -> RunSummary:
                 currency=config.currency,
                 travel_durations=config.serpapi.travel_durations,
                 arrival_area_id=config.serpapi.arrival_area_id,
+                month=config.serpapi.month,
             )
             # Approximation deliberee : compte 1 requete par duree TENTEE (pas par retry HTTP
             # interne). Simple, auditable, et surestime plutot que sous-estime les jours ou le
@@ -248,6 +249,7 @@ def _evaluate_one(
             historical_prices=historical_prices,
             stats=stats,
             stops_bucket=obs.stops_bucket,
+            trip_length_nights=obs.trip_length_nights,
             current_duration_minutes=obs.duration_minutes,
             historical_durations=historical_durations,
             minimum_discount=config.deal.minimum_discount,
@@ -256,6 +258,8 @@ def _evaluate_one(
             discount_cap=config.scoring.discount_cap,
             confidence_saturation_count=config.scoring.confidence_saturation_count,
             max_duration_deviation_ratio=config.deal.max_duration_deviation_ratio,
+            min_trip_length_nights=config.deal.min_trip_length_nights,
+            max_trip_length_nights=config.deal.max_trip_length_nights,
             weights=config.scoring.weights,
             directness_bonus=config.scoring.directness_bonus,
         )

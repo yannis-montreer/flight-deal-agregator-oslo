@@ -84,6 +84,36 @@ class TestFetchExploreDestinations:
         observations = fetch_explore_destinations(client, origin="OSL", currency="NOK", travel_duration=2)
         assert len(observations) == len(explore_fixture["destinations"])
 
+    def test_month_included_in_request_params_when_provided(self, explore_fixture):
+        captured_params = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            captured_params.update(request.url.params)
+            return httpx.Response(200, json=explore_fixture)
+
+        client = SerpApiClient(api_key="test-key")
+        client._client = httpx.Client(transport=httpx.MockTransport(handler))
+
+        fetch_explore_destinations(
+            client, origin="OSL", currency="NOK", travel_duration=2,
+            arrival_area_id="/m/073q1", month=11,
+        )
+        assert captured_params["month"] == "11"
+        assert captured_params["arrival_area_id"] == "/m/073q1"
+
+    def test_month_omitted_from_request_params_when_not_provided(self, explore_fixture):
+        captured_params = {}
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            captured_params.update(request.url.params)
+            return httpx.Response(200, json=explore_fixture)
+
+        client = SerpApiClient(api_key="test-key")
+        client._client = httpx.Client(transport=httpx.MockTransport(handler))
+
+        fetch_explore_destinations(client, origin="OSL", currency="NOK", travel_duration=2)
+        assert "month" not in captured_params
+
     def test_one_malformed_entry_does_not_abort_the_rest(self, explore_fixture):
         broken_fixture = {
             "destinations": [

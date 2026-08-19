@@ -14,8 +14,14 @@ serpapi:
   monthly_budget: 200        # cible MVP (quota gratuit reel ~250/mois, marge gardee)
   min_budget_reserve: 5      # si moins de X requetes restantes ce mois -> le run du jour est skippe
   travel_durations: [1, 2, 3]  # enum SerpApi google_travel_explore: 1=weekend, 2=~1 semaine, 3=~2 semaines
-  arrival_area_id: null      # null = destination "partout" (defaut API). Le Spike peut suggerer de restreindre
-                              # a une region (kgmid Freebase) si "partout" s'avere trop instable jour apres jour.
+  # Asie du Sud-Est (kgmid Wikidata/Freebase Q11708 -> /m/073q1, verifie par appel reel le
+  # 2026-08-19 : Singapour/Bangkok/Bali/Hanoi/Phuket/KL/Ho Chi Minh/Chiang Mai/Da Nang avec
+  # prix reels). Remettre a `null` pour repasser en "partout".
+  arrival_area_id: "/m/073q1"
+  # 1-12 = Jan-Dec (enum SerpApi), null = 6 prochains mois par defaut. NON VERIFIE : le
+  # comportement une fois novembre 2026 passe (bascule auto sur nov. 2027, ou vide ?) -
+  # a surveiller en decembre 2026 et ajuster si besoin.
+  month: 11
 
 deal:
   minimum_discount: 0.30           # discount = 1 - prix_actuel / mediane_historique
@@ -27,6 +33,9 @@ deal:
                                       # la moyenne historique de CETTE destination de plus de 50%
                                       # (ex: moyenne 8h -> exclu au-dela de 12h). Ignore si pas
                                       # assez d'historique de duree, ou si duration_minutes absent.
+  min_trip_length_nights: 6        # exclut les sejours trop courts (weekend ~2 nuits)
+  max_trip_length_nights: 14       # exclut les sejours trop longs (~1 mois). Bornes inclusives.
+                                    # Un vol one-way (pas de date de retour) est toujours exclu.
 
 scoring:
   # Les poids doivent sommer a 1.0 (valide au chargement, voir config.py)

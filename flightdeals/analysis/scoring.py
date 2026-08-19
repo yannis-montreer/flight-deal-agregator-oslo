@@ -4,6 +4,9 @@ Regle de declenchement (TOUTES les conditions requises) :
     nombre_observations >= minimum_observations
     ET discount >= minimum_discount
     ET prix_actuel <= percentile_25
+    ET min_trip_length_nights <= duree_du_sejour <= max_trip_length_nights
+       (extension demandee par l'utilisateur : exclut les sejours trop courts type weekend
+       et trop longs type 1 mois, meme si le prix est excellent — voir _check_trip_length)
     ET duree_vol pas anormalement longue vs la moyenne historique de cette destination
        (extension demandee par l'utilisateur post-MVP : evite les deals bon marche mais avec
        une escale a rallonge ; voir _check_duration ci-dessous pour les garde-fous)
@@ -40,7 +43,8 @@ class DealEvaluation:
 
     exclusion_reason est None quand triggers=True, sinon la PREMIERE condition qui a echoue
     parmi : "insufficient_history" | "discount_below_threshold" | "price_above_percentile" |
-    "duration_deviation" — utile pour les logs/debug ("pourquoi ce deal n'a pas notifie ?")."""
+    "trip_length_out_of_range" | "duration_deviation" — utile pour les logs/debug
+    ("pourquoi ce deal n'a pas notifie ?")."""
 
     triggers: bool
     discount: float
@@ -55,6 +59,7 @@ def evaluate_deal(
     historical_prices: list[float],
     stats: Optional[PriceStats],
     stops_bucket: str,
+    trip_length_nights: Optional[int],
     current_duration_minutes: Optional[int],
     historical_durations: list[int],
     minimum_discount: float,
@@ -63,6 +68,8 @@ def evaluate_deal(
     discount_cap: float,
     confidence_saturation_count: int,
     max_duration_deviation_ratio: float,
+    min_trip_length_nights: int,
+    max_trip_length_nights: int,
     weights: dict,
     directness_bonus: dict,
 ) -> DealEvaluation:
@@ -78,11 +85,12 @@ def evaluate_deal(
     discount = compute_discount(current_price, stats.median)
     price_at_or_below_percentile = current_price <= stats.percentile_25
     discount_sufficient = discount >= minimum_discount
+    trip_length_ok = _check_trip_length(trip_length_nights, min_trip_length_nights, max_trip_length_nights)
     duration_ok = _check_duration(
         current_duration_minutes, historical_durations, minimum_observations, max_duration_deviation_ratio
     )
 
-    triggers = discount_sufficient and price_at_or_below_percentile and duration_ok
+    triggers = discount_sufficient and price_at_or_below_percentile and trip_length_ok and duration_ok
 
     # Le score est TOUJOURS calcule, meme si triggers=False (utile pour les logs/debug —
     # voir plan, risque "cold start" : visibilite sur les deals proches du seuil).
@@ -105,10 +113,27 @@ def evaluate_deal(
             exclusion_reason = "discount_below_threshold"
         elif not price_at_or_below_percentile:
             exclusion_reason = "price_above_percentile"
+        elif not trip_length_ok:
+            exclusion_reason = "trip_length_out_of_range"
         else:
             exclusion_reason = "duration_deviation"
 
     return DealEvaluation(triggers=triggers, discount=discount, score=score, stats=stats, exclusion_reason=exclusion_reason)
+
+
+def _check_trip_length(
+    trip_length_nights: Optional[int], min_nights: int, max_nights: int
+) -> bool:
+    """True = duree de sejour dans la fourchette voulue (bornes inclusives), False = exclue.
+
+    Contrairement a _check_duration (vol) qui est fail-open sur donnee manquante, ici
+    trip_length_nights=None (vol one-way, pas de date de retour) est traite comme HORS
+    fourchette : la demande porte explicitement sur "la duree de A/R", donc un aller simple
+    ne correspond a rien de mesurable dans ce filtre — pas de round-trip, pas de duree a
+    juger, exclu par construction plutot que laisse passer par defaut."""
+    if trip_length_nights is None:
+        return False
+    return min_nights <= trip_length_nights <= max_nights
 
 
 def _check_duration(

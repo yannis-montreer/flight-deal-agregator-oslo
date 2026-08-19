@@ -83,6 +83,7 @@ def fetch_explore_destinations(
     currency: str,
     travel_duration: int,
     arrival_area_id: Optional[str] = None,
+    month: Optional[int] = None,
 ) -> list[RawObservation]:
     """Un appel SerpApi google_travel_explore -> une RawObservation par destination retournee
     (exploitable ou non, voir RawObservation.is_exploitable). Une erreur de parsing sur UNE
@@ -95,6 +96,11 @@ def fetch_explore_destinations(
     }
     if arrival_area_id:
         params["arrival_area_id"] = arrival_area_id
+    if month:
+        # Enum SerpApi : 1-12 = Jan-Dec, absent/0 = 6 prochains mois (comportement par
+        # defaut de l'API). Non teste : le comportement une fois le mois choisi passe
+        # (ex: interroger month=11 en decembre) — a surveiller en usage reel.
+        params["month"] = month
 
     data = client.search(params)
     raw_destinations = data.get("destinations", [])
@@ -122,6 +128,7 @@ def fetch_all_explore_destinations(
     currency: str,
     travel_durations: "tuple[int, ...] | list[int]",
     arrival_area_id: Optional[str] = None,
+    month: Optional[int] = None,
 ) -> list[RawObservation]:
     """Enchaine les N requetes explore (une par duree configuree) — fonction appelee par
     pipeline.run_once() (jalon M8).
@@ -141,6 +148,7 @@ def fetch_all_explore_destinations(
                     currency=currency,
                     travel_duration=duration,
                     arrival_area_id=arrival_area_id,
+                    month=month,
                 )
             )
         except QuotaExceededError:
