@@ -36,8 +36,8 @@ def main() -> None:
     while True:
         config = load_config()  # relu a chaque iteration, memes garanties que le produit principal
         now = datetime.now(timezone.utc)
-        wait_seconds = seconds_until_next_run(now, config.schedule)
-        logger.info("Prochaine verification dans %.0fs (a %s UTC)", wait_seconds, config.schedule)
+        wait_seconds = seconds_until_next_run(now, config.schedule, config.timezone)
+        logger.info("Prochaine verification dans %.0fs (a %s heure %s)", wait_seconds, config.schedule, config.timezone)
         time.sleep(wait_seconds)
 
         config = load_config()  # relu une 2e fois : peut avoir change pendant le sleep

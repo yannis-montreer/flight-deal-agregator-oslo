@@ -6,8 +6,12 @@ destination: SCL
 destination_name: Santiago
 currency: NOK
 
-# UTC, decale du produit principal (02:00) pour ne pas taper SerpApi au meme instant.
-schedule: "06:00"
+# Meme heure que l'agregateur principal (config/config.yaml: collection.schedule) — DST géré
+# via `timezone`, comme flightdeals.config (voir zoneinfo). Les 2 services utilisent des cles
+# SerpApi distinctes (SERPAPI_KEY vs SEARCH_SERPAPI_KEY) donc pas de contention de quota a
+# tourner au meme instant.
+schedule: "10:30"
+timezone: "Europe/Oslo"
 
 departure:
   center: "2027-01-15"

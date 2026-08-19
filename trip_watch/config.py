@@ -8,6 +8,7 @@ from dataclasses import dataclass
 from datetime import date
 from pathlib import Path
 from typing import Optional
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import yaml
 from dotenv import load_dotenv
@@ -26,6 +27,7 @@ class TripWatchConfig:
     destination_name: str
     currency: str
     schedule: str
+    timezone: str  # nom IANA (ex: "Europe/Oslo", ou "UTC") — meme mecanisme que flightdeals.config
     departure_center: date
     departure_tolerance_days: int
     duration_center_days: int
@@ -57,6 +59,14 @@ def load_config(path: "Path | str | None" = None) -> TripWatchConfig:
     if not bot_token or not chat_id:
         raise ConfigError("TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID manquant dans l'environnement")
 
+    timezone = raw.get("timezone", "UTC")  # defaut UTC si absent (retro-compatible)
+    try:
+        ZoneInfo(timezone)
+    except ZoneInfoNotFoundError as exc:
+        raise ConfigError(
+            f"timezone doit etre un nom de fuseau IANA valide (ex: 'Europe/Oslo', 'UTC'), recu: {timezone!r}"
+        ) from exc
+
     try:
         return TripWatchConfig(
             origin=raw["origin"],
@@ -64,6 +74,7 @@ def load_config(path: "Path | str | None" = None) -> TripWatchConfig:
             destination_name=raw["destination_name"],
             currency=raw["currency"],
             schedule=raw["schedule"],
+            timezone=timezone,
             departure_center=date.fromisoformat(raw["departure"]["center"]),
             departure_tolerance_days=raw["departure"]["tolerance_days"],
             duration_center_days=raw["duration"]["center_days"],
