@@ -12,11 +12,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY flightdeals/ ./flightdeals/
 COPY config/ ./config/
+COPY trip_watch/ ./trip_watch/
 
 # Utilisateur non-root : bonne pratique standard, aucune raison de tourner en root pour
 # un process qui ne fait qu'appeler des API HTTP et ecrire dans /data.
 RUN useradd --create-home --uid 1000 appuser \
-    && mkdir -p /data/logs \
+    && mkdir -p /data/logs /data/logs-trip-watch \
     && chown -R appuser:appuser /app /data
 
 USER appuser
@@ -33,4 +34,7 @@ ENV FLIGHTDEALS_DB_PATH=/data/flightdeals.db \
 # ligne) quand il n'est pas attache a un TTY — `docker logs -f` pourrait retarder de plusieurs
 # minutes l'affichage sur un process a faible debit de sortie comme celui-ci (~1 log/jour).
 
+# Image partagee par les 2 services (flightdeals + trip_watch, voir docker-compose.yml) :
+# le service trip_watch surcharge cet ENTRYPOINT via `command: ["python", "-m", "trip_watch"]`
+# plutot que de dupliquer un 2e Dockerfile/build pour un si petit outil annexe.
 ENTRYPOINT ["python", "-m", "flightdeals"]

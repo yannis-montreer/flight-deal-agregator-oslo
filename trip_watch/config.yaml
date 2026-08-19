@@ -1,0 +1,19 @@
+# Configuration du suivi Santiago. Destinations Lima/La Paz : pas automatisees pour
+# l'instant (backup, via scripts/search_custom_route.py en manuel si besoin).
+
+origin: OSL
+destination: SCL
+destination_name: Santiago
+currency: NOK
+
+# UTC, decale du produit principal (02:00) pour ne pas taper SerpApi au meme instant.
+schedule: "06:00"
+
+departure:
+  center: "2027-01-15"
+  tolerance_days: 2      # teste les 5 dates 13-17 janvier 2027, CHAQUE jour
+
+duration:
+  center_days: 35
+  tolerance_days: 5      # 30 a 40 jours ; UNE seule valeur testee par jour, en rotation
+                          # (voir tracker.py) pour tenir le cout sous le quota gratuit

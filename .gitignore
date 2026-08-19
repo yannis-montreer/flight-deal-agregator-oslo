@@ -14,6 +14,7 @@ data/*.db
 data/*.db-wal
 data/*.db-shm
 data/logs/*.log*
+data/logs-trip-watch/*.log*
 !data/.gitkeep
 !data/logs/.gitkeep
 
