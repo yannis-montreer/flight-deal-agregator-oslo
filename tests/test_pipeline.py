@@ -28,7 +28,7 @@ def _make_config(**overrides) -> Config:
     defaults = dict(
         origin="OSL",
         currency="NOK",
-        collection=CollectionConfig(enabled=True, schedule="02:00"),
+        collection=CollectionConfig(enabled=True, schedule="02:00", timezone="UTC"),
         serpapi=SerpApiConfig(
             monthly_budget=200, min_budget_reserve=5, travel_durations=(1, 2, 3),
             arrival_area_id=None, month=None,

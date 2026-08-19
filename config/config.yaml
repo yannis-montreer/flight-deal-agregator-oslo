@@ -8,7 +8,8 @@ currency: NOK
 
 collection:
   enabled: true
-  schedule: "02:00"          # HH:MM, TOUJOURS en UTC (jamais heure locale)
+  schedule: "10:30"          # HH:MM, interprete dans le fuseau ci-dessous
+  timezone: "Europe/Oslo"    # nom IANA ; gere automatiquement l'heure ete/hiver (CET/CEST)
 
 serpapi:
   monthly_budget: 200        # cible MVP (quota gratuit reel ~250/mois, marge gardee)

@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
 import pytest
 
@@ -42,15 +43,47 @@ class TestSecondsUntilNextRun:
         assert seconds_until_next_run(now, "02:00") == pytest.approx(24 * 3600 - 1)
 
 
+class TestSecondsUntilNextRunWithTimezone:
+    """Demande utilisateur : "10:30 heure d'Oslo" toute l'annee, sans derive au changement
+    heure ete/hiver. zoneinfo (stdlib + tzdata, voir requirements.txt) gere ca nativement —
+    ces tests verifient que le MEME "10:30" produit un equivalent UTC different selon la
+    saison, ce qui prouve que le fuseau est reellement pris en compte (pas un decalage fixe)."""
+
+    def test_summer_uses_cest_offset_utc_plus_2(self):
+        # 2026-08-18 est en plein ete (CEST, UTC+2) -> 10:30 Oslo = 08:30 UTC
+        now = datetime(2026, 8, 18, 6, 0, 0, tzinfo=timezone.utc)
+        seconds = seconds_until_next_run(now, "10:30", "Europe/Oslo")
+        assert seconds == pytest.approx(2.5 * 3600)  # 06:00 -> 08:30 UTC
+
+    def test_winter_uses_cet_offset_utc_plus_1(self):
+        # 2026-01-15 est en plein hiver (CET, UTC+1) -> 10:30 Oslo = 09:30 UTC
+        now = datetime(2026, 1, 15, 6, 0, 0, tzinfo=timezone.utc)
+        seconds = seconds_until_next_run(now, "10:30", "Europe/Oslo")
+        assert seconds == pytest.approx(3.5 * 3600)  # 06:00 -> 09:30 UTC (1h de plus qu'en ete)
+
+    def test_defaults_to_utc_when_timezone_omitted(self):
+        # retro-compatibilite : trip_watch appelle cette fonction sans 3e argument
+        now = datetime(2026, 8, 18, 10, 0, 0, tzinfo=timezone.utc)
+        assert seconds_until_next_run(now, "14:00") == 4 * 3600
+
+    def test_now_in_a_different_timezone_still_computes_correctly(self):
+        # `now` n'a pas besoin d'etre en UTC : seconds_until_next_run doit gerer n'importe
+        # quel fuseau d'entree (astimezone() le convertit correctement avant de comparer)
+        now_ny = datetime(2026, 8, 18, 2, 0, 0, tzinfo=ZoneInfo("America/New_York"))  # = 06:00 UTC
+        seconds = seconds_until_next_run(now_ny, "10:30", "Europe/Oslo")
+        assert seconds == pytest.approx(2.5 * 3600)
+
+
 class _FakeCollectionConfig:
-    def __init__(self, enabled: bool, schedule: str):
+    def __init__(self, enabled: bool, schedule: str, timezone: str = "UTC"):
         self.enabled = enabled
         self.schedule = schedule
+        self.timezone = timezone
 
 
 class _FakeConfig:
-    def __init__(self, enabled: bool, schedule: str = "02:00"):
-        self.collection = _FakeCollectionConfig(enabled, schedule)
+    def __init__(self, enabled: bool, schedule: str = "02:00", timezone: str = "UTC"):
+        self.collection = _FakeCollectionConfig(enabled, schedule, timezone)
 
 
 class _StopLoop(Exception):

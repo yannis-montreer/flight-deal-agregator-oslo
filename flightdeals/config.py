@@ -21,6 +21,7 @@ from typing import Optional
 
 import yaml
 from dotenv import load_dotenv
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 # Charge .env s'il existe (dev local hors Docker) ; no-op silencieux sinon. En conteneur, les
 # secrets arrivent directement via `env_file` dans docker-compose — pas de fichier .env monte,
@@ -37,7 +38,8 @@ class ConfigError(Exception):
 @dataclass(frozen=True)
 class CollectionConfig:
     enabled: bool
-    schedule: str  # "HH:MM", toujours UTC
+    schedule: str  # "HH:MM", interprete dans `timezone`
+    timezone: str  # nom IANA (ex: "Europe/Oslo", ou "UTC") — gere le changement heure ete/hiver
 
 
 @dataclass(frozen=True)
@@ -141,7 +143,11 @@ def load_config(path: "Path | str | None" = None) -> Config:
         raw = yaml.safe_load(f) or {}
 
     try:
-        collection = CollectionConfig(**raw["collection"])
+        collection = CollectionConfig(
+            enabled=raw["collection"]["enabled"],
+            schedule=raw["collection"]["schedule"],
+            timezone=raw["collection"].get("timezone", "UTC"),  # defaut UTC si absent (retro-compatible)
+        )
         serpapi = SerpApiConfig(
             monthly_budget=raw["serpapi"]["monthly_budget"],
             min_budget_reserve=raw["serpapi"]["min_budget_reserve"],
@@ -168,8 +174,16 @@ def load_config(path: "Path | str | None" = None) -> Config:
 
     if not _HHMM_RE.match(collection.schedule):
         raise ConfigError(
-            f"collection.schedule doit etre au format 'HH:MM' (UTC, 24h), recu: {collection.schedule!r}"
+            f"collection.schedule doit etre au format 'HH:MM' (24h), recu: {collection.schedule!r}"
         )
+
+    try:
+        ZoneInfo(collection.timezone)
+    except ZoneInfoNotFoundError as exc:
+        raise ConfigError(
+            f"collection.timezone doit etre un nom de fuseau IANA valide (ex: 'Europe/Oslo', 'UTC'), "
+            f"recu: {collection.timezone!r}"
+        ) from exc
 
     weights_sum = sum(scoring.weights.values())
     if abs(weights_sum - 1.0) > 1e-6:
