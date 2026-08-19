@@ -37,7 +37,7 @@ from flightdeals.db.repository import (
     query_comparable_prices,
 )
 from flightdeals.dedup import should_notify
-from flightdeals.notify.telegram import DealMessage, TelegramError, send_deal_notification
+from flightdeals.notify.telegram import DealMessage, TelegramError, send_deal_notification, send_message
 
 logger = logging.getLogger(__name__)
 
@@ -63,13 +63,15 @@ def run_once(config: Config, db_path: "Path | str") -> RunSummary:
     try:
         with SerpApiClient(api_key=config.secrets.serpapi_key) as client:
             if _budget_exhausted(client, conn, config, month_key):
-                return RunSummary(
+                summary = RunSummary(
                     skipped_budget=True,
                     observations_collected=0,
                     observations_stored=0,
                     deals_triggered=0,
                     deals_notified=0,
                 )
+                _send_daily_summary(config, conn, summary, month_key)
+                return summary
 
             raw_observations = fetch_all_explore_destinations(
                 client,
@@ -110,15 +112,48 @@ def run_once(config: Config, db_path: "Path | str") -> RunSummary:
             len(triggered_deals),
             notified_count,
         )
-        return RunSummary(
+        summary = RunSummary(
             skipped_budget=False,
             observations_collected=len(raw_observations),
             observations_stored=stored_count,
             deals_triggered=len(triggered_deals),
             deals_notified=notified_count,
         )
+        _send_daily_summary(config, conn, summary, month_key)
+        return summary
     finally:
         conn.close()
+
+
+def _send_daily_summary(config: Config, conn, summary: RunSummary, month_key: str) -> None:
+    """Recap quotidien envoye APRES chaque run, deal detecte ou non (demande explicite de
+    l'utilisateur) : les seuils de detection sont volontairement stricts (spec section 10),
+    donc le systeme peut rester silencieux plusieurs semaines sans ce recap — sans lui, rien
+    ne distingue "aucun deal aujourd'hui" de "le systeme est en panne". Toggle :
+    notification.daily_summary_enabled (peut devenir redondant une fois des deals reguliers)."""
+    if not config.notification.telegram or not config.notification.daily_summary_enabled:
+        return
+
+    requests_used = get_requests_used(conn, month_key)
+
+    if summary.skipped_budget:
+        text = (
+            "⚠️ Run du jour saute (budget SerpApi insuffisant)\n"
+            f"{requests_used}/{config.serpapi.monthly_budget} requetes utilisees ce mois"
+        )
+    else:
+        text = (
+            "\U0001F4CA Recap quotidien — Flight Deal Aggregator OSL\n"
+            f"{summary.observations_collected} destinations scannees, {summary.observations_stored} stockees\n"
+            f"{summary.deals_triggered} deal(s) detecte(s) aujourd'hui\n"
+            f"Budget SerpApi : {requests_used}/{config.serpapi.monthly_budget} requetes ce mois"
+        )
+
+    try:
+        send_message(config.secrets.telegram_bot_token, config.secrets.telegram_chat_id, text)
+        logger.info("Recap quotidien envoye")
+    except TelegramError:
+        logger.exception("Echec d'envoi du recap quotidien (ignore, pas bloquant pour le run)")
 
 
 def _budget_exhausted(client: SerpApiClient, conn, config: Config, month_key: str) -> bool:

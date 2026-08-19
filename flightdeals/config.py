@@ -76,6 +76,7 @@ class DedupConfig:
 class NotificationConfig:
     telegram: bool
     send_delay_seconds: float
+    daily_summary_enabled: bool
 
 
 @dataclass(frozen=True)

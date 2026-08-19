@@ -47,7 +47,11 @@ def _make_config(**overrides) -> Config:
             directness_bonus={"nonstop": 1.0, "one_stop": 0.5, "multi_stop": 0.0, "unknown": 0.5},
         ),
         dedup=DedupConfig(further_drop_threshold=0.10, reappear_gap_days=14),
-        notification=NotificationConfig(telegram=True, send_delay_seconds=0.0),
+        # daily_summary_enabled=False par defaut ICI (contrairement a config.yaml en prod,
+        # ou c'est True) : la plupart des tests de ce fichier verifient des notifications de
+        # deal precises via sent_messages, et n'ont pas a se soucier du recap quotidien —
+        # voir TestDailySummary plus bas pour les tests dedies a cette fonctionnalite.
+        notification=NotificationConfig(telegram=True, send_delay_seconds=0.0, daily_summary_enabled=False),
         logging=LoggingConfig(level="INFO", max_bytes=1_000_000, backup_count=1),
         secrets=Secrets(serpapi_key="test-key", telegram_bot_token="test-token", telegram_chat_id="12345"),
     )
@@ -489,4 +493,79 @@ class TestRunOnceDedup:
         summary_2 = run_once(_make_config(), db_path)
 
         assert summary_2.deals_notified == 1
+
+
+class TestDailySummary:
+    def test_sent_after_a_normal_run_with_no_deal(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "test.db"
+        fake_client = _FakeSerpApiClient(
+            account_info={"total_searches_left": 200},
+            search_responses=[_explore_response([]), _explore_response([]), _explore_response([])],
+        )
+        _install_fake_serpapi(monkeypatch, fake_client)
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+
+        config = _make_config(notification=NotificationConfig(telegram=True, send_delay_seconds=0.0, daily_summary_enabled=True))
+        run_once(config, db_path)
+
+        assert len(sent_messages) == 1
+        text = sent_messages[0]["text"]
+        assert "Recap quotidien" in text
+        assert "0 deal(s) detecte" in text
+        assert "3/200 requetes" in text  # 3 durees interrogees
+
+    def test_sent_in_addition_to_deal_notification_when_a_deal_triggers(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "test.db"
+        conn = get_connection(db_path)
+        _seed_history(conn, count=7, price=5000.0, observed_days_ago=5)
+        conn.close()
+
+        fake_client = _FakeSerpApiClient(
+            account_info={"total_searches_left": 200},
+            search_responses=[
+                _explore_response([_destination(flight_price=3000)]),
+                _explore_response([]),
+                _explore_response([]),
+            ],
+        )
+        _install_fake_serpapi(monkeypatch, fake_client)
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+
+        config = _make_config(notification=NotificationConfig(telegram=True, send_delay_seconds=0.0, daily_summary_enabled=True))
+        run_once(config, db_path)
+
+        # 1 notification de deal (format DealMessage) + 1 recap quotidien = 2 messages distincts
         assert len(sent_messages) == 2
+        assert "FLIGHT DEAL" in sent_messages[0]["text"]
+        assert "Recap quotidien" in sent_messages[1]["text"]
+        assert "1 deal(s) detecte" in sent_messages[1]["text"]
+
+    def test_sent_even_when_budget_is_skipped(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "test.db"
+        fake_client = _FakeSerpApiClient(account_info={"total_searches_left": 2})  # < min_budget_reserve=5
+        _install_fake_serpapi(monkeypatch, fake_client)
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+
+        config = _make_config(notification=NotificationConfig(telegram=True, send_delay_seconds=0.0, daily_summary_enabled=True))
+        summary = run_once(config, db_path)
+
+        assert summary.skipped_budget is True
+        assert len(sent_messages) == 1
+        assert "saute" in sent_messages[0]["text"]
+
+    def test_disabled_by_config_sends_nothing_extra(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "test.db"
+        fake_client = _FakeSerpApiClient(
+            account_info={"total_searches_left": 200},
+            search_responses=[_explore_response([]), _explore_response([]), _explore_response([])],
+        )
+        _install_fake_serpapi(monkeypatch, fake_client)
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+
+        run_once(_make_config(), db_path)  # daily_summary_enabled=False par defaut dans _make_config
+
+        assert sent_messages == []

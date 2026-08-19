@@ -42,6 +42,9 @@ dedup:
 notification:
   telegram: true
   send_delay_seconds: 1.0          # throttle entre deux envois Telegram consecutifs dans le meme run
+  daily_summary_enabled: true      # recap quotidien systematique (deal detecte ou non) -
+                                    # utile car les seuils stricts peuvent laisser des semaines
+                                    # de silence sinon ; desactivable si redondant a l'usage
 
 logging:
   level: INFO
