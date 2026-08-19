@@ -196,6 +196,22 @@ def _format_price(price: float) -> str:
     return f"{round(price):,}".replace(",", " ")
 
 
+def _skyscanner_search_url(config: TripWatchConfig, departure_date: str, return_date: str) -> str:
+    """Construit un lien de recherche Skyscanner a partir de donnees qu'on connait deja
+    (origine/destination/dates) — pas de scraping, pas d'appel API supplementaire, juste un
+    lien cliquable ouvert manuellement par l'utilisateur dans son navigateur (contrairement au
+    scraper Skyscanner ecarte plus tot, il n'y a ici aucune extraction automatisee de donnees
+    depuis leur site). Schema d'URL public de skyscanner.net, pas une API contractuelle : peut
+    changer sans preavis, impact limite a un lien casse si ca arrive."""
+    dep = date.fromisoformat(departure_date).strftime("%y%m%d")
+    ret = date.fromisoformat(return_date).strftime("%y%m%d")
+    return (
+        f"https://www.skyscanner.net/transport/flights/"
+        f"{config.origin.lower()}/{config.destination.lower()}/{dep}/{ret}/"
+        f"?currency={config.currency}"
+    )
+
+
 def _format_daily_digest(
     config: TripWatchConfig, result: DailyResult, is_new_min: bool, duration_days: int,
     remaining_searches: Optional[int],
@@ -221,6 +237,8 @@ def _format_daily_digest(
     if result.search_url:
         lines.append("Voir sur Google Flights :")
         lines.append(result.search_url)
+    lines.append("Voir sur Skyscanner :")
+    lines.append(_skyscanner_search_url(config, result.departure_date, result.return_date))
     if is_new_min:
         lines.insert(0, "\U0001F525 NOUVEAU MINIMUM pour cette combinaison exacte de dates !")
 

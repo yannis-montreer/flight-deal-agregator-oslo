@@ -15,6 +15,7 @@ from trip_watch.tracker import (
     departure_dates,
     run_daily_check,
     today_duration,
+    _skyscanner_search_url,
 )
 
 
@@ -84,6 +85,12 @@ class TestDepartureDates:
 
     def test_zero_tolerance_returns_only_center(self):
         assert departure_dates(date(2027, 1, 15), 0) == [date(2027, 1, 15)]
+
+
+class TestSkyscannerSearchUrl:
+    def test_builds_expected_url_shape(self):
+        url = _skyscanner_search_url(_FakeConfig(), "2027-01-15", "2027-02-19")
+        assert url == "https://www.skyscanner.net/transport/flights/osl/scl/270115/270219/?currency=NOK"
 
 
 class TestTodayDuration:
@@ -512,3 +519,32 @@ class TestRunDailyCheck:
         run_daily_check(_FakeConfig(), db_path)  # ne doit pas lever
 
         assert "moyenne habituelle ~10 000 NOK" in sent_messages[0]  # seule l'entree valide comptee
+
+    def test_skyscanner_link_always_included_even_without_google_flights_data(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "trip_watch.db"
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, json=_flight_response(8000))  # pas de search_metadata -> pas de lien Google
+
+        class _ClientAdapter:
+            def __init__(self, api_key):
+                self._client = httpx.Client(transport=httpx.MockTransport(handler))
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                return False
+
+            def search(self, params):
+                return self._client.get("https://serpapi.com/search.json", params=params).json()
+
+        monkeypatch.setattr("trip_watch.tracker.SerpApiClient", _ClientAdapter)
+        sent_messages = []
+        monkeypatch.setattr("trip_watch.tracker.send_message", lambda token, chat_id, text: sent_messages.append(text))
+
+        run_daily_check(_FakeConfig(), db_path)
+
+        assert "Voir sur Google Flights" not in sent_messages[0]  # confirme l'absence du lien Google
+        assert "Voir sur Skyscanner :" in sent_messages[0]
+        assert "https://www.skyscanner.net/transport/flights/osl/scl/" in sent_messages[0]
