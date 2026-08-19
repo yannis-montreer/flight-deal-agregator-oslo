@@ -106,7 +106,19 @@ def run_daily_check(config: TripWatchConfig, db_path: "Path | str") -> None:
     conn = get_connection(db_path)
     try:
         evaluated: list[tuple[DailyResult, bool]] = []
+        remaining_searches: Optional[int] = None
         with SerpApiClient(api_key=config.api_key) as client:
+            # account.json est gratuit (ne consomme pas de quota) — utilise ici uniquement
+            # pour AFFICHER le budget reel du compte (demande utilisateur : visibilite sur le
+            # quota d'un compte tiers dont on n'a pas le dashboard), pas pour bloquer le run
+            # (trip_watch n'a pas de garde-fou budget comme flightdeals.pipeline, le volume
+            # est deja tres faible ~150/mois par design).
+            try:
+                account = client.get_account_info()
+                remaining_searches = account.get("total_searches_left")
+            except Exception:
+                logger.exception("Impossible de recuperer le quota SerpApi (account.json) - omis du digest")
+
             for dep in dep_dates:
                 ret = dep + timedelta(days=duration_days)
                 result = _search_one(
@@ -151,10 +163,13 @@ def run_daily_check(config: TripWatchConfig, db_path: "Path | str") -> None:
         return
 
     best_result, best_is_new_min = min(valid, key=lambda pair: pair[0].price)
-    _send_daily_digest(config, best_result, best_is_new_min, duration_days)
+    _send_daily_digest(config, best_result, best_is_new_min, duration_days, remaining_searches)
 
 
-def _format_daily_digest(config: TripWatchConfig, result: DailyResult, is_new_min: bool, duration_days: int) -> str:
+def _format_daily_digest(
+    config: TripWatchConfig, result: DailyResult, is_new_min: bool, duration_days: int,
+    remaining_searches: Optional[int],
+) -> str:
     price_label = f"{round(result.price):,}".replace(",", " ")
     lines = [
         f"\U0001F30E Suivi {config.destination_name} — sejour de {duration_days}j",
@@ -167,14 +182,21 @@ def _format_daily_digest(config: TripWatchConfig, result: DailyResult, is_new_mi
         lines.append("Vol direct" if result.stops == 0 else f"{result.stops} escale(s)")
     if result.price_level:
         lines.append(f"Evaluation Google : prix {result.price_level}")
+    if remaining_searches is not None:
+        # Visibilite sur le quota du compte SerpApi utilise (potentiellement pas le notre —
+        # demande utilisateur : pas d'acces au dashboard du compte tiers fournissant la cle).
+        lines.append(f"Quota SerpApi restant : {remaining_searches} recherches")
     if is_new_min:
         lines.insert(0, "\U0001F525 NOUVEAU MINIMUM pour cette combinaison exacte de dates !")
 
     return "\n".join(lines)
 
 
-def _send_daily_digest(config: TripWatchConfig, result: DailyResult, is_new_min: bool, duration_days: int) -> None:
-    text = _format_daily_digest(config, result, is_new_min, duration_days)
+def _send_daily_digest(
+    config: TripWatchConfig, result: DailyResult, is_new_min: bool, duration_days: int,
+    remaining_searches: Optional[int],
+) -> None:
+    text = _format_daily_digest(config, result, is_new_min, duration_days, remaining_searches)
     try:
         send_message(config.telegram_bot_token, config.telegram_chat_id, text)
         logger.info("Digest quotidien envoye")

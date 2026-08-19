@@ -263,3 +263,74 @@ class TestRunDailyCheck:
         assert sum(1 for r in rows if r["error"] is not None) == 1
         assert sum(1 for r in rows if r["price"] is not None) == 4
         assert len(sent_messages) == 1  # le digest part quand meme, base sur les 4 valides
+
+    def test_account_quota_included_in_digest_when_available(self, tmp_path, monkeypatch):
+        """Demande utilisateur : visibilite sur le quota d'un compte SerpApi tiers (pas
+        d'acces a son dashboard) — account.json est gratuit, affiche dans le digest quotidien."""
+        db_path = tmp_path / "trip_watch.db"
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, json=_flight_response(8000))
+
+        class _ClientAdapterWithAccountInfo:
+            def __init__(self, transport_client):
+                self._client = transport_client
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                return False
+
+            def get_account_info(self):
+                return {"total_searches_left": 842, "this_month_usage": 158}
+
+            def search(self, params):
+                return self._client.get("https://serpapi.com/search.json", params=params).json()
+
+        monkeypatch.setattr(
+            "trip_watch.tracker.SerpApiClient",
+            lambda api_key: _ClientAdapterWithAccountInfo(httpx.Client(transport=httpx.MockTransport(handler))),
+        )
+        sent_messages = []
+        monkeypatch.setattr("trip_watch.tracker.send_message", lambda token, chat_id, text: sent_messages.append(text))
+
+        run_daily_check(_FakeConfig(), db_path)
+
+        assert len(sent_messages) == 1
+        assert "842" in sent_messages[0]
+        assert "Quota SerpApi restant" in sent_messages[0]
+
+    def test_account_info_failure_does_not_block_the_digest(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "trip_watch.db"
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, json=_flight_response(8000))
+
+        class _ClientAdapterBrokenAccountInfo:
+            def __init__(self, transport_client):
+                self._client = transport_client
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                return False
+
+            def get_account_info(self):
+                raise RuntimeError("panne simulee account.json")
+
+            def search(self, params):
+                return self._client.get("https://serpapi.com/search.json", params=params).json()
+
+        monkeypatch.setattr(
+            "trip_watch.tracker.SerpApiClient",
+            lambda api_key: _ClientAdapterBrokenAccountInfo(httpx.Client(transport=httpx.MockTransport(handler))),
+        )
+        sent_messages = []
+        monkeypatch.setattr("trip_watch.tracker.send_message", lambda token, chat_id, text: sent_messages.append(text))
+
+        run_daily_check(_FakeConfig(), db_path)
+
+        assert len(sent_messages) == 1  # le digest part quand meme
+        assert "Quota SerpApi" not in sent_messages[0]  # juste omis, pas de crash
