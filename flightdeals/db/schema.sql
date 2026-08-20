@@ -59,3 +59,25 @@ CREATE TABLE IF NOT EXISTS api_usage (
     requests_used    INTEGER NOT NULL DEFAULT 0,
     last_updated_at  TEXT NOT NULL
 );
+
+-- Log append-only des "signaux Google" envoyes : cold-start uniquement (observation sans
+-- assez d'historique pour notre propre detection statistique), quand price_insights.price_level
+-- (engine google_flights) qualifie le prix de "low". Table VOLONTAIREMENT separee de
+-- notified_deals — meme structure/usage (pilote should_notify_google_signal, meme logique
+-- de dedup que les vrais deals) mais jamais melangee : un signal Google non confirme ne doit
+-- jamais supprimer, ni etre supprime par, un vrai deal statistique sur la meme cle.
+CREATE TABLE IF NOT EXISTS google_signal_notifications (
+    id               INTEGER PRIMARY KEY AUTOINCREMENT,
+    notified_at      TEXT    NOT NULL,   -- ISO8601 UTC
+    origin           TEXT    NOT NULL,
+    destination      TEXT    NOT NULL,
+    departure_date   TEXT    NOT NULL,
+    return_date      TEXT,
+    price            REAL    NOT NULL,
+    currency         TEXT    NOT NULL,
+    price_level      TEXT    NOT NULL,   -- toujours "low" en pratique (seul cas qui declenche l'envoi)
+    observation_id   INTEGER NOT NULL REFERENCES flight_observations(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_google_signal_key_time
+    ON google_signal_notifications (origin, destination, departure_date, return_date, notified_at);

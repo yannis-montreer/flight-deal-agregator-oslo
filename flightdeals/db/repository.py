@@ -51,6 +51,22 @@ class NotifiedDeal:
     observation_id: int
 
 
+@dataclass(frozen=True)
+class GoogleSignalNotification:
+    """Une ligne a inserer dans google_signal_notifications — table separee de NotifiedDeal,
+    voir schema.sql pour le raisonnement (jamais de suppression croisee avec les vrais deals)."""
+
+    notified_at: str
+    origin: str
+    destination: str
+    departure_date: str
+    return_date: Optional[str]
+    price: float
+    currency: str
+    price_level: str
+    observation_id: int
+
+
 def insert_observation(conn: sqlite3.Connection, obs: FlightObservation) -> int:
     cursor = conn.execute(
         """
@@ -210,6 +226,50 @@ def insert_notification(conn: sqlite3.Connection, deal: NotifiedDeal) -> int:
         )
         """,
         asdict(deal),
+    )
+    assert cursor.lastrowid is not None
+    return cursor.lastrowid
+
+
+def get_last_google_signal_notification(
+    conn: sqlite3.Connection,
+    origin: str,
+    destination: str,
+    departure_date: str,
+    return_date: Optional[str],
+) -> Optional[sqlite3.Row]:
+    """Equivalent de get_last_notification, mais sur google_signal_notifications — pilote
+    dedup.should_notify_google_signal. Table separee, jamais de croisement avec notified_deals."""
+    return conn.execute(
+        """
+        SELECT * FROM google_signal_notifications
+        WHERE origin = :origin AND destination = :destination
+          AND departure_date = :departure_date
+          AND (return_date = :return_date OR (return_date IS NULL AND :return_date IS NULL))
+        ORDER BY notified_at DESC
+        LIMIT 1
+        """,
+        {
+            "origin": origin,
+            "destination": destination,
+            "departure_date": departure_date,
+            "return_date": return_date,
+        },
+    ).fetchone()
+
+
+def insert_google_signal_notification(conn: sqlite3.Connection, signal: GoogleSignalNotification) -> int:
+    cursor = conn.execute(
+        """
+        INSERT INTO google_signal_notifications (
+            notified_at, origin, destination, departure_date, return_date,
+            price, currency, price_level, observation_id
+        ) VALUES (
+            :notified_at, :origin, :destination, :departure_date, :return_date,
+            :price, :currency, :price_level, :observation_id
+        )
+        """,
+        asdict(signal),
     )
     assert cursor.lastrowid is not None
     return cursor.lastrowid

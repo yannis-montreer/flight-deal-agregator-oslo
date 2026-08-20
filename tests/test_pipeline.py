@@ -10,6 +10,7 @@ import pytest
 
 from flightdeals.config import (
     CollectionConfig,
+    ColdStartCheckConfig,
     Config,
     DealConfig,
     DedupConfig,
@@ -58,6 +59,10 @@ def _make_config(**overrides) -> Config:
         # deal precises via sent_messages, et n'ont pas a se soucier du recap quotidien —
         # voir TestDailySummary plus bas pour les tests dedies a cette fonctionnalite.
         notification=NotificationConfig(telegram=True, send_delay_seconds=0.0, daily_summary_enabled=False),
+        # Desactive par defaut ICI (contrairement a config.yaml en prod) : la plupart des
+        # tests de ce fichier ne testent pas ce mecanisme et n'ont pas a se soucier d'appels
+        # google_flights supplementaires mockes — voir TestColdStartSignal plus bas.
+        cold_start_check=ColdStartCheckConfig(enabled=False, max_candidates_per_run=0),
         logging=LoggingConfig(level="INFO", max_bytes=1_000_000, backup_count=1),
         secrets=Secrets(serpapi_key="test-key", telegram_bot_token="test-token", telegram_chat_id="12345"),
     )
@@ -109,6 +114,15 @@ def _install_fake_telegram(monkeypatch, sent_messages: list) -> None:
 
 def _explore_response(destinations: list) -> dict:
     return {"destinations": destinations}
+
+
+def _google_flights_response(price_level: str = "low", *, search_url: str = "https://example.com/gf") -> dict:
+    """Reponse minimale google_flights pour _check_cold_start_signals — seul price_insights.
+    price_level et search_metadata.google_flights_url sont lus par ce chemin de code."""
+    return {
+        "price_insights": {"price_level": price_level},
+        "search_metadata": {"google_flights_url": search_url},
+    }
 
 
 def _destination(**overrides) -> dict:
@@ -665,3 +679,174 @@ class TestDailySummary:
         run_once(_make_config(), db_path)  # daily_summary_enabled=False par defaut dans _make_config
 
         assert sent_messages == []
+
+
+class TestColdStartSignal:
+    """_check_cold_start_signals : palliatif au trou de detection en cold-start (demande
+    utilisateur). Toujours 3 appels _explore_response en tete de search_responses (les 3
+    travel_durations) avant le(s) _google_flights_response (les verifications cold-start)."""
+
+    def test_low_price_level_sends_distinct_google_signal_message(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "test.db"
+        # aucun historique seede -> insufficient_history garanti (minimum_observations=7 par defaut)
+        fake_client = _FakeSerpApiClient(
+            account_info={"total_searches_left": 200},
+            search_responses=[
+                _explore_response([_destination(flight_price=3000)]),
+                _explore_response([]),
+                _explore_response([]),
+                _google_flights_response(price_level="low"),
+            ],
+        )
+        _install_fake_serpapi(monkeypatch, fake_client)
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+
+        summary = run_once(
+            _make_config(cold_start_check=ColdStartCheckConfig(enabled=True, max_candidates_per_run=3)),
+            db_path,
+        )
+
+        assert summary.deals_triggered == 0  # pas assez d'historique -> jamais un vrai deal statistique
+        assert summary.google_signals_checked == 1
+        assert summary.google_signals_sent == 1
+        assert len(sent_messages) == 1
+        assert "Repere par Google" in sent_messages[0]["text"]
+        assert "FLIGHT DEAL" not in sent_messages[0]["text"]  # bien le format distinct, pas confondu
+        assert fake_client.search_calls == 4  # 3 explore + 1 google_flights
+
+    def test_price_level_not_low_is_checked_but_not_sent(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "test.db"
+        fake_client = _FakeSerpApiClient(
+            account_info={"total_searches_left": 200},
+            search_responses=[
+                _explore_response([_destination(flight_price=3000)]),
+                _explore_response([]),
+                _explore_response([]),
+                _google_flights_response(price_level="typical"),
+            ],
+        )
+        _install_fake_serpapi(monkeypatch, fake_client)
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+
+        summary = run_once(
+            _make_config(cold_start_check=ColdStartCheckConfig(enabled=True, max_candidates_per_run=3)),
+            db_path,
+        )
+
+        assert summary.google_signals_checked == 1
+        assert summary.google_signals_sent == 0
+        assert sent_messages == []
+
+    def test_disabled_by_config_issues_no_extra_calls(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "test.db"
+        fake_client = _FakeSerpApiClient(
+            account_info={"total_searches_left": 200},
+            search_responses=[
+                _explore_response([_destination(flight_price=3000)]),
+                _explore_response([]),
+                _explore_response([]),
+            ],
+        )
+        _install_fake_serpapi(monkeypatch, fake_client)
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+
+        summary = run_once(
+            _make_config(cold_start_check=ColdStartCheckConfig(enabled=False, max_candidates_per_run=3)),
+            db_path,
+        )
+
+        assert summary.google_signals_checked == 0
+        assert summary.google_signals_sent == 0
+        assert fake_client.search_calls == 3  # seulement les 3 explore calls, rien de plus
+        assert sent_messages == []
+
+    def test_trip_length_out_of_range_not_considered_a_candidate(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "test.db"
+        # sejour de 2 nuits (12 -> 14 jan), hors bornes 6-14 -> pas candidat, meme sans historique
+        short_trip = _destination(flight_price=3000, start_date="2027-01-12", end_date="2027-01-14")
+        fake_client = _FakeSerpApiClient(
+            account_info={"total_searches_left": 200},
+            search_responses=[
+                _explore_response([short_trip]),
+                _explore_response([]),
+                _explore_response([]),
+            ],
+        )
+        _install_fake_serpapi(monkeypatch, fake_client)
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+
+        summary = run_once(
+            _make_config(
+                deal=DealConfig(
+                    minimum_discount=0.30, minimum_observations=7, percentile_threshold=0.25,
+                    history_window_days=30, duration_tolerance_nights=2, max_duration_deviation_ratio=0.5,
+                    min_trip_length_nights=6, max_trip_length_nights=14,
+                ),
+                cold_start_check=ColdStartCheckConfig(enabled=True, max_candidates_per_run=3),
+            ),
+            db_path,
+        )
+
+        assert summary.google_signals_checked == 0
+        assert fake_client.search_calls == 3  # aucun appel google_flights supplementaire
+        assert sent_messages == []
+
+    def test_cap_limits_to_the_cheapest_n_candidates(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "test.db"
+        # 3 destinations sans historique, prix differents -> seules les 2 moins cheres verifiees (cap=2)
+        destinations = [
+            _destination(destination_airport={"code": "NRT"}, name="Tokyo", flight_price=5000),
+            _destination(destination_airport={"code": "BKK"}, name="Bangkok", flight_price=3000),
+            _destination(destination_airport={"code": "HKT"}, name="Phuket", flight_price=4000),
+        ]
+        fake_client = _FakeSerpApiClient(
+            account_info={"total_searches_left": 200},
+            search_responses=[
+                _explore_response(destinations),
+                _explore_response([]),
+                _explore_response([]),
+                _google_flights_response(price_level="typical"),
+                _google_flights_response(price_level="typical"),
+            ],
+        )
+        _install_fake_serpapi(monkeypatch, fake_client)
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+
+        summary = run_once(
+            _make_config(cold_start_check=ColdStartCheckConfig(enabled=True, max_candidates_per_run=2)),
+            db_path,
+        )
+
+        assert summary.google_signals_checked == 2  # pas 3 : plafonne par max_candidates_per_run
+        assert fake_client.search_calls == 3 + 2
+
+    def test_dedup_suppresses_repeat_signal_without_gap_or_drop(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "test.db"
+
+        def make_client():
+            return _FakeSerpApiClient(
+                account_info={"total_searches_left": 200},
+                search_responses=[
+                    _explore_response([_destination(flight_price=3000)]),
+                    _explore_response([]),
+                    _explore_response([]),
+                    _google_flights_response(price_level="low"),
+                ],
+            )
+
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+        config = _make_config(cold_start_check=ColdStartCheckConfig(enabled=True, max_candidates_per_run=3))
+
+        _install_fake_serpapi(monkeypatch, make_client())
+        run_once(config, db_path)
+        assert len(sent_messages) == 1
+
+        _install_fake_serpapi(monkeypatch, make_client())  # meme prix, meme destination, meme jour
+        run_once(config, db_path)
+        assert len(sent_messages) == 1  # pas de 2e envoi : ni reapparition (gap 14j), ni baisse suffisante

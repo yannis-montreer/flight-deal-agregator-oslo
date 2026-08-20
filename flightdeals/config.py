@@ -85,6 +85,19 @@ class NotificationConfig:
 
 
 @dataclass(frozen=True)
+class ColdStartCheckConfig:
+    """Voir plan / pipeline._check_cold_start_signals : pendant qu'un bucket n'a pas encore
+    deal.minimum_observations, on demande a Google (price_insights.price_level, engine
+    google_flights) son propre avis sur les candidats les moins chers du jour — s'eteint
+    automatiquement des qu'un bucket franchit le seuil (plus jamais exclusion_reason=
+    "insufficient_history" pour lui, voir scoring.py), donc pas de flag "enabled par bucket"
+    a gerer manuellement. `enabled` reste un coupe-circuit global explicite."""
+
+    enabled: bool
+    max_candidates_per_run: int  # requetes google_flights supplementaires max par run (cout)
+
+
+@dataclass(frozen=True)
 class LoggingConfig:
     level: str
     max_bytes: int
@@ -108,6 +121,7 @@ class Config:
     scoring: ScoringConfig
     dedup: DedupConfig
     notification: NotificationConfig
+    cold_start_check: ColdStartCheckConfig
     logging: LoggingConfig
     secrets: Secrets
 
@@ -164,6 +178,10 @@ def load_config(path: "Path | str | None" = None) -> Config:
         )
         dedup = DedupConfig(**raw["dedup"])
         notification = NotificationConfig(**raw["notification"])
+        # Section optionnelle (retro-compatible) : absente -> desactivee plutot qu'une
+        # valeur par defaut devinee sur le cout (voir philosophie fail-fast du module).
+        cold_start_raw = raw.get("cold_start_check", {"enabled": False, "max_candidates_per_run": 0})
+        cold_start_check = ColdStartCheckConfig(**cold_start_raw)
         logging_cfg = LoggingConfig(**raw["logging"])
         origin = raw["origin"]
         currency = raw["currency"]
@@ -220,6 +238,12 @@ def load_config(path: "Path | str | None" = None) -> Config:
             "deal.minimum_observations (sinon la rampe de confiance est degeneree)"
         )
 
+    if cold_start_check.max_candidates_per_run < 0:
+        raise ConfigError(
+            f"cold_start_check.max_candidates_per_run doit etre >= 0, "
+            f"recu: {cold_start_check.max_candidates_per_run}"
+        )
+
     secrets = _load_secrets()
 
     return Config(
@@ -231,6 +255,7 @@ def load_config(path: "Path | str | None" = None) -> Config:
         scoring=scoring,
         dedup=dedup,
         notification=notification,
+        cold_start_check=cold_start_check,
         logging=logging_cfg,
         secrets=secrets,
     )

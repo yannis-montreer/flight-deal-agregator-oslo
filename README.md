@@ -30,7 +30,18 @@ Scheduler (10:30 heure d'Oslo, CET/CEST géré automatiquement, interne au conte
   -> Calcul des deals (médiane / percentile 25 / discount, filtres durée de vol + durée de séjour)
   -> Dédoublonnage
   -> Notification Telegram (deal détecté + récap quotidien systématique)
+  -> Signal Google en cold-start (voir ci-dessous)
 ```
+
+**Signal Google (cold-start)** : tant qu'un bucket (destination/mois/durée) n'a pas les
+`deal.minimum_observations` requises, notre propre détection statistique reste aveugle — un
+vrai bon plan pourrait passer inaperçu les premiers jours. Palliatif : pour les quelques
+candidats les moins chers du jour parmi ceux sans historique suffisant, une requête
+`google_flights` supplémentaire demande à Google lui-même son avis (`price_insights.
+price_level`). Si Google qualifie le prix de "low", un message Telegram **distinct** est
+envoyé (jamais confondu avec un vrai deal statistique, dédoublonnage totalement séparé).
+S'éteint tout seul dès qu'un bucket atteint le seuil — voir `cold_start_check` dans
+`config/config.yaml` et `pipeline._check_cold_start_signals`.
 
 `trip-watch-santiago` suit une logique différente (point-à-point `google_flights`, rotation
 de durée de séjour sur plusieurs jours) — voir [trip_watch/tracker.py](trip_watch/tracker.py).
@@ -61,7 +72,7 @@ de durée de séjour sur plusieurs jours) — voir [trip_watch/tracker.py](trip_
 pytest
 ```
 
-185+ tests (voir `tests/`), aucun appel réseau réel (SerpApi et Telegram mockés partout sauf
+198+ tests (voir `tests/`), aucun appel réseau réel (SerpApi et Telegram mockés partout sauf
 dans `spike/` et `scripts/`, volontairement autonomes).
 
 ## Docker

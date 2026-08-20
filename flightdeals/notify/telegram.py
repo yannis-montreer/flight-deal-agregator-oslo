@@ -108,6 +108,51 @@ def _format_stops(stops: Optional[int]) -> str:
     return f"{stops} escales"
 
 
+@dataclass(frozen=True)
+class GoogleSignalMessage:
+    """Signal de cold-start (voir pipeline._check_cold_start_signals) : Google (via
+    price_insights.price_level de l'engine google_flights) qualifie ce prix de "low", mais
+    notre propre historique n'a pas encore assez d'observations pour le confirmer
+    statistiquement. Volontairement un type de message DIFFERENT de DealMessage — moins de
+    confiance, doit rester visuellement/textuellement distinct pour ne jamais etre confondu
+    avec un vrai deal (spec section 10, non touchee par ce mecanisme complementaire)."""
+
+    origin: str
+    destination: str
+    destination_name: Optional[str]
+    price: float
+    currency: str
+    departure_date: str
+    return_date: Optional[str]
+    airline: Optional[str]
+    stops: Optional[int]
+    price_level: str  # toujours "low" en pratique, seul cas qui declenche l'envoi
+    source_url: Optional[str]
+
+
+def render_google_signal_message(msg: GoogleSignalMessage) -> str:
+    dest_label = f"{msg.destination_name} ({msg.destination})" if msg.destination_name else msg.destination
+    price_label = f"{_format_price(msg.price)} {msg.currency}" + (" A/R" if msg.return_date else "")
+    dates_label = _format_dates(msg.departure_date, msg.return_date)
+
+    lines = [
+        "\U0001F50D Repere par Google (historique pas encore suffisant)",
+        f"{msg.origin} → {dest_label}",
+        price_label,
+        f"Google qualifie ce prix de : {msg.price_level}",
+        dates_label,
+    ]
+    if msg.airline:
+        lines.append(msg.airline)
+    lines.append(_format_stops(msg.stops))
+    lines.append("Pas encore confirme par notre propre historique — a verifier avant de reserver.")
+    if msg.source_url:
+        lines.append("Voir le vol :")
+        lines.append(msg.source_url)
+
+    return "\n".join(lines)
+
+
 def send_message(bot_token: str, chat_id: str, text: str, *, timeout_seconds: float = 15.0) -> None:
     """Leve TelegramError si l'envoi echoue. N'ecrit RIEN en base — c'est a l'appelant
     (pipeline.py, jalon M8) d'inserer dans notified_deals SEULEMENT apres un retour reussi
@@ -134,6 +179,17 @@ def send_deal_notification(
     send_message(bot_token, chat_id, text, timeout_seconds=timeout_seconds)
     logger.info(
         "Notification Telegram envoyee: %s -> %s, %s %s", deal.origin, deal.destination, deal.price, deal.currency
+    )
+
+
+def send_google_signal_notification(
+    bot_token: str, chat_id: str, msg: GoogleSignalMessage, *, timeout_seconds: float = 15.0
+) -> None:
+    text = render_google_signal_message(msg)
+    send_message(bot_token, chat_id, text, timeout_seconds=timeout_seconds)
+    logger.info(
+        "Signal Google envoye: %s -> %s, %s %s (price_level=%s)",
+        msg.origin, msg.destination, msg.price, msg.currency, msg.price_level,
     )
 
 

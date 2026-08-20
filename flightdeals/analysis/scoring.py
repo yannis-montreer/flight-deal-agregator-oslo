@@ -85,7 +85,7 @@ def evaluate_deal(
     discount = compute_discount(current_price, stats.median)
     price_at_or_below_percentile = current_price <= stats.percentile_25
     discount_sufficient = discount >= minimum_discount
-    trip_length_ok = _check_trip_length(trip_length_nights, min_trip_length_nights, max_trip_length_nights)
+    trip_length_ok = check_trip_length(trip_length_nights, min_trip_length_nights, max_trip_length_nights)
     duration_ok = _check_duration(
         current_duration_minutes, historical_durations, minimum_observations, max_duration_deviation_ratio
     )
@@ -121,7 +121,7 @@ def evaluate_deal(
     return DealEvaluation(triggers=triggers, discount=discount, score=score, stats=stats, exclusion_reason=exclusion_reason)
 
 
-def _check_trip_length(
+def check_trip_length(
     trip_length_nights: Optional[int], min_nights: int, max_nights: int
 ) -> bool:
     """True = duree de sejour dans la fourchette voulue (bornes inclusives), False = exclue.
@@ -130,7 +130,12 @@ def _check_trip_length(
     trip_length_nights=None (vol one-way, pas de date de retour) est traite comme HORS
     fourchette : la demande porte explicitement sur "la duree de A/R", donc un aller simple
     ne correspond a rien de mesurable dans ce filtre — pas de round-trip, pas de duree a
-    juger, exclu par construction plutot que laisse passer par defaut."""
+    juger, exclu par construction plutot que laisse passer par defaut.
+
+    Publique (pas de prefixe _) : reutilisee par pipeline._check_cold_start_signals pour
+    appliquer le meme filtre de duree de sejour aux candidats "historique insuffisant"
+    (voir plan cold-start / signal Google, sinon on alerterait sur des sejours hors des
+    bornes voulues juste parce qu'ils n'ont pas encore d'historique)."""
     if trip_length_nights is None:
         return False
     return min_nights <= trip_length_nights <= max_nights

@@ -56,6 +56,22 @@ notification:
                                     # utile car les seuils stricts peuvent laisser des semaines
                                     # de silence sinon ; desactivable si redondant a l'usage
 
+# Angle mort assume du MVP (spec) : tant qu'un bucket (destination/mois/duree) n'a pas
+# deal.minimum_observations, AUCUN deal ne peut y etre detecte, meme si le prix est
+# exceptionnel (demande utilisateur : "dans les 6 premiers jours il pourrait y avoir un deal
+# qu'on rate"). Palliatif : demander a Google lui-meme (price_insights.price_level, engine
+# google_flights, PAS google_travel_explore qui n'expose pas ce champ) son avis sur les
+# candidats les moins chers du jour parmi ceux encore sans historique suffisant. Message
+# Telegram distinct (GoogleSignalMessage), jamais confondu avec un vrai deal statistique.
+# S'eteint tout seul par bucket des que deal.minimum_observations est atteint (plus jamais
+# exclusion_reason="insufficient_history" pour lui) - pas de derive de cout dans la duree.
+cold_start_check:
+  enabled: true
+  max_candidates_per_run: 3   # requetes google_flights EN PLUS des explore calls habituels
+                               # (cout: jusqu'a +3/jour ≈ +90/mois tant que des buckets sont
+                               # encore en cold-start ; verifie qu'il reste de la marge sous
+                               # serpapi.monthly_budget avant d'augmenter ce chiffre)
+
 logging:
   level: INFO
   max_bytes: 5242880               # 5 MB avant rotation

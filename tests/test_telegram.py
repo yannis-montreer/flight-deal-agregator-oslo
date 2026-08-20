@@ -6,7 +6,9 @@ import pytest
 
 from flightdeals.notify.telegram import (
     DealMessage,
+    GoogleSignalMessage,
     TelegramError,
+    render_google_signal_message,
     render_message,
     send_message,
     throttled_send,
@@ -87,6 +89,44 @@ class TestRenderMessage:
     def test_no_destination_name_falls_back_to_code_only(self):
         text = render_message(_deal(destination_name=None))
         assert "OSL → NRT" in text
+
+
+def _google_signal(**overrides) -> GoogleSignalMessage:
+    defaults = dict(
+        origin="OSL",
+        destination="HKT",
+        destination_name="Phuket",
+        price=5717.0,
+        currency="NOK",
+        departure_date="2026-11-10",
+        return_date="2026-11-23",
+        airline="Thai Airways",
+        stops=1,
+        price_level="low",
+        source_url="https://www.google.com/travel/flights?example",
+    )
+    defaults.update(overrides)
+    return GoogleSignalMessage(**defaults)
+
+
+class TestRenderGoogleSignalMessage:
+    def test_clearly_distinct_from_a_real_deal_message(self):
+        text = render_google_signal_message(_google_signal())
+        assert "FLIGHT DEAL" not in text  # jamais confondu avec un vrai deal statistique
+        assert "Repere par Google" in text
+        assert "OSL → Phuket (HKT)" in text
+        assert "5 717 NOK A/R" in text
+        assert "Google qualifie ce prix de : low" in text
+        assert "pas encore confirme" in text.lower()
+
+    def test_no_source_url_omits_link_lines(self):
+        assert "Voir le vol" not in render_google_signal_message(_google_signal(source_url=None))
+
+    def test_no_score_or_discount_lines(self):
+        # contrairement a DealMessage : rien de statistique n'est calculable en cold-start
+        text = render_google_signal_message(_google_signal())
+        assert "score" not in text.lower()
+        assert "historique" in text.lower()  # mais le disclaimer, oui
 
 
 class TestSendMessage:

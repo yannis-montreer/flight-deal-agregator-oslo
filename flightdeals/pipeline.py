@@ -20,24 +20,33 @@ from flightdeals.analysis.bucketing import (
     compute_travel_period_bucket,
     compute_trip_length_nights,
 )
-from flightdeals.analysis.scoring import evaluate_deal
+from flightdeals.analysis.scoring import check_trip_length, evaluate_deal
 from flightdeals.analysis.statistics import compute_price_stats
 from flightdeals.collectors.flight_search import RawObservation, fetch_all_explore_destinations
-from flightdeals.collectors.serpapi_client import SerpApiClient
+from flightdeals.collectors.serpapi_client import QuotaExceededError, SerpApiClient, SerpApiError
 from flightdeals.config import Config
 from flightdeals.db.connection import get_connection
 from flightdeals.db.repository import (
     FlightObservation,
+    GoogleSignalNotification,
     NotifiedDeal,
     get_requests_used,
     increment_requests_used,
+    insert_google_signal_notification,
     insert_notification,
     insert_observation,
     query_comparable_durations,
     query_comparable_prices,
 )
-from flightdeals.dedup import should_notify
-from flightdeals.notify.telegram import DealMessage, TelegramError, send_deal_notification, send_message
+from flightdeals.dedup import should_notify, should_notify_google_signal
+from flightdeals.notify.telegram import (
+    DealMessage,
+    GoogleSignalMessage,
+    TelegramError,
+    send_deal_notification,
+    send_google_signal_notification,
+    send_message,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +60,29 @@ class RunSummary:
     observations_stored: int
     deals_triggered: int
     deals_notified: int
+    google_signals_checked: int = 0
+    google_signals_sent: int = 0
+
+
+@dataclass(frozen=True)
+class ColdStartCandidate:
+    """Observation exclue UNIQUEMENT pour "insufficient_history" (voir scoring.py) et dont la
+    duree de sejour respecte quand meme deal.min/max_trip_length_nights — candidate a la
+    verification complementaire aupres de Google (voir _check_cold_start_signals). Champs
+    identiques a DealMessage moins discount/score, qui n'ont pas de sens sans historique."""
+
+    obs_id: int
+    origin: str
+    destination: str
+    destination_name: Optional[str]
+    price: float
+    currency: str
+    departure_date: str
+    return_date: Optional[str]
+    airline: Optional[str]
+    stops: Optional[int]
+    duration_minutes: Optional[int]
+    source_url: Optional[str]
 
 
 def run_once(config: Config, db_path: "Path | str") -> RunSummary:
@@ -88,6 +120,7 @@ def run_once(config: Config, db_path: "Path | str") -> RunSummary:
 
         stored_count = 0
         triggered_deals: list[tuple[int, DealMessage]] = []
+        cold_start_candidates: list[ColdStartCandidate] = []
 
         for raw in raw_observations:
             try:
@@ -100,18 +133,26 @@ def run_once(config: Config, db_path: "Path | str") -> RunSummary:
                 continue  # non exploitable (pas de prix/destination/date) -> pas stockee
 
             stored_count += 1
-            obs_id, deal_message = outcome
+            obs_id, deal_message, cold_start_candidate = outcome
             if deal_message is not None:
                 triggered_deals.append((obs_id, deal_message))
+            if cold_start_candidate is not None:
+                cold_start_candidates.append(cold_start_candidate)
 
         notified_count = _dedup_and_notify(conn, config, triggered_deals, run_started_at)
+        signals_checked, signals_sent = _check_cold_start_signals(
+            conn, config, cold_start_candidates, run_started_at, month_key
+        )
 
         logger.info(
-            "Run termine: %d observations collectees, %d stockees, %d deals declenches, %d notifies",
+            "Run termine: %d observations collectees, %d stockees, %d deals declenches, %d notifies, "
+            "%d signaux Google verifies, %d envoyes",
             len(raw_observations),
             stored_count,
             len(triggered_deals),
             notified_count,
+            signals_checked,
+            signals_sent,
         )
         summary = RunSummary(
             skipped_budget=False,
@@ -119,6 +160,8 @@ def run_once(config: Config, db_path: "Path | str") -> RunSummary:
             observations_stored=stored_count,
             deals_triggered=len(triggered_deals),
             deals_notified=notified_count,
+            google_signals_checked=signals_checked,
+            google_signals_sent=signals_sent,
         )
         _send_daily_summary(config, conn, summary, month_key)
         return summary
@@ -149,6 +192,13 @@ def _send_daily_summary(config: Config, conn, summary: RunSummary, month_key: st
             f"{summary.deals_triggered} deal(s) detecte(s) aujourd'hui\n"
             f"Budget SerpApi : {requests_used}/{config.serpapi.monthly_budget} requetes ce mois"
         )
+        if summary.google_signals_checked > 0:
+            # N'apparait que tant qu'il reste des buckets en cold-start (voir
+            # _check_cold_start_signals) - disparait de lui-meme une fois l'historique mur.
+            text += (
+                f"\n\U0001F50D {summary.google_signals_sent} signal(aux) Google envoye(s) "
+                f"({summary.google_signals_checked} verifie(s), cold-start)"
+            )
 
     try:
         send_message(config.secrets.telegram_bot_token, config.secrets.telegram_chat_id, text)
@@ -197,11 +247,13 @@ def _evaluate_one(
     raw: RawObservation,
     observed_at_iso: str,
     window_start_iso: str,
-) -> Optional[tuple[int, Optional[DealMessage]]]:
+) -> Optional[tuple[int, Optional[DealMessage], Optional[ColdStartCandidate]]]:
     """None si l'observation n'est pas stockable (pas de prix/destination/date exploitable).
-    Sinon (id_observation_stockee, DealMessage_ou_None) — le DealMessage n'est present QUE si
-    la regle de declenchement du spec (section 10) est satisfaite ; obs_id est TOUJOURS
-    retourne des qu'une observation est stockee, meme sans deal declenche."""
+    Sinon (id_observation_stockee, DealMessage_ou_None, ColdStartCandidate_ou_None) — au plus
+    un des deux derniers est non-None : DealMessage si la regle de declenchement du spec
+    (section 10) est satisfaite, ColdStartCandidate si le SEUL motif d'exclusion est
+    "insufficient_history" (et que la duree de sejour reste dans les bornes voulues) — voir
+    _check_cold_start_signals. obs_id est TOUJOURS retourne des qu'une observation est stockee."""
     obs = _build_flight_observation(raw, observed_at_iso)
     if obs is None:
         return None
@@ -272,7 +324,7 @@ def _evaluate_one(
             "'pas de deal' plutot que de faire perdre le stockage",
             obs_id,
         )
-        return obs_id, None
+        return obs_id, None, None
 
     if not evaluation.triggers:
         if evaluation.exclusion_reason == "duration_deviation":
@@ -283,7 +335,22 @@ def _evaluate_one(
                 "Deal exclu pour duree de vol anormale: %s -> %s, %s min (obs id=%d)",
                 obs.origin, obs.destination, obs.duration_minutes, obs_id,
             )
-        return obs_id, None
+
+        cold_start_candidate = None
+        if evaluation.exclusion_reason == "insufficient_history" and check_trip_length(
+            obs.trip_length_nights, config.deal.min_trip_length_nights, config.deal.max_trip_length_nights
+        ):
+            # Meme filtre de duree de sejour que evaluate_deal (voir check_trip_length) : pas
+            # la peine d'alerter sur un sejour hors bornes juste parce qu'il n'a pas encore
+            # d'historique — il serait de toute facon exclu une fois l'historique suffisant.
+            cold_start_candidate = ColdStartCandidate(
+                obs_id=obs_id, origin=obs.origin, destination=obs.destination,
+                destination_name=obs.destination_name, price=obs.price, currency=obs.currency,
+                departure_date=obs.departure_date, return_date=obs.return_date,
+                airline=obs.airline, stops=obs.stops, duration_minutes=obs.duration_minutes,
+                source_url=obs.source_url,
+            )
+        return obs_id, None, cold_start_candidate
 
     deal_message = DealMessage(
         origin=obs.origin,
@@ -300,7 +367,139 @@ def _evaluate_one(
         score=evaluation.score,
         source_url=obs.source_url,
     )
-    return obs_id, deal_message
+    return obs_id, deal_message, None
+
+
+def _check_cold_start_signals(
+    conn,
+    config: Config,
+    candidates: list[ColdStartCandidate],
+    run_started_at: datetime,
+    month_key: str,
+) -> tuple[int, int]:
+    """Palliatif au trou de detection en cold-start (demande utilisateur : "dans les 6 premiers
+    jours il pourrait y avoir un deal qu'on rate") : interroge google_flights (le seul engine
+    a exposer price_insights.price_level — google_travel_explore, utilise pour le scan
+    quotidien, ne l'expose pas) sur les N candidats les moins chers du jour parmi ceux sans
+    historique suffisant. Si Google qualifie le prix de "low", envoie un message Telegram
+    DISTINCT (GoogleSignalMessage), jamais melange avec un vrai deal statistique (dedup
+    separee, voir dedup.should_notify_google_signal / schema.sql).
+
+    S'eteint tout seul par bucket des que evaluate_deal a assez d'historique (plus jamais
+    exclusion_reason="insufficient_history" pour lui, voir pipeline._evaluate_one) : aucune
+    logique d'extinction a gerer ici, `candidates` est deja vide pour un bucket mature.
+
+    Retourne (nombre_verifie, nombre_envoye) pour le recap quotidien (RunSummary). Ne leve
+    jamais : une erreur sur UN candidat est loguee et ignoree (spec section 14)."""
+    if (
+        not config.cold_start_check.enabled
+        or not config.notification.telegram
+        or not candidates
+        or config.cold_start_check.max_candidates_per_run <= 0
+    ):
+        return 0, 0
+
+    cheapest = sorted(candidates, key=lambda c: c.price)[: config.cold_start_check.max_candidates_per_run]
+    checked = 0
+    sent = 0
+
+    try:
+        with SerpApiClient(api_key=config.secrets.serpapi_key) as client:
+            for candidate in cheapest:
+                if candidate.return_date is None:
+                    continue  # garde-fou theorique : check_trip_length exclut deja les one-way en amont
+
+                try:
+                    data = client.search({
+                        "engine": "google_flights",
+                        "departure_id": candidate.origin,
+                        "arrival_id": candidate.destination,
+                        "outbound_date": candidate.departure_date,
+                        "return_date": candidate.return_date,
+                        "type": "1",
+                        "currency": candidate.currency,
+                    })
+                except QuotaExceededError:
+                    checked += 1
+                    logger.warning(
+                        "Quota SerpApi atteint pendant la verification cold-start (%d/%d verifies), arret anticipe",
+                        checked, len(cheapest),
+                    )
+                    break
+                except SerpApiError:
+                    checked += 1
+                    logger.exception(
+                        "Echec de verification Google (cold-start) pour %s -> %s (ignore)",
+                        candidate.origin, candidate.destination,
+                    )
+                    continue
+
+                checked += 1
+                price_level = (data.get("price_insights") or {}).get("price_level")
+                if price_level != "low":
+                    continue
+
+                try:
+                    decision = should_notify_google_signal(
+                        conn, origin=candidate.origin, destination=candidate.destination,
+                        departure_date=candidate.departure_date, return_date=candidate.return_date,
+                        current_price=candidate.price, now=run_started_at,
+                        further_drop_threshold=config.dedup.further_drop_threshold,
+                        reappear_gap_days=config.dedup.reappear_gap_days,
+                    )
+                except Exception:
+                    logger.exception(
+                        "Echec d'evaluation dedup (signal Google) pour %s -> %s (ignore, pas envoye)",
+                        candidate.origin, candidate.destination,
+                    )
+                    continue
+
+                if not decision.should_notify:
+                    logger.info(
+                        "Signal Google supprime par dedoublonnage (%s): %s -> %s %s %s",
+                        decision.reason, candidate.origin, candidate.destination, candidate.price, candidate.currency,
+                    )
+                    continue
+
+                signal_message = GoogleSignalMessage(
+                    origin=candidate.origin, destination=candidate.destination,
+                    destination_name=candidate.destination_name, price=candidate.price,
+                    currency=candidate.currency, departure_date=candidate.departure_date,
+                    return_date=candidate.return_date, airline=candidate.airline, stops=candidate.stops,
+                    price_level=price_level,
+                    source_url=(data.get("search_metadata") or {}).get("google_flights_url"),
+                )
+                try:
+                    send_google_signal_notification(
+                        config.secrets.telegram_bot_token, config.secrets.telegram_chat_id, signal_message
+                    )
+                except TelegramError:
+                    logger.exception(
+                        "Echec d'envoi du signal Google pour %s -> %s (ignore, retente demain car non enregistre)",
+                        candidate.origin, candidate.destination,
+                    )
+                    continue
+
+                insert_google_signal_notification(
+                    conn,
+                    GoogleSignalNotification(
+                        notified_at=datetime.now(timezone.utc).isoformat(),
+                        origin=candidate.origin, destination=candidate.destination,
+                        departure_date=candidate.departure_date, return_date=candidate.return_date,
+                        price=candidate.price, currency=candidate.currency, price_level=price_level,
+                        observation_id=candidate.obs_id,
+                    ),
+                )
+                sent += 1
+    except Exception:
+        logger.exception("Echec inattendu pendant la verification cold-start (ignore, run continue)")
+
+    if checked > 0:
+        # Comptees a part des explore calls (deja incrementees plus haut dans run_once) — meme
+        # philosophie "1 requete = 1 tentative search(), succes ou echec" que SerpApiClient.search.
+        increment_requests_used(conn, month_key, count=checked)
+
+    return checked, sent
 
 
 def _build_flight_observation(raw: RawObservation, observed_at: str) -> Optional[FlightObservation]:

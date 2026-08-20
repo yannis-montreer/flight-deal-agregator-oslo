@@ -3,8 +3,15 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from flightdeals.db.repository import FlightObservation, NotifiedDeal, insert_notification, insert_observation
-from flightdeals.dedup import should_notify
+from flightdeals.db.repository import (
+    FlightObservation,
+    GoogleSignalNotification,
+    NotifiedDeal,
+    insert_google_signal_notification,
+    insert_notification,
+    insert_observation,
+)
+from flightdeals.dedup import should_notify, should_notify_google_signal
 
 
 def _obs(**overrides) -> FlightObservation:
@@ -45,6 +52,22 @@ def _notify(conn, obs_id: int, **overrides) -> None:
     )
     defaults.update(overrides)
     insert_notification(conn, NotifiedDeal(**defaults))
+
+
+def _notify_google_signal(conn, obs_id: int, **overrides) -> None:
+    defaults = dict(
+        notified_at="2026-08-10T00:00:00+00:00",
+        origin="OSL",
+        destination="NRT",
+        departure_date="2027-01-12",
+        return_date="2027-01-19",
+        price=3200.0,
+        currency="NOK",
+        price_level="low",
+        observation_id=obs_id,
+    )
+    defaults.update(overrides)
+    insert_google_signal_notification(conn, GoogleSignalNotification(**defaults))
 
 
 class TestShouldNotify:
@@ -243,3 +266,59 @@ class TestShouldNotify:
             reappear_gap_days=14,
         )
         assert decision.should_notify is False  # meme prix, gap court -> suppression normale
+
+
+class TestShouldNotifyGoogleSignal:
+    """should_notify_google_signal partage la meme regle pure que should_notify (voir
+    dedup._evaluate_dedup, deja couverte exhaustivement ci-dessus) mais lit/ecrit dans
+    google_signal_notifications, une table SEPAREE de notified_deals — l'essentiel a verifier
+    ici est justement cette isolation, pas re-tester la regle elle-meme."""
+
+    def test_first_signal_for_key_notifies(self, conn):
+        decision = should_notify_google_signal(
+            conn, origin="OSL", destination="NRT", departure_date="2027-01-12", return_date="2027-01-19",
+            current_price=3200.0, now=datetime.now(timezone.utc),
+            further_drop_threshold=0.10, reappear_gap_days=14,
+        )
+        assert decision.should_notify is True
+        assert decision.reason == "first_notification"
+
+    def test_repeat_signal_shortly_after_is_suppressed(self, conn):
+        obs_id = insert_observation(conn, _obs())
+        _notify_google_signal(conn, obs_id, notified_at="2026-08-15T00:00:00+00:00", price=3200.0)
+
+        decision = should_notify_google_signal(
+            conn, origin="OSL", destination="NRT", departure_date="2027-01-12", return_date="2027-01-19",
+            current_price=3200.0, now=datetime(2026, 8, 16, tzinfo=timezone.utc),
+            further_drop_threshold=0.10, reappear_gap_days=14,
+        )
+        assert decision.should_notify is False
+        assert decision.reason == "suppressed_duplicate"
+
+    def test_a_real_deal_notification_does_not_suppress_a_google_signal(self, conn):
+        # Une notif de VRAI deal (notified_deals) sur la meme cle exacte ne doit jamais
+        # influencer should_notify_google_signal — tables totalement independantes.
+        obs_id = insert_observation(conn, _obs())
+        _notify(conn, obs_id, notified_at="2026-08-15T00:00:00+00:00", price=3200.0)
+
+        decision = should_notify_google_signal(
+            conn, origin="OSL", destination="NRT", departure_date="2027-01-12", return_date="2027-01-19",
+            current_price=3200.0, now=datetime(2026, 8, 16, tzinfo=timezone.utc),
+            further_drop_threshold=0.10, reappear_gap_days=14,
+        )
+        assert decision.should_notify is True
+        assert decision.reason == "first_notification"
+
+    def test_a_google_signal_does_not_suppress_a_real_deal_notification(self, conn):
+        # Symetrique : un signal Google envoye hier ne doit jamais supprimer un vrai deal
+        # statistique qui vient de se confirmer sur la meme cle exacte aujourd'hui.
+        obs_id = insert_observation(conn, _obs())
+        _notify_google_signal(conn, obs_id, notified_at="2026-08-15T00:00:00+00:00", price=3200.0)
+
+        decision = should_notify(
+            conn, origin="OSL", destination="NRT", departure_date="2027-01-12", return_date="2027-01-19",
+            current_price=3200.0, now=datetime(2026, 8, 16, tzinfo=timezone.utc),
+            further_drop_threshold=0.10, reappear_gap_days=14,
+        )
+        assert decision.should_notify is True
+        assert decision.reason == "first_notification"
