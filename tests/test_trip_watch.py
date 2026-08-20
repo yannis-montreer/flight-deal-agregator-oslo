@@ -126,6 +126,8 @@ class _FakeConfig:
         self.departure_tolerance_days = 2
         self.duration_center_days = 35
         self.duration_tolerance_days = 5
+        self.required_stops = 1
+        self.travel_class = 2
         self.api_key = "test-key"
         self.telegram_bot_token = "test-token"
         self.telegram_chat_id = "12345"
@@ -548,3 +550,100 @@ class TestRunDailyCheck:
         assert "Voir sur Google Flights" not in sent_messages[0]  # confirme l'absence du lien Google
         assert "Voir sur Skyscanner :" in sent_messages[0]
         assert "https://www.skyscanner.net/transport/flights/osl/scl/" in sent_messages[0]
+
+    def test_only_matching_stop_count_considered_cheapest_wins(self, tmp_path, monkeypatch):
+        """Demande d'une amie : exactement 1 escale, ni vol direct ni 2+. Un vol direct moins
+        cher et un vol a 2 escales moins cher doivent tous les deux etre ecartes."""
+        db_path = tmp_path / "trip_watch.db"
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, json={
+                "best_flights": [
+                    {"price": 5000, "flights": [{"airline": "X"}]},  # 0 escale (direct) -> exclu
+                ],
+                "other_flights": [
+                    {"price": 9000, "flights": [{"airline": "Y"}, {"airline": "Y"}]},  # 1 escale, + cher
+                    {"price": 7000, "flights": [{"airline": "Z"}, {"airline": "Z"}]},  # 1 escale, - cher -> gagne
+                    {"price": 6000, "flights": [{"airline": "W"}, {"airline": "W"}, {"airline": "W"}]},  # 2 escales -> exclu
+                ],
+                "price_insights": {"price_level": "typical"},
+            })
+
+        class _ClientAdapter:
+            def __init__(self, api_key):
+                self._client = httpx.Client(transport=httpx.MockTransport(handler))
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                return False
+
+            def search(self, params):
+                return self._client.get("https://serpapi.com/search.json", params=params).json()
+
+        monkeypatch.setattr("trip_watch.tracker.SerpApiClient", _ClientAdapter)
+        sent_messages = []
+        monkeypatch.setattr("trip_watch.tracker.send_message", lambda token, chat_id, text: sent_messages.append(text))
+
+        run_daily_check(_FakeConfig(), db_path)
+
+        assert "7 000 NOK" in sent_messages[0]
+        assert "5 000" not in sent_messages[0]
+        assert "6 000" not in sent_messages[0]
+
+    def test_travel_class_param_sent_to_every_serpapi_request(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "trip_watch.db"
+        captured_params = []
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            captured_params.append(dict(request.url.params))
+            return httpx.Response(200, json=_flight_response(8000))
+
+        class _ClientAdapter:
+            def __init__(self, api_key):
+                self._client = httpx.Client(transport=httpx.MockTransport(handler))
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                return False
+
+            def search(self, params):
+                return self._client.get("https://serpapi.com/search.json", params=params).json()
+
+        monkeypatch.setattr("trip_watch.tracker.SerpApiClient", _ClientAdapter)
+        monkeypatch.setattr("trip_watch.tracker.send_message", lambda token, chat_id, text: None)
+
+        run_daily_check(_FakeConfig(), db_path)
+
+        assert len(captured_params) == 5  # les 5 dates de depart
+        assert all(p.get("travel_class") == "2" for p in captured_params)  # Premium Economy (_FakeConfig)
+
+    def test_digest_includes_travel_class_label(self, tmp_path, monkeypatch):
+        db_path = tmp_path / "trip_watch.db"
+
+        def handler(request: httpx.Request) -> httpx.Response:
+            return httpx.Response(200, json=_flight_response(8000))
+
+        class _ClientAdapter:
+            def __init__(self, api_key):
+                self._client = httpx.Client(transport=httpx.MockTransport(handler))
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *exc):
+                return False
+
+            def search(self, params):
+                return self._client.get("https://serpapi.com/search.json", params=params).json()
+
+        monkeypatch.setattr("trip_watch.tracker.SerpApiClient", _ClientAdapter)
+        sent_messages = []
+        monkeypatch.setattr("trip_watch.tracker.send_message", lambda token, chat_id, text: sent_messages.append(text))
+
+        run_daily_check(_FakeConfig(), db_path)
+
+        assert "Premium Economy" in sent_messages[0]

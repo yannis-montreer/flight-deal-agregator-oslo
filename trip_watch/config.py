@@ -32,6 +32,8 @@ class TripWatchConfig:
     departure_tolerance_days: int
     duration_center_days: int
     duration_tolerance_days: int
+    required_stops: int   # nombre d'escales EXACT exige (demande d'une amie : ni direct ni 2+)
+    travel_class: int     # SerpApi: 1=Economy 2=Premium Economy 3=Affaires 4=Premiere
     api_key: str
     telegram_bot_token: str
     telegram_chat_id: str
@@ -67,6 +69,15 @@ def load_config(path: "Path | str | None" = None) -> TripWatchConfig:
             f"timezone doit etre un nom de fuseau IANA valide (ex: 'Europe/Oslo', 'UTC'), recu: {timezone!r}"
         ) from exc
 
+    filters = raw.get("filters", {})
+    required_stops = filters.get("required_stops", 1)
+    travel_class = filters.get("travel_class", 2)
+
+    if required_stops < 0:
+        raise ConfigError(f"filters.required_stops doit etre >= 0, recu: {required_stops}")
+    if travel_class not in (1, 2, 3, 4):
+        raise ConfigError(f"filters.travel_class doit etre 1/2/3/4 (Economy/Premium/Affaires/Premiere), recu: {travel_class}")
+
     try:
         return TripWatchConfig(
             origin=raw["origin"],
@@ -79,6 +90,8 @@ def load_config(path: "Path | str | None" = None) -> TripWatchConfig:
             departure_tolerance_days=raw["departure"]["tolerance_days"],
             duration_center_days=raw["duration"]["center_days"],
             duration_tolerance_days=raw["duration"]["tolerance_days"],
+            required_stops=required_stops,
+            travel_class=travel_class,
             api_key=api_key,
             telegram_bot_token=bot_token,
             telegram_chat_id=chat_id,

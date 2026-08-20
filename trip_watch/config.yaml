@@ -21,3 +21,13 @@ duration:
   center_days: 35
   tolerance_days: 5      # 30 a 40 jours ; UNE seule valeur testee par jour, en rotation
                           # (voir tracker.py) pour tenir le cout sous le quota gratuit
+
+# Demande de l'amie proprietaire du compte SerpApi : pas de vol en classe Economy, et pas
+# plus d'une escale. travel_class est un selecteur EXACT cote SerpApi (verifie en direct :
+# demander Premium Economy ne renvoie jamais de tarifs Affaires/Premiere, et inversement) —
+# donc pas de "Economy+ ou mieux" en un seul appel. Fixe a Premium Economy (le moins cher des
+# 3 classes acceptables) plutot que de tester les 3 en rotation, pour ne pas alourdir le cout
+# (3 classes x 5 dates = ~450 requetes/mois, au-dessus du forfait gratuit 250/mois de l'amie).
+filters:
+  required_stops: 1       # escales EXACTES exigees (filtre cote client, gratuit)
+  travel_class: 2          # 1=Economy 2=Premium Economy 3=Affaires 4=Premiere

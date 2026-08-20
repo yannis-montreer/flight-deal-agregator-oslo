@@ -52,7 +52,8 @@ def today_duration(center_days: int, tolerance_days: int, today: date) -> int:
 
 
 def _search_one(
-    client: SerpApiClient, *, origin: str, destination: str, outbound_date: date, return_date: date, currency: str
+    client: SerpApiClient, *, origin: str, destination: str, outbound_date: date, return_date: date, currency: str,
+    required_stops: int, travel_class: int,
 ) -> DailyResult:
     params = {
         "engine": "google_flights",
@@ -62,6 +63,7 @@ def _search_one(
         "return_date": return_date.isoformat(),
         "type": "1",  # round trip selon la doc SerpApi au moment de l'ecriture
         "currency": currency,
+        "travel_class": travel_class,
     }
 
     def _error(message: str, price_level: Optional[str] = None, search_url: Optional[str] = None) -> DailyResult:
@@ -81,13 +83,24 @@ def _search_one(
     # equivalent disponible : cliquer dessus rouvre les memes resultats en direct.
     search_url = (data.get("search_metadata") or {}).get("google_flights_url")
     insights = data.get("price_insights") or {}
-    candidates = data.get("best_flights") or data.get("other_flights") or []
+
+    # SerpApi n'a pas de mode "exactement N escales" (seulement "N escales ou moins"), donc
+    # filtre cote client sur le nombre EXACT d'escales — gratuit, aucun appel supplementaire.
+    # On combine best_flights + other_flights (pas seulement le "best" subjectif de Google)
+    # pour trouver le vrai moins cher parmi les vols qui correspondent au critere de l'amie.
+    all_candidates = (data.get("best_flights") or []) + (data.get("other_flights") or [])
+    candidates = [
+        c for c in all_candidates
+        if max(len(c.get("flights", [])) - 1, 0) == required_stops
+        and isinstance(c.get("price"), (int, float)) and not isinstance(c.get("price"), bool)
+    ]
     if not candidates:
         return _error(
-            data.get("error") or "aucun vol trouve", price_level=insights.get("price_level"), search_url=search_url
+            data.get("error") or f"aucun vol a {required_stops} escale(s) trouve",
+            price_level=insights.get("price_level"), search_url=search_url,
         )
 
-    best = candidates[0]
+    best = min(candidates, key=lambda c: c["price"])
     legs = best.get("flights", [])
     airlines = ", ".join(sorted({leg.get("airline", "?") for leg in legs})) if legs else None
 
@@ -146,6 +159,7 @@ def run_daily_check(config: TripWatchConfig, db_path: "Path | str") -> None:
                 result = _search_one(
                     client, origin=config.origin, destination=config.destination,
                     outbound_date=dep, return_date=ret, currency=config.currency,
+                    required_stops=config.required_stops, travel_class=config.travel_class,
                 )
 
                 obs_id = insert_observation(
@@ -196,6 +210,9 @@ def _format_price(price: float) -> str:
     return f"{round(price):,}".replace(",", " ")
 
 
+_TRAVEL_CLASS_LABELS = {1: "Economy", 2: "Premium Economy", 3: "Affaires", 4: "Premiere"}
+
+
 def _skyscanner_search_url(config: TripWatchConfig, departure_date: str, return_date: str) -> str:
     """Construit un lien de recherche Skyscanner a partir de donnees qu'on connait deja
     (origine/destination/dates) — pas de scraping, pas d'appel API supplementaire, juste un
@@ -221,10 +238,14 @@ def _format_daily_digest(
         f"Meilleur prix du jour : {_format_date_fr(result.departure_date)} → {_format_date_fr(result.return_date)}",
         f"{_format_price(result.price)} {result.currency}",
     ]
+    lines.append(_TRAVEL_CLASS_LABELS.get(config.travel_class, f"classe {config.travel_class}"))
     if result.airline:
         lines.append(result.airline)
     if result.stops is not None:
-        lines.append("Vol direct" if result.stops == 0 else f"{result.stops} escale(s)")
+        if result.stops == 0:
+            lines.append("Vol direct")
+        else:
+            lines.append(f"{result.stops} escale" if result.stops == 1 else f"{result.stops} escales")
     if result.price_level:
         eval_line = f"Evaluation Google : prix {result.price_level}"
         if result.typical_avg_price is not None:
