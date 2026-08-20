@@ -17,7 +17,7 @@ machine. Deux services distincts, une seule image :
 | Service | Rôle | Périmètre actuel |
 |---|---|---|
 | `flightdeals` | Détection proactive de deals, produit principal | OSL → Asie du Sud-Est, novembre, séjours 6-14 nuits |
-| `trip-watch-santiago` | Suivi ponctuel d'un trajet précis (favor) | OSL → Santiago, 13-17 janvier 2027, séjour 30-40j, 1 escale exacte, Premium Economy |
+| `trip-watch-santiago` | Suivi ponctuel d'un trajet précis (favor) | OSL → Santiago, 12-18 janvier 2027, séjour 30-40j, 1 escale exacte, Premium Economy |
 
 ## Principe (flightdeals)
 

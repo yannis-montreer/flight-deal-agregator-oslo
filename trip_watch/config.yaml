@@ -15,7 +15,9 @@ timezone: "Europe/Oslo"
 
 departure:
   center: "2027-01-15"
-  tolerance_days: 2      # teste les 5 dates 13-17 janvier 2027, CHAQUE jour
+  tolerance_days: 3      # teste les 7 dates 12-18 janvier 2027, CHAQUE jour (~210 requetes/mois
+                          # avec 1 seule classe/duree par jour ; marge gardee sous le forfait
+                          # gratuit 250/mois de l'amie)
 
 duration:
   center_days: 35
@@ -27,7 +29,8 @@ duration:
 # demander Premium Economy ne renvoie jamais de tarifs Affaires/Premiere, et inversement) —
 # donc pas de "Economy+ ou mieux" en un seul appel. Fixe a Premium Economy (le moins cher des
 # 3 classes acceptables) plutot que de tester les 3 en rotation, pour ne pas alourdir le cout
-# (3 classes x 5 dates = ~450 requetes/mois, au-dessus du forfait gratuit 250/mois de l'amie).
+# (3 classes x 7 dates = ~630 requetes/mois, tres au-dessus du forfait gratuit 250/mois de
+# l'amie).
 filters:
   required_stops: 1       # escales EXACTES exigees (filtre cote client, gratuit)
   travel_class: 2          # 1=Economy 2=Premium Economy 3=Affaires 4=Premiere
