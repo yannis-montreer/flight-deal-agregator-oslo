@@ -90,7 +90,22 @@ class TestDepartureDates:
 class TestSkyscannerSearchUrl:
     def test_builds_expected_url_shape(self):
         url = _skyscanner_search_url(_FakeConfig(), "2027-01-15", "2027-02-19")
-        assert url == "https://www.skyscanner.net/transport/flights/osl/scl/270115/270219/?currency=NOK"
+        assert url == (
+            "https://www.skyscanner.net/transport/flights/osl/scl/270115/270219/"
+            "?currency=NOK&cabinclass=premiumeconomy"
+        )
+
+    def test_cabin_class_follows_config_travel_class(self):
+        config = _FakeConfig()
+        config.travel_class = 3  # Affaires
+        url = _skyscanner_search_url(config, "2027-01-15", "2027-02-19")
+        assert "cabinclass=business" in url
+
+    def test_unknown_travel_class_defaults_to_economy(self):
+        config = _FakeConfig()
+        config.travel_class = 99  # valeur inattendue, defensif
+        url = _skyscanner_search_url(config, "2027-01-15", "2027-02-19")
+        assert "cabinclass=economy" in url
 
 
 class TestTodayDuration:

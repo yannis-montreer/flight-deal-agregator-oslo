@@ -72,7 +72,7 @@ de durée de séjour sur plusieurs jours) — voir [trip_watch/tracker.py](trip_
 pytest
 ```
 
-198+ tests (voir `tests/`), aucun appel réseau réel (SerpApi et Telegram mockés partout sauf
+200+ tests (voir `tests/`), aucun appel réseau réel (SerpApi et Telegram mockés partout sauf
 dans `spike/` et `scripts/`, volontairement autonomes).
 
 ## Docker

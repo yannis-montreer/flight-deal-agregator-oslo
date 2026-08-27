@@ -212,20 +212,28 @@ def _format_price(price: float) -> str:
 
 _TRAVEL_CLASS_LABELS = {1: "Economy", 2: "Premium Economy", 3: "Affaires", 4: "Premiere"}
 
+# Mapping vers le parametre cabinclass de skyscanner.net (minuscules, sans espace) — confirme
+# via 2 recherches web independantes (doc partenaire Skyscanner + articles techniques tiers),
+# PAS verifie en direct sur le site (bloque par leur mur anti-bot des la 1ere requete, meme
+# en navigation "normale" depuis la page d'accueil — pas de tentative de contournement). Sans
+# ce parametre, skyscanner.net affiche Economy par defaut, quelle que soit la recherche.
+_SKYSCANNER_CABIN_CLASS = {1: "economy", 2: "premiumeconomy", 3: "business", 4: "first"}
+
 
 def _skyscanner_search_url(config: TripWatchConfig, departure_date: str, return_date: str) -> str:
     """Construit un lien de recherche Skyscanner a partir de donnees qu'on connait deja
-    (origine/destination/dates) — pas de scraping, pas d'appel API supplementaire, juste un
-    lien cliquable ouvert manuellement par l'utilisateur dans son navigateur (contrairement au
-    scraper Skyscanner ecarte plus tot, il n'y a ici aucune extraction automatisee de donnees
+    (origine/destination/dates/classe) — pas de scraping, pas d'appel API supplementaire, juste
+    un lien cliquable ouvert manuellement par l'utilisateur dans son navigateur (contrairement
+    au scraper Skyscanner ecarte plus tot, il n'y a ici aucune extraction automatisee de donnees
     depuis leur site). Schema d'URL public de skyscanner.net, pas une API contractuelle : peut
     changer sans preavis, impact limite a un lien casse si ca arrive."""
     dep = date.fromisoformat(departure_date).strftime("%y%m%d")
     ret = date.fromisoformat(return_date).strftime("%y%m%d")
+    cabin_class = _SKYSCANNER_CABIN_CLASS.get(config.travel_class, "economy")
     return (
         f"https://www.skyscanner.net/transport/flights/"
         f"{config.origin.lower()}/{config.destination.lower()}/{dep}/{ret}/"
-        f"?currency={config.currency}"
+        f"?currency={config.currency}&cabinclass={cabin_class}"
     )
 
 
