@@ -14,8 +14,8 @@
       <datalist id="regions">{% for r in regions %}<option value="{{ r.name }}">{{ r.kind }}</option>{% endfor %}</datalist>
     </div>
     <div>
-      <label for="month">Mois de voyage
-        <span class="hint">Google ne prend qu'un mois : c'est le prochain à venir</span></label>
+      <label for="month">Mois de départ
+        <span class="hint">Le retour peut tomber le mois suivant ; Google ne prend qu'un mois, le prochain à venir</span></label>
       <select id="month" name="month">
         <option value="" {% if v.month == "" %}selected{% endif %}>6 prochains mois</option>
         {% for value, label in month_options %}<option value="{{ value }}" {% if v.month == value|string %}selected{% endif %}>{{ label }}</option>{% endfor %}

@@ -75,7 +75,11 @@ def test_forms_render(env):
 def test_unchanged_save_writes_nothing(env):
     client, fd_path, watches_dir = env
     before = fd_path.read_bytes()
-    response = client.post("/flightdeals", data=_fd_form(), follow_redirects=False)
+    # Formulaire construit depuis le fichier tel qu'il est (config/config.yaml est edite en
+    # production via l'interface : ses valeurs ne sont pas figees).
+    from webui.app import flightdeals_form_values
+    current = flightdeals_form_values(load_fd(fd_path, require_secrets=False))
+    response = client.post("/flightdeals", data=current, follow_redirects=False)
     assert response.status_code == 303
     assert fd_path.read_bytes() == before
     assert _history(fd_path.parent) == []

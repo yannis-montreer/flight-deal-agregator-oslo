@@ -15,10 +15,11 @@
   {% else %}
   <dl>
     <dt>Destination</dt><dd>{{ region_label(fd.serpapi.arrival_area_id) }}</dd>
-    <dt>Mois</dt><dd>{{ month_label(fd.serpapi.month) }}</dd>
+    <dt>Départ en</dt><dd>{{ month_label(fd.serpapi.month) }}</dd>
     <dt>Séjour</dt><dd>{{ fd.deal.min_trip_length_nights }} à {{ fd.deal.max_trip_length_nights }} nuits</dd>
     <dt>Baisse minimale</dt><dd>{{ (fd.deal.minimum_discount * 100) | round | int }} %</dd>
     <dt>Run</dt><dd>{{ fd.collection.schedule }} ({{ fd.collection.timezone }})</dd>
+    <dt>Clé SerpApi</dt><dd><code>{{ fd_cost.key_env }}</code></dd>
     <dt>Coût</dt><dd>{{ fd_cost.per_month }} recherches/mois max <span class="muted">— {{ fd_cost.detail }}</span></dd>
   </dl>
   {% for w in fd_warnings %}<p class="msg warn">{{ w }}</p>{% endfor %}
