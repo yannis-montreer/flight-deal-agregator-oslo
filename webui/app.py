@@ -40,6 +40,23 @@ REGION_ID_BY_NAME = {r["name"].casefold(): r["id"] for r in REGIONS}
 VERIFIED_AREA_IDS = {"/m/073q1"}  # verifie par un vrai appel SerpApi (voir config/config.yaml)
 RAW_ID_RE = re.compile(r"^/[mg]/[0-9a-z_]+$")
 
+# Aeroports a vols reguliers [code, ville, nom, pays] (voir build_airports.py, source OurAirports).
+AIRPORTS: list[list[str]] = json.loads((Path(__file__).parent / "airports.json").read_text(encoding="utf-8"))
+AIRPORT_BY_CODE = {a[0]: a for a in AIRPORTS}
+
+
+def airport_label(code: str) -> str:
+    airport = AIRPORT_BY_CODE.get(code)
+    if not airport:
+        return code
+    _, city, name, country = airport
+    return f"{name} — {city}, {country}" if city else f"{name} — {country}"
+
+
+def airport_city(code: str) -> str:
+    airport = AIRPORT_BY_CODE.get(code)
+    return (airport[1] or airport[2]) if airport else ""
+
 
 def region_label(area_id: Optional[str]) -> str:
     if not area_id:
@@ -111,7 +128,10 @@ def _text(form: dict, name: str, label: str) -> str:
 def _iata(form: dict, name: str, label: str) -> str:
     value = _text(form, name, label).upper()
     if not re.fullmatch(r"[A-Z]{3}", value):
-        raise FormError(f"{label} : code IATA de 3 lettres attendu (ex : OSL).")
+        raise FormError(f"{label} : tape le nom de la ville et choisis l'aéroport dans la liste (code de 3 lettres, ex : OSL).")
+    if value not in AIRPORT_BY_CODE:
+        raise FormError(f"{label} : le code « {value} » ne correspond à aucun aéroport à vols réguliers. "
+                        "Tape le nom de la ville et choisis dans la liste.")
     return value
 
 
@@ -197,6 +217,7 @@ def create_app(flightdeals_path: Path, watches_dir: Path, allowed_hosts: Optiona
             "fd_warnings": flightdeals_warnings(fd_config) if fd_config else [],
             "watches": watches, "budgets": budget_rows(costs), "saved": saved,
             "month_label": month_label, "region_label": region_label, "classes": TRAVEL_CLASSES,
+            "airport_city": airport_city,
         })
 
     @app.get("/flightdeals", response_class=HTMLResponse)
@@ -273,6 +294,7 @@ def create_app(flightdeals_path: Path, watches_dir: Path, allowed_hosts: Optiona
         return TEMPLATES.TemplateResponse(request, "watch.html", {
             "watch_id": watch_id, "v": values, "error": error, "classes": TRAVEL_CLASSES,
             "quota": cost_mod.quota_for(values.get("api_key_env", "")),
+            "airports": AIRPORTS, "airport_label": airport_label,
         }, status_code=status_code)
 
     def _page_error(request, message, status_code=500):

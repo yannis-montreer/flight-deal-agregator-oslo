@@ -167,7 +167,8 @@ def test_shared_key_is_counted_once_per_watch(env):
 @pytest.mark.parametrize(
     "overrides,message",
     [
-        ({"origin": "OS"}, "IATA"),
+        ({"origin": "OS"}, "3 lettres"),
+        ({"destination": "LYO"}, "aucun aéroport"),
         ({"departure_center": "15/01/2027"}, "AAAA-MM-JJ"),
         ({"duration_center_days": "3", "duration_tolerance_days": "5"}, "center_days"),
         ({"schedule": "25:00"}, "schedule"),
@@ -276,3 +277,29 @@ def test_month_select_shows_years(env):
     from datetime import date
     year = date.today().year
     assert f"{year}<" in page or f"{year + 1}<" in page
+
+
+# ---------- autocompletion des aeroports ----------
+
+def test_airport_codes_validated_against_list(env):
+    client, _, watches_dir = env
+    response = client.post("/watches/santiago", data=_watch_form(destination="lys"), follow_redirects=False)
+    assert response.status_code == 303
+    assert "destination: LYS" in (watches_dir / "santiago.yaml").read_text(encoding="utf-8")
+    assert "LYS (Colombier-Saugnieu" in client.get("/").text
+
+
+def test_watch_form_offers_airport_list(env):
+    client, _, _ = env
+    page = client.get("/watches/santiago").text
+    assert 'list="airports"' in page
+    assert '<option value="LYS">Lyon Saint-Exupéry Airport' in page
+    assert "Oslo-Gardermoen International Airport" in page  # libelle sous le champ Depart
+
+
+def test_airports_file_is_consistent():
+    from webui.app import AIRPORTS
+    codes = [a[0] for a in AIRPORTS]
+    assert len(codes) == len(set(codes)) > 3000
+    assert {"OSL", "SCL", "LYS", "CDG", "BKK", "LIM", "LPB"} <= set(codes)
+    assert all(len(a) == 4 and len(a[0]) == 3 for a in AIRPORTS)
