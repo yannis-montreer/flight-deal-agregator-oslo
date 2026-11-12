@@ -23,6 +23,7 @@ from trip_watch.config import load_config as load_trip_watch_config
 from trip_watch.tracker import departure_dates
 
 from webui import costs as cost_mod
+from webui.currencies import CURRENCIES
 from webui.store import load_document, save_document, set_list, set_value
 
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
@@ -294,7 +295,7 @@ def create_app(flightdeals_path: Path, watches_dir: Path, allowed_hosts: Optiona
         return TEMPLATES.TemplateResponse(request, "watch.html", {
             "watch_id": watch_id, "v": values, "error": error, "classes": TRAVEL_CLASSES,
             "quota": cost_mod.quota_for(values.get("api_key_env", "")),
-            "airports": AIRPORTS, "airport_label": airport_label,
+            "airports": AIRPORTS, "airport_label": airport_label, "currencies": CURRENCIES,
         }, status_code=status_code)
 
     def _page_error(request, message, status_code=500):
@@ -378,7 +379,10 @@ def apply_watch_form(doc, form: dict) -> None:
     set_value(doc, "destination_name", _text(form, "destination_name", "Nom de la veille"))
     set_value(doc, "origin", _iata(form, "origin", "Départ"))
     set_value(doc, "destination", _iata(form, "destination", "Arrivée"))
-    set_value(doc, "currency", _text(form, "currency", "Devise").upper())
+    currency = _text(form, "currency", "Devise").upper()
+    if currency not in CURRENCIES:
+        raise FormError(f"Devise : « {currency} » n'est pas dans la liste. Tape le nom (ex : « euro ») et choisis.")
+    set_value(doc, "currency", currency)
     set_value(doc, "schedule", _text(form, "schedule", "Heure du run"), quoted=True)
     set_value(doc["departure"], "center", center_raw, quoted=True)
     set_value(doc["departure"], "tolerance_days", _int(form, "departure_tolerance_days", "Tolérance départ (jours)", 0, 30))

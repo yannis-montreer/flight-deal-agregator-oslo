@@ -303,3 +303,21 @@ def test_airports_file_is_consistent():
     assert len(codes) == len(set(codes)) > 3000
     assert {"OSL", "SCL", "LYS", "CDG", "BKK", "LIM", "LPB"} <= set(codes)
     assert all(len(a) == 4 and len(a[0]) == 3 for a in AIRPORTS)
+
+# ---------- devise ----------
+
+def test_currency_from_list_accepted_and_unknown_refused(env):
+    client, _, watches_dir = env
+    path = watches_dir / "santiago.yaml"
+    assert client.post("/watches/santiago", data=_watch_form(currency="eur"), follow_redirects=False).status_code == 303
+    assert "currency: EUR" in path.read_text(encoding="utf-8")
+    before = path.read_bytes()
+    response = client.post("/watches/santiago", data=_watch_form(currency="NOR"))
+    assert response.status_code == 400 and "pas dans la liste" in response.text
+    assert path.read_bytes() == before
+
+
+def test_watch_form_offers_currency_list(env):
+    client, _, _ = env
+    page = client.get("/watches/santiago").text
+    assert 'list="currencies"' in page and '<option value="NOK">Couronne norvégienne' in page

@@ -54,8 +54,11 @@
       </select>
     </div>
     <div>
-      <label for="currency">Devise</label>
-      <input type="text" id="currency" name="currency" maxlength="3" value="{{ v.currency }}">
+      <label for="currency">Devise <span class="hint">efface, tape le nom (ex : « euro ») et choisis</span></label>
+      <input type="text" id="currency" name="currency" list="currencies" autocomplete="off" value="{{ v.currency }}">
+      <span class="hint">{{ currencies.get(v.currency|upper, "") }} — à ne pas changer sur une veille en cours :
+        l'historique des prix (« nouveau minimum ») ne tient pas compte de la devise.</span>
+      <datalist id="currencies">{% for code, name in currencies.items() %}<option value="{{ code }}">{{ name }}</option>{% endfor %}</datalist>
     </div>
     <div>
       <label for="schedule">Heure du run <span class="hint">heure d'Oslo</span></label>
