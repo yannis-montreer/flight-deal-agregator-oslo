@@ -20,6 +20,10 @@ logger = logging.getLogger(__name__)
 
 KEY_NAME_RE = re.compile(r"^[A-Z0-9_]*SERPAPI_KEY[A-Z0-9_]*$")
 REGISTRY_FILENAME = "keys.json"
+_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+# Republie au moins toutes les heures : flightdeals (autre service) consomme la cle
+# SERPAPI_KEY a 10:30 sans prevenir trip-watch ; account.json etant gratuit, on rafraichit.
+REFRESH_SECONDS = 3600
 
 
 def available_key_names(environ: Mapping[str, str]) -> list[str]:
@@ -33,11 +37,18 @@ def _as_int(value: Any) -> Optional[int]:
 def build_registry(environ: Mapping[str, str], fetch_account: Callable[[str], dict]) -> dict:
     keys = []
     for name in available_key_names(environ):
-        entry: dict[str, Any] = {"name": name, "searches_per_month": None, "searches_left": None, "error": None}
+        entry: dict[str, Any] = {
+            "name": name, "searches_per_month": None, "searches_left": None,
+            "used_this_period": None, "renewal_date": None, "error": None,
+        }
         try:
             account = fetch_account(environ[name].strip())
             entry["searches_per_month"] = _as_int(account.get("searches_per_month"))
             entry["searches_left"] = _as_int(account.get("total_searches_left"))
+            entry["used_this_period"] = _as_int(account.get("this_month_usage"))
+            renewal = account.get("plan_renewal_date")
+            # Seulement une date AAAA-MM-JJ (jamais un texte libre venu de l'API).
+            entry["renewal_date"] = renewal if isinstance(renewal, str) and _DATE_RE.match(renewal) else None
         except Exception as exc:  # noqa: BLE001 - un compte injoignable ne doit rien bloquer
             entry["error"] = type(exc).__name__  # jamais str(exc) : peut contenir la cle
         keys.append(entry)
@@ -52,13 +63,14 @@ def write_registry(status_dir: Path, registry: dict) -> None:
     os.replace(tmp, target)
 
 
-def publish(status_dir: Optional[Path], fetch_account: Callable[[str], dict]) -> None:
-    """Ne leve jamais : le registre n'est qu'une aide a l'affichage."""
+def publish(status_dir: Optional[Path], fetch_account: Callable[[str], dict], *, quiet: bool = False) -> None:
+    """Ne leve jamais : le registre n'est qu'une aide a l'affichage. `quiet` : rafraichissement
+    periodique, sans ligne de log (evite 24 lignes par jour)."""
     if status_dir is None:
         return
     try:
         registry = build_registry(os.environ, fetch_account)
         write_registry(status_dir, registry)
-        logger.info("Registre des cles publie : %s", ", ".join(k["name"] for k in registry["keys"]) or "aucune")
+        (logger.debug if quiet else logger.info)("Registre des cles publie : %s", ", ".join(k["name"] for k in registry["keys"]) or "aucune")
     except Exception:  # noqa: BLE001
         logger.warning("Impossible de publier le registre des cles (ignore)")

@@ -172,3 +172,13 @@ def test_historical_min_compares_same_currency_only(tmp_path):
     assert get_historical_min(conn, "SCL", "2027-01-15", "2027-02-19", currency="NOK") == 9000.0
     assert get_historical_min(conn, "SCL", "2027-01-15", "2027-02-19", currency="EUR") == 800.0
     conn.close()
+
+
+def test_registry_keeps_renewal_date_and_usage_only_when_well_formed():
+    registry = keys.build_registry({"SERPAPI_KEY": "s", "SERPAPI_KEY_3": "t"}, lambda k: {
+        "searches_per_month": 250, "total_searches_left": 244, "this_month_usage": 6,
+        "plan_renewal_date": "2026-11-18" if k == "s" else "<script>",
+    })
+    by = {e["name"]: e for e in registry["keys"]}
+    assert by["SERPAPI_KEY"]["renewal_date"] == "2026-11-18" and by["SERPAPI_KEY"]["used_this_period"] == 6
+    assert by["SERPAPI_KEY_3"]["renewal_date"] is None

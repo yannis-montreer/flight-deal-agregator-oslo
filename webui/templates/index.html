@@ -60,13 +60,35 @@
 
 <section class="card">
   <h2>Clés SerpApi</h2>
-  <p class="muted">Réservé = pire cas sur un mois de 31 jours. Quota et « restantes » lus sur le compte SerpApi par le service des alertes{% if registry %} (mis à jour le {{ registry.updated_at[:16].replace("T", " ") }} UTC){% endif %}.</p>
+  <p class="muted">Projection jusqu'à la réinitialisation de chaque clé = déjà consommé (compte SerpApi) + runs restants des alertes actives.
+    Barre foncée : consommé ; claire : prévu.{% if registry %} Compteurs SerpApi lus le {{ registry.updated_at[:16].replace("T", " ") }} UTC (rafraîchis toutes les heures).{% endif %}</p>
   {% for b in budgets %}
-  <div style="margin-top:12px">
-    <strong><code>{{ b.key_env }}</code></strong> : {{ b.total }} / {{ b.quota }} réservées
-    {% if b.left is not none %}<span class="muted">— {{ b.left }} recherches restantes ce mois</span>{% endif %}
-    <div class="bar{% if b.over %} over{% endif %}"><span style="width: {{ b.percent }}%"></span></div>
-    <span class="muted">{% if b.users %}Utilisée par : {{ b.users | join(", ") }}{% else %}Libre{% endif %}</span>
+  {% set p = b.projection %}
+  <div style="margin-top:16px">
+    <strong><code>{{ b.key_env }}</code></strong>
+    {% if p %}
+      : {{ p.projected }} / {{ p.quota }} d'ici la réinitialisation du <strong>{{ p.renewal.strftime("%d/%m") }}</strong>
+      <span class="muted">(dans {{ p.days_left }} j)</span>
+      <div class="bar stacked{% if p.warn %} over{% endif %}">
+        <span class="used" style="width: {{ p.percent(p.used) }}%"></span><span class="planned" style="width: {{ [p.percent(p.projected) - p.percent(p.used), 0] | max }}%"></span>
+      </div>
+      <span class="muted">Déjà consommé : {{ p.used }} — prévu par les alertes : {{ p.planned }}
+        {% if p.planned_by %}({% for label, n in p.planned_by.items() %}{{ label }} {{ n }}{{ ", " if not loop.last }}{% endfor %}){% endif %}
+        — {{ (100 * p.ratio) | round | int }} % du quota</span>
+      {% if p.warn %}
+      <p class="msg {{ 'err' if p.exhaust_on else 'warn' }}">
+        {% if p.exhaust_on %}Quota épuisé vers le {{ p.exhaust_on.strftime("%d/%m") }}, avant la réinitialisation du {{ p.renewal.strftime("%d/%m") }} :
+        les recherches suivantes échoueront.{% else %}Plus de 95 % du quota sera utilisé avant la réinitialisation.{% endif %}
+        Mets une alerte de cette clé en pause (case « Active ») ou réduis sa plage de dates.
+      </p>
+      {% endif %}
+      <span class="muted" style="display:block">Réservé sur un mois complet (pire cas 31 j) : {{ b.total }} / {{ b.quota }}</span>
+    {% else %}
+      : {{ b.total }} / {{ b.quota }} réservées
+      {% if b.left is not none %}<span class="muted">— {{ b.left }} recherches restantes</span>{% endif %}
+      <div class="bar{% if b.over %} over{% endif %}"><span style="width: {{ b.percent }}%"></span></div>
+    {% endif %}
+    <span class="muted" style="display:block">{% if b.users %}Utilisée par : {{ b.users | join(", ") }}{% else %}Libre{% endif %}</span>
     {% if b.missing %}<p class="msg warn">Cette clé n'est pas dans le fichier .env de la NUC : les alertes qui l'utilisent sont ignorées.</p>{% endif %}
     {% if b.error %}<p class="msg warn">Compte SerpApi injoignable pour cette clé ({{ b.error }}) : clé invalide ou réseau.</p>{% endif %}
   </div>

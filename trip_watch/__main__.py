@@ -49,6 +49,7 @@ def main() -> None:
             "" if config.enabled else " (EN PAUSE)",
         )
     keys.publish(status_dir, _fetch_account)
+    last_publish = time.monotonic()
 
     scheduler = WatchScheduler()
     previous_errors: dict[str, str] = {}
@@ -57,8 +58,9 @@ def main() -> None:
         executed, previous_errors = run_cycle(
             scheduler, watch_dir, data_dir, run_daily_check, now, utc_now, previous_errors
         )
-        if executed:
-            keys.publish(status_dir, _fetch_account)
+        if executed or time.monotonic() - last_publish >= keys.REFRESH_SECONDS:
+            keys.publish(status_dir, _fetch_account, quiet=not executed)
+            last_publish = time.monotonic()
         time.sleep(scheduler.seconds_to_sleep(utc_now()))
 
 

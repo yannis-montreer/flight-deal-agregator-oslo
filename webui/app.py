@@ -7,7 +7,7 @@ import os
 import re
 import unicodedata
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Callable, Optional
 from urllib.parse import urlparse
@@ -24,6 +24,7 @@ from trip_watch.config import load_config as load_trip_watch_config
 from trip_watch.tracker import departure_dates
 
 from webui import costs as cost_mod
+from webui import projection as proj_mod
 from webui.currencies import CURRENCIES
 from trip_watch.config import DEFAULT_API_KEY_ENV, ENV_NAME_RE
 from webui.store import archive_document, create_document, load_document, save_document, set_list, set_value
@@ -245,15 +246,41 @@ def create_app(
             result = [c for c in result if c.watch_id != replace_id] + [replacement]
         return result
 
+    def consumers_by_key() -> dict[str, list[proj_mod.Consumer]]:
+        """Qui consomme quelle cle, a quelle heure, combien par run (alertes actives seulement)."""
+        result: dict[str, list[proj_mod.Consumer]] = {}
+        fd_config, _ = load_flightdeals()
+        if fd_config is not None and fd_config.collection.enabled:
+            cost = cost_mod.flightdeals_cost(fd_config)
+            result.setdefault(cost.key_env, []).append(proj_mod.Consumer(
+                cost.label, cost.per_day, fd_config.collection.schedule, fd_config.collection.timezone))
+        for w in load_watches():
+            if w.config and w.config.enabled:
+                result.setdefault(w.config.api_key_env, []).append(proj_mod.Consumer(
+                    w.config.destination_name, w.cost.per_day, w.config.schedule, w.config.timezone))
+        return result
+
+    def projection_for(entry: dict, quota: int, consumers: list) -> Optional[proj_mod.Projection]:
+        used, renewal = entry.get("used_this_period"), entry.get("renewal_date")
+        if not isinstance(used, int) or not isinstance(renewal, str):
+            return None
+        try:
+            renewal_date = date.fromisoformat(renewal)
+        except ValueError:
+            return None
+        return proj_mod.project(used, quota, renewal_date, consumers, datetime.now(timezone.utc))
+
     def budget_rows(costs: list, registry: Optional[dict]) -> list[dict]:
         by_name = {k.get("name"): k for k in (registry or {}).get("keys", [])}
         names = sorted(set(cost_mod.totals_by_key(costs)) | set(by_name))
+        consumers = consumers_by_key()
         rows = []
         for key_env in names:
             total = cost_mod.totals_by_key(costs).get(key_env, 0)
             quota = cost_mod.quota_for(key_env, registry)
             entry = by_name.get(key_env, {})
             rows.append({
+                "projection": projection_for(entry, quota, consumers.get(key_env, [])),
                 "key_env": key_env, "total": total, "quota": quota,
                 "percent": min(100, round(100 * total / quota)) if quota else 100,
                 "users": [c.label for c in costs if c.key_env == key_env and c.per_month > 0],

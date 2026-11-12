@@ -43,6 +43,9 @@
   .bar { height: 8px; background: var(--bar); border-radius: 4px; overflow: hidden; margin: 6px 0 2px; }
   .bar > span { display: block; height: 100%; background: var(--ok); }
   .bar.over > span { background: var(--err-text); }
+  .bar.stacked { display: flex; }
+  .bar.stacked > span.planned { background: var(--ok); opacity: .45; }
+  .bar.stacked.over > span.planned { background: var(--err-text); opacity: .45; }
   .muted { color: var(--muted); font-size: .9rem; }
   code { font-size: .9em; }
   form .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px 18px; }
