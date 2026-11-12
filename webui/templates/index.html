@@ -1,9 +1,10 @@
 {% extends "base.html" %}
 {% block content %}
 <h1>Veilles</h1>
-<p class="sub">Les modifications sont prises en compte au prochain run, sans redémarrage. Une nouvelle heure de run ne s'applique qu'après le run déjà programmé.</p>
+<p class="sub">Les modifications sont prises en compte sans redémarrage : en quelques minutes pour les alertes, au run suivant pour les bons plans.</p>
 
 {% if saved %}<p class="msg ok">Modification enregistrée. L'ancienne version est conservée dans <code>.history/</code>.</p>{% endif %}
+{% if deleted %}<p class="msg ok">Alerte « {{ deleted }} » supprimée (fichier rangé dans <code>watches/.archive/</code>, historique conservé).</p>{% endif %}
 
 <section class="card">
   <div class="card-head">
@@ -26,14 +27,20 @@
   {% endif %}
 </section>
 
+<div class="card-head" style="margin: 24px 0 12px">
+  <h2>Alertes trajet</h2>
+  <a class="btn" href="/watches/new">+ Nouvelle alerte</a>
+</div>
+
 {% for w in watches %}
 <section class="card">
   <div class="card-head">
-    <h2>{{ w.config.destination_name if w.config else w.watch_id }} <span class="muted">({{ w.watch_id }})</span></h2>
+    <h2>{{ w.config.destination_name if w.config else w.watch_id }} <span class="muted">({{ w.watch_id }})</span>
+      {% if w.config and not w.config.enabled %}<span class="badge">en pause</span>{% endif %}</h2>
     {% if w.config %}<a class="btn" href="/watches/{{ w.watch_id }}">Modifier</a>{% endif %}
   </div>
   {% if w.error %}
-    <p class="msg err">Fichier invalide : {{ w.error }}</p>
+    <p class="msg err">Fichier invalide (alerte ignorée par le service) : {{ w.error }}</p>
   {% else %}
   {% set c = w.config %}
   <dl>
@@ -47,16 +54,32 @@
   {% for msg in w.warnings %}<p class="msg warn">{{ msg }}</p>{% endfor %}
   {% endif %}
 </section>
+{% else %}
+<p class="muted">Aucune alerte.</p>
 {% endfor %}
 
 <section class="card">
-  <h2>Quotas SerpApi (pire cas, mois de 31 jours)</h2>
+  <h2>Clés SerpApi</h2>
+  <p class="muted">Réservé = pire cas sur un mois de 31 jours. Quota et « restantes » lus sur le compte SerpApi par le service des alertes{% if registry %} (mis à jour le {{ registry.updated_at[:16].replace("T", " ") }} UTC){% endif %}.</p>
   {% for b in budgets %}
-  <div style="margin-top:10px">
-    <strong><code>{{ b.key_env }}</code></strong> : {{ b.total }} / {{ b.quota }} recherches
+  <div style="margin-top:12px">
+    <strong><code>{{ b.key_env }}</code></strong> : {{ b.total }} / {{ b.quota }} réservées
+    {% if b.left is not none %}<span class="muted">— {{ b.left }} recherches restantes ce mois</span>{% endif %}
     <div class="bar{% if b.over %} over{% endif %}"><span style="width: {{ b.percent }}%"></span></div>
-    <span class="muted">Utilisée par : {{ b.users | join(", ") }}</span>
+    <span class="muted">{% if b.users %}Utilisée par : {{ b.users | join(", ") }}{% else %}Libre{% endif %}</span>
+    {% if b.missing %}<p class="msg warn">Cette clé n'est pas dans le fichier .env de la NUC : les alertes qui l'utilisent sont ignorées.</p>{% endif %}
+    {% if b.error %}<p class="msg warn">Compte SerpApi injoignable pour cette clé ({{ b.error }}) : clé invalide ou réseau.</p>{% endif %}
   </div>
   {% endfor %}
+  <details style="margin-top:16px">
+    <summary>Ajouter une clé SerpApi</summary>
+    <ol class="muted">
+      <li>Sur la NUC, ouvre <code>C:\Users\salon\flight-deal-agregator-oslo\.env</code> avec le Bloc-notes.</li>
+      <li>Ajoute une ligne <code>SERPAPI_KEY_3=ta_clé</code> (le nom doit contenir <code>SERPAPI_KEY</code>), enregistre.</li>
+      <li>Dans PowerShell, dans ce dossier : <code>docker compose up -d</code> (relit .env, ne déclenche aucun run).</li>
+      <li>Recharge cette page : la clé apparaît ici et dans le choix de clé des alertes.</li>
+    </ol>
+    <p class="muted">La valeur de la clé ne passe jamais par cette interface.</p>
+  </details>
 </section>
 {% endblock %}

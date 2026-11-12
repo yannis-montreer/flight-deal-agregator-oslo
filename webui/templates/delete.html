@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Supprimer {{ label }} — Veilles{% endblock %}
+{% block content %}
+<p><a href="/watches/{{ watch_id }}">← Retour</a></p>
+<h1>Supprimer l'alerte « {{ label }} » ?</h1>
+<form method="post" action="/watches/{{ watch_id }}/delete" class="card">
+  <p>L'alerte s'arrête : plus aucune recherche ni message Telegram.</p>
+  <p class="muted">
+    Rien n'est effacé : son fichier est rangé dans <code>watches/.archive/</code>
+    {% if db_file %}et son historique de prix reste dans <code>data/{{ db_file }}</code>{% endif %}.
+    Pour une simple pause, décoche plutôt « Active » dans le formulaire.
+  </p>
+  <div class="actions">
+    <button class="btn danger" type="submit">Supprimer l'alerte</button>
+    <a class="btn secondary" href="/watches/{{ watch_id }}">Annuler</a>
+  </div>
+</form>
+{% endblock %}

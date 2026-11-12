@@ -34,3 +34,7 @@ Thumbs.db
 config/.history/
 watches/.history/
 .*.yaml.tmp
+
+# Registre des cles publie par le service des alertes (local, regenere)
+status/*.json
+watches/.archive/

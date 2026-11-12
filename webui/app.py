@@ -5,8 +5,9 @@ from __future__ import annotations
 import json
 import os
 import re
+import unicodedata
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Any, Callable, Optional
 from urllib.parse import urlparse
@@ -24,7 +25,8 @@ from trip_watch.tracker import departure_dates
 
 from webui import costs as cost_mod
 from webui.currencies import CURRENCIES
-from webui.store import load_document, save_document, set_list, set_value
+from trip_watch.config import DEFAULT_API_KEY_ENV, ENV_NAME_RE
+from webui.store import archive_document, create_document, load_document, save_document, set_list, set_value
 
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 WATCH_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,40}$")
@@ -136,7 +138,37 @@ def _iata(form: dict, name: str, label: str) -> str:
     return value
 
 
-def create_app(flightdeals_path: Path, watches_dir: Path, allowed_hosts: Optional[list[str]] = None) -> FastAPI:
+def slugify(name: str) -> str:
+    ascii_name = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode("ascii")
+    return re.sub(r"[^a-z0-9]+", "-", ascii_name.lower()).strip("-")[:30] or "alerte"
+
+
+def new_watch_text(watch_id: str, form: dict, key_env: str) -> str:
+    """Contenu d'un nouveau fichier d'alerte. Les valeurs ont deja ete controlees par
+    validate_watch_form ; json.dumps produit une chaine YAML entre guillemets valide."""
+    q = json.dumps
+    return (
+        f"# Alerte creee depuis l'interface le {date.today().isoformat()}.\n"
+        f"# Modifiable depuis l'interface (http://127.0.0.1:8765).\n\n"
+        f"api_key_env: {key_env}\n"
+        f"enabled: {'true' if form['enabled'] else 'false'}\n"
+        f"db_file: trip_watch_{watch_id}.db\n\n"
+        f"destination_name: {q(form['destination_name'], ensure_ascii=False)}\n"
+        f"origin: {form['origin']}\n"
+        f"destination: {form['destination']}\n"
+        f"currency: {form['currency']}\n"
+        f"schedule: {q(form['schedule'])}\n"
+        f"timezone: \"Europe/Oslo\"\n\n"
+        f"departure:\n  center: {q(form['departure_center'])}\n  tolerance_days: {form['departure_tolerance_days']}\n\n"
+        f"duration:\n  center_days: {form['duration_center_days']}\n  tolerance_days: {form['duration_tolerance_days']}\n\n"
+        f"filters:\n  required_stops: {form['required_stops']}\n  travel_class: {form['travel_class']}\n"
+    )
+
+
+def create_app(
+    flightdeals_path: Path, watches_dir: Path, allowed_hosts: Optional[list[str]] = None,
+    status_dir: Optional[Path] = None,
+) -> FastAPI:
     allowed_hosts = allowed_hosts or ["127.0.0.1", "localhost"]
     app = FastAPI(title="Veilles", docs_url=None, redoc_url=None, openapi_url=None)
     # Protection contre le DNS rebinding : seule l'adresse locale est acceptee.
@@ -183,6 +215,26 @@ def create_app(flightdeals_path: Path, watches_dir: Path, allowed_hosts: Optiona
         except CONFIG_ERRORS as exc:
             return None, str(exc)
 
+    def read_registry() -> Optional[dict]:
+        """Registre des cles publie par le service des alertes (noms + compteurs, jamais de
+        secret). None s'il n'existe pas encore."""
+        if status_dir is None:
+            return None
+        try:
+            data = json.loads((status_dir / "keys.json").read_text(encoding="utf-8"))
+            return data if isinstance(data, dict) and isinstance(data.get("keys"), list) else None
+        except (OSError, ValueError):
+            return None
+
+    def key_names(registry: Optional[dict]) -> Optional[list[str]]:
+        return sorted(k["name"] for k in registry["keys"] if isinstance(k.get("name"), str)) if registry else None
+
+    def key_choices(registry: Optional[dict], current: str = "") -> list[str]:
+        names = key_names(registry)
+        if names is None:  # registre indisponible : cles deja utilisees + cle par defaut
+            names = sorted({w.config.api_key_env for w in load_watches() if w.config} | {DEFAULT_API_KEY_ENV})
+        return sorted(set(names) | ({current} if current else set()))
+
     def all_costs(replace_id: Optional[str] = None, replacement: Optional[cost_mod.WatchCost] = None) -> list:
         result = []
         fd_config, _ = load_flightdeals()
@@ -193,30 +245,42 @@ def create_app(flightdeals_path: Path, watches_dir: Path, allowed_hosts: Optiona
             result = [c for c in result if c.watch_id != replace_id] + [replacement]
         return result
 
-    def budget_rows(costs: list) -> list[dict]:
+    def budget_rows(costs: list, registry: Optional[dict]) -> list[dict]:
+        by_name = {k.get("name"): k for k in (registry or {}).get("keys", [])}
+        names = sorted(set(cost_mod.totals_by_key(costs)) | set(by_name))
         rows = []
-        for key_env, total in sorted(cost_mod.totals_by_key(costs).items()):
-            quota = cost_mod.quota_for(key_env)
+        for key_env in names:
+            total = cost_mod.totals_by_key(costs).get(key_env, 0)
+            quota = cost_mod.quota_for(key_env, registry)
+            entry = by_name.get(key_env, {})
             rows.append({
                 "key_env": key_env, "total": total, "quota": quota,
                 "percent": min(100, round(100 * total / quota)) if quota else 100,
-                "users": [c.label for c in costs if c.key_env == key_env],
+                "users": [c.label for c in costs if c.key_env == key_env and c.per_month > 0],
                 "over": total > quota,
+                "left": entry.get("searches_left"),
+                "missing": registry is not None and key_env not in by_name,
+                "error": entry.get("error"),
             })
         return rows
+
+    def budget_check(registry, replace_id, replacement):
+        cost_mod.check_budget(all_costs(replace_id, replacement), registry)
 
     # ---------- pages ----------
 
     @app.get("/", response_class=HTMLResponse)
-    def index(request: Request, saved: str = ""):
+    def index(request: Request, saved: str = "", deleted: str = ""):
         fd_config, fd_error = load_flightdeals()
         watches = load_watches()
         costs = all_costs()
+        registry = read_registry()
         return TEMPLATES.TemplateResponse(request, "index.html", {
             "fd": fd_config, "fd_error": fd_error,
             "fd_cost": cost_mod.flightdeals_cost(fd_config) if fd_config else None,
             "fd_warnings": flightdeals_warnings(fd_config) if fd_config else [],
-            "watches": watches, "budgets": budget_rows(costs), "saved": saved,
+            "watches": watches, "budgets": budget_rows(costs, registry), "saved": saved, "deleted": deleted,
+            "registry": registry,
             "month_label": month_label, "region_label": region_label, "classes": TRAVEL_CLASSES,
             "airport_city": airport_city,
         })
@@ -233,53 +297,105 @@ def create_app(flightdeals_path: Path, watches_dir: Path, allowed_hosts: Optiona
         form_data = await request.form()
         form = dict(form_data)
         form["travel_durations"] = form_data.getlist("travel_durations")
+        registry = read_registry()
         try:
             doc = load_document(flightdeals_path)
             apply_flightdeals_form(doc, form)
-
-            def check(cfg):
-                cost_mod.check_budget(all_costs("flightdeals", cost_mod.flightdeals_cost(cfg)))
-
             save_document(
                 flightdeals_path, doc,
-                validate=lambda p: load_flightdeals_config(p, require_secrets=False), check=check,
+                validate=lambda p: load_flightdeals_config(p, require_secrets=False),
+                check=lambda cfg: budget_check(registry, "flightdeals", cost_mod.flightdeals_cost(cfg)),
             )
         except (FormError, cost_mod.BudgetError, *CONFIG_ERRORS) as exc:
             return _render_flightdeals(request, form, str(exc), status_code=400)
         return RedirectResponse("/?saved=flightdeals", status_code=303)
+
+    # /watches/new est declare AVANT /watches/{watch_id} (sinon "new" serait pris pour un nom).
+    @app.get("/watches/new", response_class=HTMLResponse)
+    def watch_new_form(request: Request):
+        registry = read_registry()
+        choices = key_choices(registry)
+        # Cle proposee par defaut : celle qui a le plus de marge ce mois-ci.
+        totals = cost_mod.totals_by_key(all_costs())
+        default_key = max(choices, key=lambda k: cost_mod.quota_for(k, registry) - totals.get(k, 0)) if choices else DEFAULT_API_KEY_ENV
+        return _render_watch(request, None, new_watch_defaults(default_key), None, registry)
+
+    @app.post("/watches/new", response_class=HTMLResponse)
+    async def watch_create(request: Request):
+        form = dict(await request.form())
+        registry = read_registry()
+        try:
+            values = parse_watch_form(form, key_names(registry))
+            base = slugify(values["destination_name"])
+            watch_id, n = base, 2
+            while (watches_dir / f"{watch_id}.yaml").exists() or watch_id == "new":
+                watch_id, n = f"{base}-{n}", n + 1
+            create_document(
+                watches_dir / f"{watch_id}.yaml", new_watch_text(watch_id, values, values["api_key_env"]),
+                validate=lambda p: load_trip_watch_config(p, require_secrets=False),
+                check=lambda cfg: budget_check(registry, watch_id, cost_mod.trip_watch_cost(watch_id, cfg)),
+            )
+        except (FormError, cost_mod.BudgetError, FileExistsError, *CONFIG_ERRORS) as exc:
+            return _render_watch(request, None, form, str(exc), registry, status_code=400)
+        return RedirectResponse(f"/?saved={watch_id}", status_code=303)
 
     @app.get("/watches/{watch_id}", response_class=HTMLResponse)
     def watch_form(request: Request, watch_id: str):
         try:
             path = watch_path(watch_id)
         except FileNotFoundError:
-            return _page_error(request, "Veille introuvable.", status_code=404)
+            return _page_error(request, "Alerte introuvable.", status_code=404)
         try:
             config = load_trip_watch_config(path, require_secrets=False)
         except CONFIG_ERRORS as exc:
             return _page_error(request, f"Le fichier actuel est invalide, à corriger à la main : {exc}")
-        return _render_watch(request, watch_id, watch_form_values(config), None)
+        return _render_watch(request, watch_id, watch_form_values(config), None, read_registry())
 
     @app.post("/watches/{watch_id}", response_class=HTMLResponse)
     async def watch_save(request: Request, watch_id: str):
         try:
             path = watch_path(watch_id)
         except FileNotFoundError:
-            return _page_error(request, "Veille introuvable.", status_code=404)
+            return _page_error(request, "Alerte introuvable.", status_code=404)
         form = dict(await request.form())
+        registry = read_registry()
         try:
             current = load_trip_watch_config(path, require_secrets=False)
-            form["api_key_env"] = current.api_key_env  # non modifiable depuis l'interface
+            names = key_names(registry)
+            if names is not None and current.api_key_env not in names:
+                names = names + [current.api_key_env]  # garder la cle actuelle reste possible
+            values = parse_watch_form(form, names)
             doc = load_document(path)
-            apply_watch_form(doc, form)
-
-            def check(cfg):
-                cost_mod.check_budget(all_costs(watch_id, cost_mod.trip_watch_cost(watch_id, cfg)))
-
-            save_document(path, doc, validate=lambda p: load_trip_watch_config(p, require_secrets=False), check=check)
+            apply_watch_form(doc, values)
+            save_document(
+                path, doc, validate=lambda p: load_trip_watch_config(p, require_secrets=False),
+                check=lambda cfg: budget_check(registry, watch_id, cost_mod.trip_watch_cost(watch_id, cfg)),
+            )
         except (FormError, cost_mod.BudgetError, *CONFIG_ERRORS) as exc:
-            return _render_watch(request, watch_id, form, str(exc), status_code=400)
+            return _render_watch(request, watch_id, form, str(exc), registry, status_code=400)
         return RedirectResponse(f"/?saved={watch_id}", status_code=303)
+
+    @app.get("/watches/{watch_id}/delete", response_class=HTMLResponse)
+    def watch_delete_confirm(request: Request, watch_id: str):
+        try:
+            path = watch_path(watch_id)
+        except FileNotFoundError:
+            return _page_error(request, "Alerte introuvable.", status_code=404)
+        try:
+            config = load_trip_watch_config(path, require_secrets=False)
+            label, db_file = config.destination_name, config.db_file
+        except CONFIG_ERRORS:
+            label, db_file = watch_id, None
+        return TEMPLATES.TemplateResponse(request, "delete.html", {"watch_id": watch_id, "label": label, "db_file": db_file})
+
+    @app.post("/watches/{watch_id}/delete", response_class=HTMLResponse)
+    def watch_delete(request: Request, watch_id: str):
+        try:
+            path = watch_path(watch_id)
+        except FileNotFoundError:
+            return _page_error(request, "Alerte introuvable.", status_code=404)
+        archive_document(path)
+        return RedirectResponse(f"/?deleted={watch_id}", status_code=303)
 
     def _render_flightdeals(request, values, error, status_code=200):
         return TEMPLATES.TemplateResponse(request, "flightdeals.html", {
@@ -291,16 +407,21 @@ def create_app(flightdeals_path: Path, watches_dir: Path, allowed_hosts: Optiona
             "regions": REGIONS,
         }, status_code=status_code)
 
-    def _render_watch(request, watch_id, values, error, status_code=200):
+    def _render_watch(request, watch_id, values, error, registry, status_code=200):
+        current_key = values.get("api_key_env", "")
+        choices = key_choices(registry, current_key)
+        totals = cost_mod.totals_by_key(all_costs())
+        key_options = [
+            {"name": k, "quota": cost_mod.quota_for(k, registry), "used": totals.get(k, 0)} for k in choices
+        ]
         return TEMPLATES.TemplateResponse(request, "watch.html", {
-            "watch_id": watch_id, "v": values, "error": error, "classes": TRAVEL_CLASSES,
-            "quota": cost_mod.quota_for(values.get("api_key_env", "")),
+            "watch_id": watch_id, "is_new": watch_id is None, "v": values, "error": error,
+            "classes": TRAVEL_CLASSES, "key_options": key_options, "registry_ok": registry is not None,
             "airports": AIRPORTS, "airport_label": airport_label, "currencies": CURRENCIES,
         }, status_code=status_code)
 
     def _page_error(request, message, status_code=500):
         return TEMPLATES.TemplateResponse(request, "error.html", {"message": message}, status_code=status_code)
-
     return app
 
 
@@ -355,6 +476,7 @@ def apply_flightdeals_form(doc, form: dict) -> None:
 def watch_form_values(config) -> dict:
     return {
         "api_key_env": config.api_key_env,
+        "enabled": "on" if config.enabled else "",
         "destination_name": config.destination_name,
         "origin": config.origin,
         "destination": config.destination,
@@ -369,28 +491,66 @@ def watch_form_values(config) -> dict:
     }
 
 
-def apply_watch_form(doc, form: dict) -> None:
+def new_watch_defaults(key_env: str, today: Optional[date] = None) -> dict:
+    today = today or date.today()
+    return {
+        "api_key_env": key_env, "enabled": "on", "destination_name": "", "origin": "OSL", "destination": "",
+        "currency": "NOK", "schedule": "10:30", "departure_center": (today + timedelta(days=60)).isoformat(),
+        "departure_tolerance_days": "1", "duration_center_days": "14", "duration_tolerance_days": "2",
+        "required_stops": "1", "travel_class": "1",
+    }
+
+
+def parse_watch_form(form: dict, key_names: Optional[list[str]]) -> dict:
+    """Controle et normalise les champs d'une alerte. `key_names` : cles connues du service
+    des alertes (registre) ; None = registre indisponible, on ne controle que le format."""
     center_raw = _text(form, "departure_center", "Date de départ centrale")
     try:
         date.fromisoformat(center_raw)
     except ValueError as exc:
         raise FormError("Date de départ centrale : format AAAA-MM-JJ attendu.") from exc
-
-    set_value(doc, "destination_name", _text(form, "destination_name", "Nom de la veille"))
-    set_value(doc, "origin", _iata(form, "origin", "Départ"))
-    set_value(doc, "destination", _iata(form, "destination", "Arrivée"))
     currency = _text(form, "currency", "Devise").upper()
     if currency not in CURRENCIES:
         raise FormError(f"Devise : « {currency} » n'est pas dans la liste. Tape le nom (ex : « euro ») et choisis.")
-    set_value(doc, "currency", currency)
-    set_value(doc, "schedule", _text(form, "schedule", "Heure du run"), quoted=True)
-    set_value(doc["departure"], "center", center_raw, quoted=True)
-    set_value(doc["departure"], "tolerance_days", _int(form, "departure_tolerance_days", "Tolérance départ (jours)", 0, 30))
-    set_value(doc["duration"], "center_days", _int(form, "duration_center_days", "Durée du séjour (jours)", 1, 365))
-    set_value(doc["duration"], "tolerance_days", _int(form, "duration_tolerance_days", "Tolérance durée (jours)", 0, 60))
-    set_value(doc["filters"], "required_stops", _int(form, "required_stops", "Escales", 0, 3))
-    set_value(doc["filters"], "travel_class", _int(form, "travel_class", "Classe", 1, 4))
+    key_env = _text(form, "api_key_env", "Clé SerpApi")
+    if not ENV_NAME_RE.match(key_env):
+        raise FormError("Clé SerpApi : nom de variable invalide.")
+    if key_names is not None and key_env not in key_names:
+        raise FormError(f"Clé SerpApi : « {key_env} » n'est pas présente dans le fichier .env de la NUC.")
+    schedule = _text(form, "schedule", "Heure du run")
+    if not re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", schedule):
+        raise FormError("Heure du run : format HH:MM attendu.")
+    return {
+        "api_key_env": key_env,
+        "enabled": bool(form.get("enabled")),
+        "destination_name": _text(form, "destination_name", "Nom de l'alerte"),
+        "origin": _iata(form, "origin", "Départ"),
+        "destination": _iata(form, "destination", "Arrivée"),
+        "currency": currency,
+        "schedule": schedule,
+        "departure_center": center_raw,
+        "departure_tolerance_days": _int(form, "departure_tolerance_days", "Tolérance départ (jours)", 0, 30),
+        "duration_center_days": _int(form, "duration_center_days", "Durée du séjour (jours)", 1, 365),
+        "duration_tolerance_days": _int(form, "duration_tolerance_days", "Tolérance durée (jours)", 0, 60),
+        "required_stops": _int(form, "required_stops", "Escales", 0, 3),
+        "travel_class": _int(form, "travel_class", "Classe", 1, 4),
+    }
 
+
+def apply_watch_form(doc, values: dict) -> None:
+    set_value(doc, "api_key_env", values["api_key_env"])
+    set_value(doc, "enabled", values["enabled"])
+    set_value(doc, "destination_name", values["destination_name"])
+    set_value(doc, "origin", values["origin"])
+    set_value(doc, "destination", values["destination"])
+    set_value(doc, "currency", values["currency"])
+    set_value(doc, "schedule", values["schedule"], quoted=True)
+    set_value(doc["departure"], "center", values["departure_center"], quoted=True)
+    set_value(doc["departure"], "tolerance_days", values["departure_tolerance_days"])
+    set_value(doc["duration"], "center_days", values["duration_center_days"])
+    set_value(doc["duration"], "tolerance_days", values["duration_tolerance_days"])
+    set_value(doc["filters"], "required_stops", values["required_stops"])
+    set_value(doc["filters"], "travel_class", values["travel_class"])
 
 # ---------- avertissements (non bloquants) ----------
 
@@ -428,4 +588,5 @@ def create_app_from_env() -> FastAPI:
     return create_app(
         Path(os.environ.get("WEBUI_FLIGHTDEALS_CONFIG", "config/config.yaml")),
         Path(os.environ.get("WEBUI_WATCHES_DIR", "watches")),
+        status_dir=Path(os.environ["WEBUI_STATUS_DIR"]) if os.environ.get("WEBUI_STATUS_DIR") else None,
     )

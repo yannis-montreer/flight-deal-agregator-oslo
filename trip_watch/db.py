@@ -78,16 +78,22 @@ def get_historical_min(
     return_date: str,
     *,
     exclude_id: Optional[int] = None,
+    currency: Optional[str] = None,
 ) -> Optional[float]:
     """Prix minimum deja observe pour cette EXACTE combinaison (destination + dates),
     hors l'observation exclude_id elle-meme (typiquement celle qu'on vient d'inserer).
-    None si aucune observation anterieure avec prix pour cette combinaison."""
+    None si aucune observation anterieure avec prix pour cette combinaison.
+    `currency` : ne compare qu'aux prix de la meme devise (sinon un changement de devise
+    d'une alerte comparerait des EUR a un historique en NOK)."""
     sql = (
         "SELECT MIN(price) AS min_price FROM observations "
         "WHERE destination = :destination AND departure_date = :departure_date "
         "AND return_date = :return_date AND price IS NOT NULL"
     )
     params = {"destination": destination, "departure_date": departure_date, "return_date": return_date}
+    if currency is not None:
+        sql += " AND currency = :currency"
+        params["currency"] = currency
     if exclude_id is not None:
         sql += " AND id != :exclude_id"
         params["exclude_id"] = exclude_id

@@ -48,6 +48,12 @@ class TripWatchConfig:
     telegram_bot_token: str
     telegram_chat_id: str
     api_key_env: str = DEFAULT_API_KEY_ENV  # NOM de la variable d'environnement de la cle (jamais la valeur)
+    watch_id: str = ""      # nom du fichier sans .yaml (ex: "santiago")
+    enabled: bool = True    # false = alerte en pause (aucune recherche, aucun cout)
+    db_file: str = ""       # fichier SQLite de l'alerte, dans le dossier de donnees
+
+
+DB_FILE_RE = re.compile(r"^[A-Za-z0-9_.-]+\.db$")
 
 
 def _default_config_path() -> Path:
@@ -61,7 +67,12 @@ def load_config(path: "Path | str | None" = None, *, require_secrets: bool = Tru
     if not config_path.exists():
         raise ConfigError(f"Fichier de config introuvable: {config_path}")
 
-    raw = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+    try:
+        raw = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as exc:
+        raise ConfigError(f"YAML illisible dans {config_path}: {exc}") from exc
+    if not isinstance(raw, dict):
+        raise ConfigError(f"{config_path} doit contenir des cles/valeurs YAML")
 
     # `api_key_env` (optionnel) : NOM de la variable d'environnement qui porte la cle SerpApi
     # de cette veille — permet a chaque veille d'avoir sa propre cle/son propre quota. Si
@@ -122,6 +133,11 @@ def load_config(path: "Path | str | None" = None, *, require_secrets: bool = Tru
             telegram_bot_token=bot_token,
             telegram_chat_id=chat_id,
             api_key_env=api_key_env or DEFAULT_API_KEY_ENV,
+            watch_id=config_path.stem,
+            enabled=raw.get("enabled", True),
+            # Une base par alerte : les historiques ne se melangent jamais. Santiago garde
+            # explicitement sa base historique (db_file: trip_watch.db dans son fichier).
+            db_file=raw.get("db_file") or f"trip_watch_{config_path.stem}.db",
         )
     except KeyError as exc:
         raise ConfigError(f"Cle de config manquante dans {config_path}: {exc}") from exc
@@ -149,5 +165,9 @@ def _validate(config: TripWatchConfig) -> None:
         value = getattr(config, field_name)
         if not isinstance(value, int) or isinstance(value, bool) or value < 0:
             raise ConfigError(f"{field_name} doit etre un entier >= 0, recu: {value!r}")
+    if not isinstance(config.enabled, bool):
+        raise ConfigError(f"enabled doit valoir true ou false, recu: {config.enabled!r}")
+    if not isinstance(config.db_file, str) or not DB_FILE_RE.match(config.db_file):
+        raise ConfigError(f"db_file doit etre un simple nom de fichier .db (ex: trip_watch_lima.db), recu: {config.db_file!r}")
     if config.duration_center_days - config.duration_tolerance_days < 1:
         raise ConfigError("duration: center_days - tolerance_days doit valoir au moins 1 jour")

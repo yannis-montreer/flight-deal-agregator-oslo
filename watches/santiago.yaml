@@ -5,6 +5,13 @@
 # Une future veille avec son propre quota aura sa propre variable (ex: SERPAPI_KEY_3).
 api_key_env: SEARCH_SERPAPI_KEY
 
+# false = alerte en pause (aucune recherche, aucun cout).
+enabled: true
+
+# Base de donnees de l'alerte (dans data/). Santiago garde sa base historique ; une nouvelle
+# alerte a la sienne (trip_watch_<nom>.db), pour ne jamais melanger les historiques.
+db_file: trip_watch.db
+
 origin: OSL
 destination: SCL
 destination_name: Santiago

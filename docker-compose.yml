@@ -16,10 +16,11 @@ services:
       # sans rebuild.
       - ./config:/app/config:ro
 
-  # Suivi ponctuel OSL -> Santiago (voir trip_watch/, hors produit principal). Meme image
-  # que le service flightdeals (voir Dockerfile), commande differente. Log dir et fichier
-  # DB separes du service principal pour ne jamais interferer avec flightdeals.db/logs.
-  trip-watch-santiago:
+  # Alertes trajet (voir trip_watch/) : UN service pour TOUTES les alertes du dossier
+  # watches/ (une par fichier .yaml, chacune avec sa cle SerpApi, son heure et sa base).
+  # Ajouter/supprimer une alerte = un fichier (l'interface le fait) : aucun changement ici.
+  # Meme image que flightdeals, commande differente.
+  trip-watch:
     build: .
     restart: unless-stopped
     # `entrypoint:`, PAS `command:` — command s'ajoute a l'ENTRYPOINT du Dockerfile au lieu
@@ -30,22 +31,20 @@ services:
     # remplace correctement l'ENTRYPOINT de l'image.
     entrypoint: ["python", "-m", "trip_watch"]
     env_file:
-      - .env
+      - .env   # toutes les cles SerpApi (SERPAPI_KEY, SEARCH_SERPAPI_KEY, SERPAPI_KEY_3...)
     environment:
       - TZ=UTC
       - FLIGHTDEALS_LOG_DIR=/data/logs-trip-watch
-      - TRIP_WATCH_DB_PATH=/data/trip_watch.db
-      - TRIP_WATCH_CONFIG_PATH=/app/watches/santiago.yaml
+      - TRIP_WATCH_DIR=/app/watches
+      - TRIP_WATCH_DATA_DIR=/data
+      - TRIP_WATCH_STATUS_DIR=/status
     volumes:
       - ./data:/data
-      # Montage du DOSSIER (pas du fichier seul) : l'interface remplace le fichier de facon
-      # atomique (nouveau fichier + renommage) ; un montage de fichier seul resterait
-      # accroche a l'ancienne version jusqu'au redemarrage du conteneur.
+      # Montage du DOSSIER (pas des fichiers) : l'interface cree/remplace les fichiers de
+      # facon atomique ; un montage de fichier seul resterait accroche a l'ancienne version.
       - ./watches:/app/watches:ro
-    # Future 3e veille : copier ce service, changer TRIP_WATCH_CONFIG_PATH
-    # (/app/watches/<nom>.yaml), TRIP_WATCH_DB_PATH (/data/trip_watch_<nom>.db) et
-    # FLIGHTDEALS_LOG_DIR, et mettre `api_key_env: SERPAPI_KEY_3` dans le fichier de la veille.
-
+      # Registre des cles pour l'interface : NOMS + compteurs du compte, jamais de secret.
+      - ./status:/status
   # Interface locale d'edition des veilles (http://127.0.0.1:8765, depuis la NUC uniquement).
   # Aucun secret : pas d'env_file. N'ecrit que dans config/ et watches/ (jamais data/).
   webui:
@@ -57,17 +56,21 @@ services:
       - TZ=Europe/Oslo
       - WEBUI_FLIGHTDEALS_CONFIG=/cfg/config/config.yaml
       - WEBUI_WATCHES_DIR=/cfg/watches
-      # Quota mensuel par cle si different du forfait gratuit (250), ex: SERPAPI_KEY_3=1000
+      - WEBUI_STATUS_DIR=/cfg/status
+      # Quota mensuel par cle, seulement pour forcer une valeur (sinon : forfait reel lu par
+      # le service des alertes, ou 250), ex: SERPAPI_KEY_3=1000
       - WEBUI_KEY_QUOTAS=
     ports:
       - "127.0.0.1:8765:8765"
     volumes:
       - ./config:/cfg/config
       - ./watches:/cfg/watches
+      - ./status:/cfg/status:ro
 
 # Les deux conteneurs restent autonomes sans compose : `docker run -d --restart unless-stopped
 # --env-file .env -v ./data:/data flightdeals` fonctionne seul (config baked-in dans l'image),
 # conformement a la contrainte "pas de dependance a un orchestrateur externe" (voir plan).
 # Pour trip_watch en standalone : `docker run -d --restart unless-stopped --env-file .env
-# -v ./data:/data --entrypoint python flightdeals -m trip_watch`. Pas de `ports:` sur les
+# -v ./data:/data -v ./watches:/app/watches -e TRIP_WATCH_DATA_DIR=/data --entrypoint python
+# flightdeals -m trip_watch`. Pas de `ports:` sur les
 # workers (purs workers de fond) ; seule l'interface `webui` publie un port, sur 127.0.0.1.

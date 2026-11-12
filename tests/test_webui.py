@@ -2,6 +2,7 @@
 jamais sur les originaux. Aucun appel reseau."""
 from __future__ import annotations
 
+import json
 import shutil
 from pathlib import Path
 
@@ -26,7 +27,14 @@ def env(tmp_path, monkeypatch):
     fd_path = config_dir / "config.yaml"
     shutil.copy(REPO_ROOT / "config" / "config.yaml", fd_path)
     shutil.copy(REPO_ROOT / "watches" / "santiago.yaml", watches_dir / "santiago.yaml")
-    client = TestClient(create_app(fd_path, watches_dir), base_url="http://127.0.0.1:8765")
+    status_dir = tmp_path / "status"
+    status_dir.mkdir()
+    # Registre tel que publie par le service des alertes : noms + compteurs, aucun secret.
+    (status_dir / "keys.json").write_text(json.dumps({"updated_at": "2026-11-12T12:00:00+00:00", "keys": [
+        {"name": n, "searches_per_month": 250, "searches_left": 240, "error": None}
+        for n in ("SEARCH_SERPAPI_KEY", "SERPAPI_KEY", "SERPAPI_KEY_3")
+    ]}), encoding="utf-8")
+    client = TestClient(create_app(fd_path, watches_dir, status_dir=status_dir), base_url="http://127.0.0.1:8765")
     return client, fd_path, watches_dir
 
 
@@ -46,6 +54,7 @@ def _watch_form(**overrides):
         "destination_name": "Santiago", "origin": "OSL", "destination": "SCL", "departure_center": "2027-01-15",
         "departure_tolerance_days": "3", "duration_center_days": "35", "duration_tolerance_days": "5",
         "required_stops": "1", "travel_class": "2", "currency": "NOK", "schedule": "10:30",
+        "api_key_env": "SEARCH_SERPAPI_KEY", "enabled": "on",
     }
     form.update(overrides)
     return form
@@ -131,10 +140,19 @@ def test_watch_save(env):
     assert len(_history(watches_dir)) == 1
 
 
-def test_api_key_env_cannot_be_changed_from_form(env):
+def test_key_can_be_switched_to_a_key_present_in_env(env):
     client, _, watches_dir = env
-    client.post("/watches/santiago", data=_watch_form(api_key_env="SERPAPI_KEY", destination_name="X"))
-    assert load_tw(watches_dir / "santiago.yaml", require_secrets=False).api_key_env == "SEARCH_SERPAPI_KEY"
+    response = client.post("/watches/santiago", data=_watch_form(api_key_env="SERPAPI_KEY_3"), follow_redirects=False)
+    assert response.status_code == 303
+    assert load_tw(watches_dir / "santiago.yaml", require_secrets=False).api_key_env == "SERPAPI_KEY_3"
+
+
+def test_key_absent_from_env_is_refused(env):
+    client, _, watches_dir = env
+    before = (watches_dir / "santiago.yaml").read_bytes()
+    response = client.post("/watches/santiago", data=_watch_form(api_key_env="SERPAPI_KEY_9"))
+    assert response.status_code == 400 and ".env" in response.text
+    assert (watches_dir / "santiago.yaml").read_bytes() == before
 
 
 def test_budget_overrun_is_refused_and_file_untouched(env):
@@ -321,3 +339,113 @@ def test_watch_form_offers_currency_list(env):
     client, _, _ = env
     page = client.get("/watches/santiago").text
     assert 'list="currencies"' in page and '<option value="NOK">Couronne norvégienne' in page
+
+# ---------- creation / pause / suppression d'alertes, cles ----------
+
+def _new_form(**overrides):
+    form = _watch_form(destination_name="Lima en famille", destination="LIM", departure_center="2027-03-10",
+                       departure_tolerance_days="1", duration_center_days="14", duration_tolerance_days="2",
+                       travel_class="1", api_key_env="SERPAPI_KEY_3")
+    form.update(overrides)
+    return form
+
+
+def test_create_alert_writes_a_valid_file_with_its_own_db_and_key(env):
+    client, _, watches_dir = env
+    response = client.post("/watches/new", data=_new_form(), follow_redirects=False)
+    assert response.status_code == 303 and response.headers["location"] == "/?saved=lima-en-famille"
+    config = load_tw(watches_dir / "lima-en-famille.yaml", require_secrets=False)
+    assert config.destination == "LIM" and config.api_key_env == "SERPAPI_KEY_3"
+    assert config.db_file == "trip_watch_lima-en-famille.db" and config.enabled
+    assert config.destination_name == "Lima en famille"
+    # Le service des alertes la prendra (meme chargeur, meme dossier).
+    from trip_watch.runner import load_watches
+    configs, errors = load_watches(watches_dir, require_secrets=False)
+    assert set(configs) == {"santiago", "lima-en-famille"} and errors == {}
+    page = client.get("/").text
+    assert "Lima en famille" in page and "93 / 250" in page  # 3 dates x 31 jours sur SERPAPI_KEY_3
+
+
+def test_create_twice_gets_unique_ids(env):
+    client, _, watches_dir = env
+    client.post("/watches/new", data=_new_form(), follow_redirects=False)
+    client.post("/watches/new", data=_new_form(), follow_redirects=False)
+    assert (watches_dir / "lima-en-famille-2.yaml").exists()
+
+
+def test_create_refused_when_it_would_overrun_a_shared_key(env):
+    client, _, watches_dir = env
+    # Santiago reserve deja 217/250 sur SEARCH_SERPAPI_KEY : +93 depasse.
+    response = client.post("/watches/new", data=_new_form(api_key_env="SEARCH_SERPAPI_KEY"))
+    assert response.status_code == 400 and "quota" in response.text
+    assert sorted(p.name for p in watches_dir.glob("*.yaml")) == ["santiago.yaml"]
+
+
+def test_create_refuses_unknown_key_and_bad_airport(env):
+    client, _, watches_dir = env
+    assert client.post("/watches/new", data=_new_form(api_key_env="NOPE_KEY")).status_code == 400
+    assert client.post("/watches/new", data=_new_form(destination="LYO")).status_code == 400
+    assert sorted(p.name for p in watches_dir.glob("*.yaml")) == ["santiago.yaml"]
+
+
+def test_create_name_with_quotes_and_accents_is_safe(env):
+    client, _, watches_dir = env
+    client.post("/watches/new", data=_new_form(destination_name='Séjour "spécial": test'), follow_redirects=False)
+    config = load_tw(watches_dir / "sejour-special-test.yaml", require_secrets=False)
+    assert config.destination_name == 'Séjour "spécial": test'
+
+
+def test_new_form_proposes_key_with_most_room(env):
+    client, _, _ = env
+    page = client.get("/watches/new").text
+    assert '<option value="SERPAPI_KEY_3" selected>' in page  # la seule cle encore libre
+
+
+def test_pause_costs_nothing_and_frees_the_key(env):
+    client, _, watches_dir = env
+    response = client.post("/watches/santiago", data=_watch_form(enabled=""), follow_redirects=False)
+    assert response.status_code == 303
+    assert load_tw(watches_dir / "santiago.yaml", require_secrets=False).enabled is False
+    page = client.get("/").text
+    assert "en pause" in page and "0 / 250" in page
+    # La cle liberee accepte maintenant une nouvelle alerte.
+    assert client.post("/watches/new", data=_new_form(api_key_env="SEARCH_SERPAPI_KEY"), follow_redirects=False).status_code == 303
+
+
+def test_delete_archives_file_and_keeps_history(env):
+    client, _, watches_dir = env
+    confirm = client.get("/watches/santiago/delete")
+    assert confirm.status_code == 200 and "data/trip_watch.db" in confirm.text
+    response = client.post("/watches/santiago/delete", follow_redirects=False)
+    assert response.status_code == 303
+    assert not (watches_dir / "santiago.yaml").exists()
+    archived = list((watches_dir / ".archive").glob("santiago-*.yaml"))
+    assert len(archived) == 1
+    assert "supprimée" in client.get("/?deleted=santiago").text
+
+
+def test_delete_requires_post_from_same_site(env):
+    client, _, watches_dir = env
+    response = client.post("/watches/santiago/delete", headers={"Origin": "https://evil.example"})
+    assert response.status_code == 403 and (watches_dir / "santiago.yaml").exists()
+
+
+def test_registry_quota_and_remaining_are_shown(env, tmp_path):
+    client, _, _ = env
+    status = tmp_path / "status" / "keys.json"
+    data = json.loads(status.read_text(encoding="utf-8"))
+    data["keys"][2]["searches_per_month"] = 1000
+    status.write_text(json.dumps(data), encoding="utf-8")
+    page = client.get("/").text
+    assert "/ 1000 réservées" in page and "240 recherches restantes" in page
+
+
+def test_works_without_registry(tmp_path, monkeypatch):
+    monkeypatch.delenv("WEBUI_KEY_QUOTAS", raising=False)
+    (tmp_path / "config").mkdir()
+    (tmp_path / "watches").mkdir()
+    shutil.copy(REPO_ROOT / "config" / "config.yaml", tmp_path / "config" / "config.yaml")
+    shutil.copy(REPO_ROOT / "watches" / "santiago.yaml", tmp_path / "watches" / "santiago.yaml")
+    client = TestClient(create_app(tmp_path / "config" / "config.yaml", tmp_path / "watches"), base_url="http://127.0.0.1")
+    assert client.get("/").status_code == 200
+    assert "pas encore publiée" in client.get("/watches/new").text

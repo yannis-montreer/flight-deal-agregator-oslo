@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass
+from typing import Optional
 
 from flightdeals.config import Config as FlightDealsConfig
 from trip_watch.config import TripWatchConfig
@@ -46,6 +47,8 @@ def flightdeals_cost(config: FlightDealsConfig) -> WatchCost:
 
 
 def trip_watch_cost(watch_id: str, config: TripWatchConfig) -> WatchCost:
+    if not getattr(config, "enabled", True):
+        return WatchCost(watch_id, config.destination_name, config.api_key_env, 0, 0, "en pause : aucune recherche")
     per_day = 2 * config.departure_tolerance_days + 1
     detail = f"{per_day} date(s) de départ testée(s)/jour"
     return WatchCost(watch_id, config.destination_name, config.api_key_env, per_day, per_day * DAYS_PER_MONTH, detail)
@@ -63,8 +66,16 @@ def key_quotas() -> dict[str, int]:
     return quotas
 
 
-def quota_for(key_env: str) -> int:
-    return key_quotas().get(key_env, FREE_PLAN_QUOTA)
+def quota_for(key_env: str, registry: Optional[dict] = None) -> int:
+    """Quota mensuel d'une cle, par ordre de priorite : surcharge WEBUI_KEY_QUOTAS, puis le
+    forfait reel lu par le service des alertes (registre, account.json), puis 250 (gratuit)."""
+    override = key_quotas().get(key_env)
+    if override is not None:
+        return override
+    for entry in (registry or {}).get("keys", []):
+        if entry.get("name") == key_env and isinstance(entry.get("searches_per_month"), int):
+            return entry["searches_per_month"]
+    return FREE_PLAN_QUOTA
 
 
 def totals_by_key(costs: list[WatchCost]) -> dict[str, int]:
@@ -74,9 +85,9 @@ def totals_by_key(costs: list[WatchCost]) -> dict[str, int]:
     return totals
 
 
-def check_budget(costs: list[WatchCost]) -> None:
+def check_budget(costs: list[WatchCost], registry: Optional[dict] = None) -> None:
     for key_env, total in totals_by_key(costs).items():
-        quota = quota_for(key_env)
+        quota = quota_for(key_env, registry)
         if total > quota:
             users = ", ".join(c.label for c in costs if c.key_env == key_env)
             raise BudgetError(

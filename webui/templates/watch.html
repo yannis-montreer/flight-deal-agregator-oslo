@@ -1,16 +1,30 @@
 {% extends "base.html" %}
-{% block title %}{{ v.destination_name }} — Veilles{% endblock %}
+{% block title %}{{ "Nouvelle alerte" if is_new else v.destination_name }} — Veilles{% endblock %}
 {% block content %}
 <p><a href="/">← Retour</a></p>
-<h1>{{ v.destination_name }}</h1>
-<p class="sub">Fichier <code>watches/{{ watch_id }}.yaml</code> — clé SerpApi <code>{{ v.api_key_env }}</code> (quota {{ quota }}/mois).
-  Coût : (2 × tolérance départ + 1) recherches par jour.</p>
+<h1>{{ "Nouvelle alerte" if is_new else v.destination_name }}</h1>
+<p class="sub">
+  {% if is_new %}Suivi quotidien d'un trajet précis (dates, classe, escales). Elle démarre à sa prochaine heure de run, sans redémarrage.
+  {% else %}Fichier <code>watches/{{ watch_id }}.yaml</code>.{% endif %}
+  Coût : (2 × tolérance départ + 1) recherches par jour.
+</p>
 {% if error %}<p class="msg err">{{ error }}</p>{% endif %}
-<form method="post" class="card">
+<form method="post" action="{{ '/watches/new' if is_new else '/watches/' ~ watch_id }}" class="card">
   <div class="grid">
     <div>
-      <label for="destination_name">Nom de la veille <span class="hint">affiché dans Telegram</span></label>
-      <input type="text" id="destination_name" name="destination_name" value="{{ v.destination_name }}">
+      <label for="destination_name">Nom de l'alerte <span class="hint">affiché dans Telegram</span></label>
+      <input type="text" id="destination_name" name="destination_name" value="{{ v.destination_name }}" placeholder="ex : Lima en famille">
+    </div>
+    <div>
+      <label for="api_key_env">Clé SerpApi <span class="hint">celle dont le quota paiera les recherches</span></label>
+      <select id="api_key_env" name="api_key_env">
+        {% for k in key_options %}<option value="{{ k.name }}" {% if v.api_key_env == k.name %}selected{% endif %}>{{ k.name }} — {{ k.used }}/{{ k.quota }} déjà réservées</option>{% endfor %}
+      </select>
+      {% if not registry_ok %}<span class="hint">Liste des clés de .env pas encore publiée par le service des alertes.</span>{% endif %}
+    </div>
+    <div>
+      <label>État</label>
+      <div class="checks"><label><input type="checkbox" name="enabled" {% if v.enabled %}checked{% endif %}> Active <span class="hint">(décoché = en pause, aucun coût)</span></label></div>
     </div>
     <div>
       <label for="origin">Aéroport de départ <span class="hint">efface, tape la ville (ex : « Oslo ») et choisis</span></label>
@@ -52,12 +66,12 @@
       <select id="travel_class" name="travel_class">
         {% for value, name in classes.items() %}<option value="{{ value }}" {% if v.travel_class == value|string %}selected{% endif %}>{{ name }}</option>{% endfor %}
       </select>
+      {% if not is_new %}<span class="hint">À ne pas changer sur une alerte en cours : le « nouveau minimum » ne distingue pas les classes. Crée plutôt une nouvelle alerte.</span>{% endif %}
     </div>
     <div>
       <label for="currency">Devise <span class="hint">efface, tape le nom (ex : « euro ») et choisis</span></label>
       <input type="text" id="currency" name="currency" list="currencies" autocomplete="off" value="{{ v.currency }}">
-      <span class="hint">{{ currencies.get(v.currency|upper, "") }} — à ne pas changer sur une veille en cours :
-        l'historique des prix (« nouveau minimum ») ne tient pas compte de la devise.</span>
+      <span class="hint">{{ currencies.get(v.currency|upper, "") }}</span>
       <datalist id="currencies">{% for code, name in currencies.items() %}<option value="{{ code }}">{{ name }}</option>{% endfor %}</datalist>
     </div>
     <div>
@@ -66,8 +80,9 @@
     </div>
   </div>
   <div class="actions">
-    <button class="btn" type="submit">Enregistrer</button>
+    <button class="btn" type="submit">{{ "Créer l'alerte" if is_new else "Enregistrer" }}</button>
     <a class="btn secondary" href="/">Annuler</a>
+    {% if not is_new %}<a class="btn danger" href="/watches/{{ watch_id }}/delete">Supprimer…</a>{% endif %}
   </div>
 </form>
 {% endblock %}

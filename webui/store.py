@@ -138,3 +138,36 @@ def save_document(path: Path, doc: Any, validate: Callable[[Path], Any], check: 
     finally:
         if tmp.exists():
             tmp.unlink()
+
+
+def create_document(path: Path, text: str, validate: Callable[[Path], Any], check: Callable[[Any], None] | None = None) -> Any:
+    """Cree un NOUVEAU fichier (refuse d'ecraser un fichier existant), avec les memes
+    garanties que save_document : validation et controle de budget avant toute ecriture,
+    puis apparition atomique du fichier complet."""
+    if path.exists():
+        raise FileExistsError(path.name)
+    tmp = path.parent / f".{path.name}.tmp"
+    try:
+        tmp.write_bytes(text.encode("utf-8"))
+        config = validate(tmp)
+        if check is not None:
+            check(config)
+        os.replace(tmp, path)
+        return config
+    finally:
+        if tmp.exists():
+            tmp.unlink()
+
+
+ARCHIVE_DIRNAME = ".archive"
+
+
+def archive_document(path: Path) -> Path:
+    """« Suppression » d'une alerte : le fichier est deplace dans .archive/ (jamais efface),
+    ce qui suffit a l'arreter. Sa base de donnees n'est pas touchee."""
+    archive = path.parent / ARCHIVE_DIRNAME
+    archive.mkdir(exist_ok=True)
+    stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+    target = archive / f"{path.stem}-{stamp}{path.suffix}"
+    os.replace(path, target)
+    return target

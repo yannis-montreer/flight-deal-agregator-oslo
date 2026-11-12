@@ -12,12 +12,13 @@ anormalement bon marché par rapport à ses propres observations passées.
 ## Statut actuel
 
 MVP complet et déployé (jalons M0-M11 terminés). Tourne en continu via Docker sur cette
-machine. Deux services distincts, une seule image :
+machine. Trois services, deux images :
 
 | Service | Rôle | Périmètre actuel |
 |---|---|---|
 | `flightdeals` | Détection proactive de deals, produit principal | OSL → Asie du Sud-Est, novembre, séjours 6-14 nuits |
-| `trip-watch-santiago` | Suivi ponctuel d'un trajet précis (favor) | OSL → Santiago, 12-18 janvier 2027, séjour 30-40j, 1 escale exacte, Premium Economy |
+| `trip-watch` | Alertes sur des trajets précis, une par fichier de `watches/` | ex. OSL → Santiago, 12-18 janvier 2027, séjour 30-40j, 1 escale exacte, Premium Economy |
+| `webui` | Interface locale d'édition (http://127.0.0.1:8765) | voir plus bas |
 
 ## Principe (flightdeals)
 
@@ -43,8 +44,11 @@ envoyé (jamais confondu avec un vrai deal statistique, dédoublonnage totalemen
 S'éteint tout seul dès qu'un bucket atteint le seuil — voir `cold_start_check` dans
 `config/config.yaml` et `pipeline._check_cold_start_signals`.
 
-`trip-watch-santiago` suit une logique différente (point-à-point `google_flights`, rotation
-de durée de séjour sur plusieurs jours) — voir [trip_watch/tracker.py](trip_watch/tracker.py).
+`trip-watch` suit une logique différente (point-à-point `google_flights`, rotation de durée de
+séjour sur plusieurs jours) — voir [trip_watch/tracker.py](trip_watch/tracker.py). Un seul service
+fait tourner toutes les alertes de `watches/` (une par fichier `.yaml`), chacune avec sa clé
+SerpApi (`api_key_env`), son heure et sa base (`db_file`) — voir
+[trip_watch/runner.py](trip_watch/runner.py).
 
 `scripts/search_custom_route.py` reste disponible pour des recherches ponctuelles
 (Lima, La Paz, ou toute autre combinaison route/dates) sans automatisation.
@@ -78,14 +82,14 @@ dans `spike/` et `scripts/`, volontairement autonomes).
 ## Docker
 
 ```bash
-docker compose up -d              # les 2 services
+docker compose up -d              # les 3 services
 docker compose up -d flightdeals  # un seul
 docker compose logs -f flightdeals
 ```
 
 La base SQLite et les logs sont persistés dans `./data` (bind mount) :
-`flightdeals.db` + `logs/` pour le produit principal, `trip_watch.db` + `logs-trip-watch/`
-pour le suivi Santiago — totalement séparés, aucune interférence entre les deux.
+`flightdeals.db` + `logs/` pour le produit principal ; `logs-trip-watch/` et une base par alerte
+(`trip_watch.db` pour Santiago, `trip_watch_<nom>.db` pour les autres) — totalement séparés.
 `./config/config.yaml` (et `./watches/santiago.yaml`) peuvent être édités et sont pris en
 compte au prochain cycle sans rebuild — seul un changement de code nécessite
 `docker compose build`.
@@ -104,11 +108,14 @@ YAML à la main :
   `WEBUI_KEY_QUOTAS` dans `docker-compose.yml`) ;
 - l'interface n'a accès à aucun secret ni à `data/`.
 
-Chaque fichier de `watches/` indique par `api_key_env` le **nom** de la variable de `.env`
-qui porte sa clé SerpApi. Ajouter une veille avec sa propre clé : créer
-`watches/<nom>.yaml` (copie de `santiago.yaml`, avec par exemple `api_key_env: SERPAPI_KEY_3`),
-ajouter `SERPAPI_KEY_3=...` dans `.env`, puis dupliquer le service `trip-watch-santiago`
-dans `docker-compose.yml` (voir le commentaire qui y décrit les 3 variables à changer).
+**Alertes** : bouton « Nouvelle alerte » (fichier `watches/<nom>.yaml` créé, pris en compte en
+quelques minutes sans redémarrage), case « Active » pour une pause, « Supprimer » range le
+fichier dans `watches/.archive/` (l'historique `data/trip_watch_<nom>.db` est conservé).
+
+**Clés** : chaque alerte choisit sa clé par **nom** de variable de `.env` (`api_key_env`). Le
+service `trip-watch` publie dans `status/keys.json` les noms des clés présentes et les compteurs
+de leur compte (`account.json`, gratuit) — jamais les valeurs. Ajouter une clé : une ligne
+`SERPAPI_KEY_3=...` dans `.env` (le nom doit contenir `SERPAPI_KEY`), puis `docker compose up -d`.
 
 ## Spike (historique)
 

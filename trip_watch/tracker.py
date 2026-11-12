@@ -179,7 +179,8 @@ def run_daily_check(config: TripWatchConfig, db_path: "Path | str") -> None:
                 is_new_min = False
                 if result.price is not None:
                     prior_min = get_historical_min(
-                        conn, config.destination, result.departure_date, result.return_date, exclude_id=obs_id
+                        conn, config.destination, result.departure_date, result.return_date, exclude_id=obs_id,
+                        currency=result.currency,
                     )
                     is_new_min = prior_min is None or result.price < prior_min
 
