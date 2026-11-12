@@ -11,3 +11,8 @@ __pycache__/
 .venv/
 venv/
 README.md
+
+# Copies de travail locales et historique des editions de l'interface
+.claude/
+**/.history/
+**/.*.tmp

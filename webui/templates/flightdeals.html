@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Bons plans — Veilles{% endblock %}
+{% block content %}
+<p><a href="/">← Retour</a></p>
+<h1>Bons plans (flightdeals)</h1>
+<p class="sub">Les réglages avancés (score, dédoublonnage, journaux) restent dans <code>config/config.yaml</code>.</p>
+{% if error %}<p class="msg err">{{ error }}</p>{% endif %}
+<form method="post" class="card">
+  <div class="grid">
+    <div>
+      <label for="arrival_area_id">Région d'arrivée
+        <span class="hint">Identifiant Google ; vide = partout</span></label>
+      <input type="text" id="arrival_area_id" name="arrival_area_id" value="{{ v.arrival_area_id }}" list="areas">
+      <datalist id="areas">{% for id, name in areas.items() %}<option value="{{ id }}">{{ name }}</option>{% endfor %}</datalist>
+    </div>
+    <div>
+      <label for="month">Mois de voyage</label>
+      <select id="month" name="month">
+        <option value="" {% if v.month == "" %}selected{% endif %}>6 prochains mois</option>
+        {% for m in months %}<option value="{{ loop.index }}" {% if v.month == loop.index|string %}selected{% endif %}>{{ m }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label>Durées recherchées <span class="hint">1 recherche par jour et par case</span></label>
+      <div class="checks">
+        {% for value, name in durations.items() %}
+        <label><input type="checkbox" name="travel_durations" value="{{ value }}" {% if value|string in v.travel_durations %}checked{% endif %}> {{ name }}</label>
+        {% endfor %}
+      </div>
+    </div>
+    <div>
+      <label for="min_trip_length_nights">Séjour minimum (nuits)</label>
+      <input type="number" id="min_trip_length_nights" name="min_trip_length_nights" min="0" value="{{ v.min_trip_length_nights }}">
+    </div>
+    <div>
+      <label for="max_trip_length_nights">Séjour maximum (nuits)</label>
+      <input type="number" id="max_trip_length_nights" name="max_trip_length_nights" min="0" value="{{ v.max_trip_length_nights }}">
+    </div>
+    <div>
+      <label for="minimum_discount">Baisse minimale (%) <span class="hint">par rapport au prix habituel</span></label>
+      <input type="number" id="minimum_discount" name="minimum_discount" min="1" max="99" value="{{ v.minimum_discount }}">
+    </div>
+    <div>
+      <label for="schedule">Heure du run <span class="hint">heure d'Oslo</span></label>
+      <input type="time" id="schedule" name="schedule" value="{{ v.schedule }}">
+    </div>
+    <div>
+      <label for="monthly_budget">Budget interne (recherches/mois)
+        <span class="hint">au-delà, les runs sont sautés</span></label>
+      <input type="number" id="monthly_budget" name="monthly_budget" min="1" value="{{ v.monthly_budget }}">
+    </div>
+    <div>
+      <label>Démarrage à froid <span class="hint">avis de Google tant que l'historique est insuffisant</span></label>
+      <div class="checks"><label><input type="checkbox" name="cold_start_enabled" {% if v.cold_start_enabled %}checked{% endif %}> Activé</label></div>
+    </div>
+    <div>
+      <label for="max_candidates_per_run">Vérifications Google max par run</label>
+      <input type="number" id="max_candidates_per_run" name="max_candidates_per_run" min="0" max="20" value="{{ v.max_candidates_per_run }}">
+    </div>
+    <div>
+      <label>Récap quotidien Telegram</label>
+      <div class="checks"><label><input type="checkbox" name="daily_summary_enabled" {% if v.daily_summary_enabled %}checked{% endif %}> Envoyé chaque jour</label></div>
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn" type="submit">Enregistrer</button>
+    <a class="btn secondary" href="/">Annuler</a>
+  </div>
+</form>
+{% endblock %}

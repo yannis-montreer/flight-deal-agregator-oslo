@@ -1,0 +1,7 @@
+# Dependances propres a l'interface d'edition (en plus de ../requirements.txt).
+fastapi>=0.115,<1.0
+uvicorn>=0.30,<1.0
+jinja2>=3.1,<4.0
+python-multipart>=0.0.9
+# Edition des YAML en conservant commentaires et mise en forme (PyYAML les perd).
+ruamel.yaml>=0.18,<0.19

@@ -86,9 +86,29 @@ docker compose logs -f flightdeals
 La base SQLite et les logs sont persistés dans `./data` (bind mount) :
 `flightdeals.db` + `logs/` pour le produit principal, `trip_watch.db` + `logs-trip-watch/`
 pour le suivi Santiago — totalement séparés, aucune interférence entre les deux.
-`./config/config.yaml` (et `./trip_watch/config.yaml`) peuvent être édités et sont pris en
+`./config/config.yaml` (et `./watches/santiago.yaml`) peuvent être édités et sont pris en
 compte au prochain cycle sans rebuild — seul un changement de code nécessite
 `docker compose build`.
+
+## Interface d'édition des veilles
+
+Le service `webui` sert une page locale sur <http://127.0.0.1:8765> (depuis la machine
+uniquement, par exemple via le Bureau à distance) pour modifier les veilles sans éditer le
+YAML à la main :
+
+- chaque enregistrement est validé par le même code que les services, puis écrit de façon
+  atomique ; l'ancienne version est gardée dans `config/.history/` ou `watches/.history/`
+  (30 dernières) ;
+- le coût SerpApi mensuel (pire cas) est calculé par clé, et un enregistrement qui
+  dépasserait le quota d'une clé est refusé (quota 250 par défaut, surchargeable via
+  `WEBUI_KEY_QUOTAS` dans `docker-compose.yml`) ;
+- l'interface n'a accès à aucun secret ni à `data/`.
+
+Chaque fichier de `watches/` indique par `api_key_env` le **nom** de la variable de `.env`
+qui porte sa clé SerpApi. Ajouter une veille avec sa propre clé : créer
+`watches/<nom>.yaml` (copie de `santiago.yaml`, avec par exemple `api_key_env: SERPAPI_KEY_3`),
+ajouter `SERPAPI_KEY_3=...` dans `.env`, puis dupliquer le service `trip-watch-santiago`
+dans `docker-compose.yml` (voir le commentaire qui y décrit les 3 variables à changer).
 
 ## Spike (historique)
 

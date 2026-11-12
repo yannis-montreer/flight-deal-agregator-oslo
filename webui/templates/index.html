@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Veilles</h1>
+<p class="sub">Les modifications sont prises en compte au prochain run, sans redémarrage. Une nouvelle heure de run ne s'applique qu'après le run déjà programmé.</p>
+
+{% if saved %}<p class="msg ok">Modification enregistrée. L'ancienne version est conservée dans <code>.history/</code>.</p>{% endif %}
+
+<section class="card">
+  <div class="card-head">
+    <h2>Bons plans (flightdeals)</h2>
+    {% if fd %}<a class="btn" href="/flightdeals">Modifier</a>{% endif %}
+  </div>
+  {% if fd_error %}
+    <p class="msg err">Fichier invalide : {{ fd_error }}</p>
+  {% else %}
+  <dl>
+    <dt>Région</dt><dd>{{ areas.get(fd.serpapi.arrival_area_id, fd.serpapi.arrival_area_id or "Partout") }}</dd>
+    <dt>Mois</dt><dd>{{ months[fd.serpapi.month - 1] if fd.serpapi.month else "6 prochains mois" }}</dd>
+    <dt>Séjour</dt><dd>{{ fd.deal.min_trip_length_nights }} à {{ fd.deal.max_trip_length_nights }} nuits</dd>
+    <dt>Baisse minimale</dt><dd>{{ (fd.deal.minimum_discount * 100) | round | int }} %</dd>
+    <dt>Run</dt><dd>{{ fd.collection.schedule }} ({{ fd.collection.timezone }})</dd>
+    <dt>Coût</dt><dd>{{ fd_cost.per_month }} recherches/mois max <span class="muted">— {{ fd_cost.detail }}</span></dd>
+  </dl>
+  {% for w in fd_warnings %}<p class="msg warn">{{ w }}</p>{% endfor %}
+  {% endif %}
+</section>
+
+{% for w in watches %}
+<section class="card">
+  <div class="card-head">
+    <h2>{{ w.config.destination_name if w.config else w.watch_id }} <span class="muted">({{ w.watch_id }})</span></h2>
+    {% if w.config %}<a class="btn" href="/watches/{{ w.watch_id }}">Modifier</a>{% endif %}
+  </div>
+  {% if w.error %}
+    <p class="msg err">Fichier invalide : {{ w.error }}</p>
+  {% else %}
+  {% set c = w.config %}
+  <dl>
+    <dt>Trajet</dt><dd>{{ c.origin }} → {{ c.destination }}, {{ classes[c.travel_class] }}, {{ c.required_stops }} escale(s) exactement</dd>
+    <dt>Départ</dt><dd>{{ c.departure_center.strftime("%d/%m/%Y") }} ± {{ c.departure_tolerance_days }} j</dd>
+    <dt>Séjour</dt><dd>{{ c.duration_center_days }} ± {{ c.duration_tolerance_days }} jours</dd>
+    <dt>Run</dt><dd>{{ c.schedule }} ({{ c.timezone }})</dd>
+    <dt>Clé SerpApi</dt><dd><code>{{ c.api_key_env }}</code></dd>
+    <dt>Coût</dt><dd>{{ w.cost.per_month }} recherches/mois max <span class="muted">— {{ w.cost.detail }}</span></dd>
+  </dl>
+  {% for msg in w.warnings %}<p class="msg warn">{{ msg }}</p>{% endfor %}
+  {% endif %}
+</section>
+{% endfor %}
+
+<section class="card">
+  <h2>Quotas SerpApi (pire cas, mois de 31 jours)</h2>
+  {% for b in budgets %}
+  <div style="margin-top:10px">
+    <strong><code>{{ b.key_env }}</code></strong> : {{ b.total }} / {{ b.quota }} recherches
+    <div class="bar{% if b.over %} over{% endif %}"><span style="width: {{ b.percent }}%"></span></div>
+    <span class="muted">Utilisée par : {{ b.users | join(", ") }}</span>
+  </div>
+  {% endfor %}
+</section>
+{% endblock %}

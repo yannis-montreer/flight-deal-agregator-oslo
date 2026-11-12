@@ -29,3 +29,8 @@ scripts/search_results/
 # OS
 .DS_Store
 Thumbs.db
+
+# Interface d'edition : anciennes versions et fichiers temporaires (locaux a la machine)
+config/.history/
+watches/.history/
+.*.yaml.tmp

@@ -1,6 +1,10 @@
 # Configuration du suivi Santiago. Destinations Lima/La Paz : pas automatisees pour
 # l'instant (backup, via scripts/search_custom_route.py en manuel si besoin).
 
+# NOM de la variable de .env qui porte la cle SerpApi de cette veille (jamais la valeur).
+# Une future veille avec son propre quota aura sa propre variable (ex: SERPAPI_KEY_3).
+api_key_env: SEARCH_SERPAPI_KEY
+
 origin: OSL
 destination: SCL
 destination_name: Santiago

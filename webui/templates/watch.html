@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}{{ v.destination_name }} — Veilles{% endblock %}
+{% block content %}
+<p><a href="/">← Retour</a></p>
+<h1>{{ v.destination_name }}</h1>
+<p class="sub">Fichier <code>watches/{{ watch_id }}.yaml</code> — clé SerpApi <code>{{ v.api_key_env }}</code> (quota {{ quota }}/mois).
+  Coût : (2 × tolérance départ + 1) recherches par jour.</p>
+{% if error %}<p class="msg err">{{ error }}</p>{% endif %}
+<form method="post" class="card">
+  <div class="grid">
+    <div>
+      <label for="destination_name">Nom de la veille <span class="hint">affiché dans Telegram</span></label>
+      <input type="text" id="destination_name" name="destination_name" value="{{ v.destination_name }}">
+    </div>
+    <div>
+      <label for="origin">Départ <span class="hint">code IATA</span></label>
+      <input type="text" id="origin" name="origin" maxlength="3" value="{{ v.origin }}">
+    </div>
+    <div>
+      <label for="destination">Arrivée <span class="hint">code IATA</span></label>
+      <input type="text" id="destination" name="destination" maxlength="3" value="{{ v.destination }}">
+    </div>
+    <div>
+      <label for="departure_center">Date de départ centrale</label>
+      <input type="date" id="departure_center" name="departure_center" value="{{ v.departure_center }}">
+    </div>
+    <div>
+      <label for="departure_tolerance_days">Tolérance départ (± jours)
+        <span class="hint">toutes ces dates sont testées chaque jour</span></label>
+      <input type="number" id="departure_tolerance_days" name="departure_tolerance_days" min="0" max="30" value="{{ v.departure_tolerance_days }}">
+    </div>
+    <div>
+      <label for="duration_center_days">Durée du séjour (jours)</label>
+      <input type="number" id="duration_center_days" name="duration_center_days" min="1" value="{{ v.duration_center_days }}">
+    </div>
+    <div>
+      <label for="duration_tolerance_days">Tolérance durée (± jours)
+        <span class="hint">une durée testée par jour, en rotation</span></label>
+      <input type="number" id="duration_tolerance_days" name="duration_tolerance_days" min="0" value="{{ v.duration_tolerance_days }}">
+    </div>
+    <div>
+      <label for="required_stops">Escales (exactement)</label>
+      <select id="required_stops" name="required_stops">
+        {% for n in range(0, 4) %}<option value="{{ n }}" {% if v.required_stops == n|string %}selected{% endif %}>{{ "Vol direct" if n == 0 else n ~ " escale" ~ ("s" if n > 1 else "") }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="travel_class">Classe</label>
+      <select id="travel_class" name="travel_class">
+        {% for value, name in classes.items() %}<option value="{{ value }}" {% if v.travel_class == value|string %}selected{% endif %}>{{ name }}</option>{% endfor %}
+      </select>
+    </div>
+    <div>
+      <label for="currency">Devise</label>
+      <input type="text" id="currency" name="currency" maxlength="3" value="{{ v.currency }}">
+    </div>
+    <div>
+      <label for="schedule">Heure du run <span class="hint">heure d'Oslo</span></label>
+      <input type="time" id="schedule" name="schedule" value="{{ v.schedule }}">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn" type="submit">Enregistrer</button>
+    <a class="btn secondary" href="/">Annuler</a>
+  </div>
+</form>
+{% endblock %}

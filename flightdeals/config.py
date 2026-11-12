@@ -148,7 +148,9 @@ def _load_secrets() -> Secrets:
     )
 
 
-def load_config(path: "Path | str | None" = None) -> Config:
+def load_config(path: "Path | str | None" = None, *, require_secrets: bool = True) -> Config:
+    """`require_secrets=False` : valide uniquement le fichier (utilise par l'interface
+    d'edition, qui n'a volontairement aucun secret) ; les champs secrets valent alors ""."""
     config_path = Path(path) if path else _default_config_path()
     if not config_path.exists():
         raise ConfigError(f"Fichier de config introuvable: {config_path}")
@@ -223,6 +225,11 @@ def load_config(path: "Path | str | None" = None) -> Config:
             f"deal.max_duration_deviation_ratio doit etre >= 0, recu: {deal.max_duration_deviation_ratio}"
         )
 
+    if not serpapi.travel_durations or any(d not in (1, 2, 3) for d in serpapi.travel_durations):
+        raise ConfigError(
+            f"serpapi.travel_durations doit contenir au moins une valeur parmi 1/2/3, recu: {list(serpapi.travel_durations)}"
+        )
+
     if serpapi.month is not None and not (1 <= serpapi.month <= 12):
         raise ConfigError(f"serpapi.month doit etre entre 1 et 12 (ou absent), recu: {serpapi.month}")
 
@@ -244,7 +251,7 @@ def load_config(path: "Path | str | None" = None) -> Config:
             f"recu: {cold_start_check.max_candidates_per_run}"
         )
 
-    secrets = _load_secrets()
+    secrets = _load_secrets() if require_secrets else Secrets("", "", "")
 
     return Config(
         origin=origin,

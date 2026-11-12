@@ -13,6 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY flightdeals/ ./flightdeals/
 COPY config/ ./config/
 COPY trip_watch/ ./trip_watch/
+COPY watches/ ./watches/
 
 # Utilisateur non-root : bonne pratique standard, aucune raison de tourner en root pour
 # un process qui ne fait qu'appeler des API HTTP et ecrire dans /data.
