@@ -37,7 +37,7 @@
   {% else %}
   {% set c = w.config %}
   <dl>
-    <dt>Trajet</dt><dd>{{ c.origin }} ({{ airport_city(c.origin) }}) → {{ c.destination }} ({{ airport_city(c.destination) }}),{{ classes[c.travel_class] }}, {{ c.required_stops }} escale(s) exactement</dd>
+    <dt>Trajet</dt><dd>{{ c.origin }} ({{ airport_city(c.origin) }}) → {{ c.destination }} ({{ airport_city(c.destination) }}) — {{ classes[c.travel_class] }}, {{ c.required_stops }} escale(s) exactement</dd>
     <dt>Départ</dt><dd>{{ c.departure_center.strftime("%d/%m/%Y") }} ± {{ c.departure_tolerance_days }} j</dd>
     <dt>Séjour</dt><dd>{{ c.duration_center_days }} ± {{ c.duration_tolerance_days }} jours</dd>
     <dt>Run</dt><dd>{{ c.schedule }} ({{ c.timezone }})</dd>
