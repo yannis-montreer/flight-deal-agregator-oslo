@@ -8,16 +8,17 @@
 <form method="post" class="card">
   <div class="grid">
     <div>
-      <label for="arrival_area_id">Région d'arrivée
-        <span class="hint">Identifiant Google ; vide = partout</span></label>
-      <input type="text" id="arrival_area_id" name="arrival_area_id" value="{{ v.arrival_area_id }}" list="areas">
-      <datalist id="areas">{% for id, name in areas.items() %}<option value="{{ id }}">{{ name }}</option>{% endfor %}</datalist>
+      <label for="region">Destination (pays ou région)
+        <span class="hint">Efface le champ, tape les premières lettres (ex : « Ita ») et choisis dans la liste ; vide = partout</span></label>
+      <input type="text" id="region" name="region" value="{{ v.region }}" list="regions" autocomplete="off" placeholder="Partout">
+      <datalist id="regions">{% for r in regions %}<option value="{{ r.name }}">{{ r.kind }}</option>{% endfor %}</datalist>
     </div>
     <div>
-      <label for="month">Mois de voyage</label>
+      <label for="month">Mois de voyage
+        <span class="hint">Google ne prend qu'un mois : c'est le prochain à venir</span></label>
       <select id="month" name="month">
         <option value="" {% if v.month == "" %}selected{% endif %}>6 prochains mois</option>
-        {% for m in months %}<option value="{{ loop.index }}" {% if v.month == loop.index|string %}selected{% endif %}>{{ m }}</option>{% endfor %}
+        {% for value, label in month_options %}<option value="{{ value }}" {% if v.month == value|string %}selected{% endif %}>{{ label }}</option>{% endfor %}
       </select>
     </div>
     <div>

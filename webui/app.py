@@ -2,6 +2,7 @@
 formulaires HTML classiques, aucun JavaScript necessaire."""
 from __future__ import annotations
 
+import json
 import os
 import re
 from dataclasses import dataclass
@@ -31,7 +32,47 @@ MONTHS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "
              "septembre", "octobre", "novembre", "décembre"]
 TRAVEL_CLASSES = {1: "Economy", 2: "Premium Economy", 3: "Affaires", 4: "Première"}
 TRAVEL_DURATIONS = {1: "Week-end", 2: "~1 semaine", 3: "~2 semaines"}
-KNOWN_AREAS = {"/m/073q1": "Asie du Sud-Est"}
+
+# Pays et grandes regions -> identifiant Google (voir build_regions.py, source Wikidata).
+REGIONS: list[dict] = json.loads((Path(__file__).parent / "regions.json").read_text(encoding="utf-8"))
+REGION_NAME_BY_ID = {r["id"]: r["name"] for r in REGIONS}
+REGION_ID_BY_NAME = {r["name"].casefold(): r["id"] for r in REGIONS}
+VERIFIED_AREA_IDS = {"/m/073q1"}  # verifie par un vrai appel SerpApi (voir config/config.yaml)
+RAW_ID_RE = re.compile(r"^/[mg]/[0-9a-z_]+$")
+
+
+def region_label(area_id: Optional[str]) -> str:
+    if not area_id:
+        return "Partout"
+    return REGION_NAME_BY_ID.get(area_id, area_id)
+
+
+def parse_region(value: str) -> Optional[str]:
+    """Nom choisi dans la liste -> identifiant Google ; un identifiant brut (/m/... ou /g/...)
+    reste accepte pour un cas non couvert par la liste ; vide = partout."""
+    value = (value or "").strip()
+    if not value or value.casefold() == "partout":
+        return None
+    area_id = REGION_ID_BY_NAME.get(value.casefold())
+    if area_id:
+        return area_id
+    if RAW_ID_RE.match(value):
+        return value
+    raise FormError(f"Région « {value} » inconnue : choisis un pays ou une région dans la liste proposée.")
+
+
+def month_year(month: int, today: Optional[date] = None) -> int:
+    """Annee du prochain mois `month` a venir (le mois en cours compte encore pour cette annee).
+    SerpApi ne prend qu'un mois (1-12), sans annee : il cherche dans les mois a venir."""
+    today = today or date.today()
+    return today.year if month >= today.month else today.year + 1
+
+
+def month_label(month: Optional[int], today: Optional[date] = None) -> str:
+    if month is None:
+        return "6 prochains mois"
+    return f"{MONTHS_FR[month - 1]} {month_year(month, today)}"
+
 
 CONFIG_ERRORS = (FlightDealsConfigError, TripWatchConfigError)
 
@@ -155,7 +196,7 @@ def create_app(flightdeals_path: Path, watches_dir: Path, allowed_hosts: Optiona
             "fd_cost": cost_mod.flightdeals_cost(fd_config) if fd_config else None,
             "fd_warnings": flightdeals_warnings(fd_config) if fd_config else [],
             "watches": watches, "budgets": budget_rows(costs), "saved": saved,
-            "months": MONTHS_FR, "classes": TRAVEL_CLASSES, "areas": KNOWN_AREAS,
+            "month_label": month_label, "region_label": region_label, "classes": TRAVEL_CLASSES,
         })
 
     @app.get("/flightdeals", response_class=HTMLResponse)
@@ -220,7 +261,12 @@ def create_app(flightdeals_path: Path, watches_dir: Path, allowed_hosts: Optiona
 
     def _render_flightdeals(request, values, error, status_code=200):
         return TEMPLATES.TemplateResponse(request, "flightdeals.html", {
-            "v": values, "error": error, "months": MONTHS_FR, "durations": TRAVEL_DURATIONS, "areas": KNOWN_AREAS,
+            "v": values, "error": error, "durations": TRAVEL_DURATIONS,
+            # Ordre chronologique a partir du mois en cours (novembre 2026, decembre 2026, janvier 2027...).
+            "month_options": [
+                (m, month_label(m)) for m in sorted(range(1, 13), key=lambda m: (month_year(m), m))
+            ],
+            "regions": REGIONS,
         }, status_code=status_code)
 
     def _render_watch(request, watch_id, values, error, status_code=200):
@@ -241,7 +287,7 @@ def flightdeals_form_values(config) -> dict:
     return {
         "schedule": config.collection.schedule,
         "month": "" if config.serpapi.month is None else str(config.serpapi.month),
-        "arrival_area_id": config.serpapi.arrival_area_id or "",
+        "region": region_label(config.serpapi.arrival_area_id) if config.serpapi.arrival_area_id else "",
         "travel_durations": [str(d) for d in config.serpapi.travel_durations],
         "min_trip_length_nights": str(config.deal.min_trip_length_nights),
         "max_trip_length_nights": str(config.deal.max_trip_length_nights),
@@ -257,7 +303,7 @@ def apply_flightdeals_form(doc, form: dict) -> None:
     schedule = _text(form, "schedule", "Heure du run")
     month_raw = (form.get("month") or "").strip()
     month = None if month_raw == "" else _int(form, "month", "Mois", 1, 12)
-    area = (form.get("arrival_area_id") or "").strip() or None
+    area = parse_region(form.get("region") or "")
     durations = sorted({_int({"d": d}, "d", "Durées", 1, 3) for d in form.get("travel_durations") or []})
     if not durations:
         raise FormError("Durées de séjour : coche au moins une case.")
@@ -324,15 +370,22 @@ def apply_watch_form(doc, form: dict) -> None:
 
 def flightdeals_warnings(config, today: Optional[date] = None) -> list[str]:
     today = today or date.today()
+    warnings = []
+    area_id = config.serpapi.arrival_area_id
+    if area_id and area_id not in VERIFIED_AREA_IDS:
+        warnings.append(
+            f"La zone « {region_label(area_id)} » n'a encore jamais été testée avec cette recherche : "
+            "vérifie que le récap Telegram du lendemain contient bien des vols."
+        )
     month = config.serpapi.month
-    if month is None:
-        return []
-    if month < today.month:
-        return [f"Le mois surveillé ({MONTHS_FR[month - 1]}) est passé cette année : "
-                "le comportement de SerpApi dans ce cas n'a jamais été vérifié."]
-    if month == today.month:
-        return [f"Le mois surveillé ({MONTHS_FR[month - 1]}) est en cours : pense à choisir le suivant."]
-    return []
+    if month is not None and month == today.month:
+        warnings.append(f"Le mois surveillé ({month_label(month, today)}) est en cours : pense à choisir le suivant.")
+    elif month is not None and month < today.month:
+        warnings.append(
+            f"{month_label(month, today).capitalize()} est un mois de l'année prochaine : cas jamais observé "
+            "jusqu'ici, vérifie les dates des vols dans le récap Telegram du lendemain."
+        )
+    return warnings
 
 
 def watch_warnings(config, today: Optional[date] = None) -> list[str]:

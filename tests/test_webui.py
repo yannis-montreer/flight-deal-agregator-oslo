@@ -32,7 +32,7 @@ def env(tmp_path, monkeypatch):
 
 def _fd_form(**overrides):
     form = {
-        "arrival_area_id": "/m/073q1", "month": "11", "travel_durations": ["1", "2", "3"],
+        "region": "Asie du Sud-Est", "month": "11", "travel_durations": ["1", "2", "3"],
         "min_trip_length_nights": "6", "max_trip_length_nights": "14", "minimum_discount": "30",
         "schedule": "10:30", "monthly_budget": "200", "cold_start_enabled": "on",
         "max_candidates_per_run": "3", "daily_summary_enabled": "on",
@@ -106,7 +106,7 @@ def test_flightdeals_save_keeps_comments_quotes_and_backup(env):
 
 def test_flightdeals_everywhere_and_all_months(env):
     client, fd_path, _ = env
-    client.post("/flightdeals", data=_fd_form(month="", arrival_area_id=""), follow_redirects=False)
+    client.post("/flightdeals", data=_fd_form(month="", region=""), follow_redirects=False)
     raw = yaml.safe_load(fd_path.read_text(encoding="utf-8"))
     assert raw["serpapi"]["month"] is None and raw["serpapi"]["arrival_area_id"] is None
 
@@ -214,3 +214,61 @@ def test_foreign_host_refused(env):
 def test_unknown_or_unsafe_watch_ids(env, watch_id):
     client, _, _ = env
     assert client.get(f"/watches/{watch_id}").status_code == 404
+
+
+# ---------- destination (liste pays/regions) et mois avec annee ----------
+
+def test_region_chosen_by_name_is_stored_as_google_id(env):
+    client, fd_path, _ = env
+    response = client.post("/flightdeals", data=_fd_form(region="italie"), follow_redirects=False)
+    assert response.status_code == 303
+    assert 'arrival_area_id: "/m/03rjj"' in fd_path.read_text(encoding="utf-8")
+    page = client.get("/").text
+    assert "Italie" in page and "jamais été testée" in page
+    assert 'value="Italie"' in client.get("/flightdeals").text
+
+
+def test_region_raw_id_still_accepted(env):
+    client, fd_path, _ = env
+    client.post("/flightdeals", data=_fd_form(region="/g/11abc_def"), follow_redirects=False)
+    assert 'arrival_area_id: "/g/11abc_def"' in fd_path.read_text(encoding="utf-8")
+
+
+def test_unknown_region_rejected(env):
+    client, fd_path, _ = env
+    before = fd_path.read_bytes()
+    response = client.post("/flightdeals", data=_fd_form(region="Atlantide"))
+    assert response.status_code == 400 and "inconnue" in response.text
+    assert fd_path.read_bytes() == before
+
+
+def test_current_region_shown_by_name(env):
+    client, _, _ = env
+    assert 'value="Asie du Sud-Est"' in client.get("/flightdeals").text
+
+
+def test_regions_file_is_consistent():
+    from webui.app import REGIONS
+    names = [r["name"] for r in REGIONS]
+    ids = [r["id"] for r in REGIONS]
+    assert len(names) == len(set(names)) and len(ids) == len(set(ids))
+    assert {"Italie", "Norvège", "Chili", "Asie du Sud-Est", "Pays-Bas", "Danemark"} <= set(names)
+    assert all(i.startswith("/m/") for i in ids)
+
+
+def test_month_labels_carry_the_year():
+    from datetime import date
+    from webui.app import month_label
+    today = date(2026, 11, 12)
+    assert month_label(1, today) == "janvier 2027"
+    assert month_label(11, today) == "novembre 2026"
+    assert month_label(12, today) == "décembre 2026"
+    assert month_label(None, today) == "6 prochains mois"
+
+
+def test_month_select_shows_years(env):
+    client, _, _ = env
+    page = client.get("/flightdeals").text
+    from datetime import date
+    year = date.today().year
+    assert f"{year}<" in page or f"{year + 1}<" in page

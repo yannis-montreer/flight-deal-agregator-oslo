@@ -14,8 +14,8 @@
     <p class="msg err">Fichier invalide : {{ fd_error }}</p>
   {% else %}
   <dl>
-    <dt>Région</dt><dd>{{ areas.get(fd.serpapi.arrival_area_id, fd.serpapi.arrival_area_id or "Partout") }}</dd>
-    <dt>Mois</dt><dd>{{ months[fd.serpapi.month - 1] if fd.serpapi.month else "6 prochains mois" }}</dd>
+    <dt>Destination</dt><dd>{{ region_label(fd.serpapi.arrival_area_id) }}</dd>
+    <dt>Mois</dt><dd>{{ month_label(fd.serpapi.month) }}</dd>
     <dt>Séjour</dt><dd>{{ fd.deal.min_trip_length_nights }} à {{ fd.deal.max_trip_length_nights }} nuits</dd>
     <dt>Baisse minimale</dt><dd>{{ (fd.deal.minimum_discount * 100) | round | int }} %</dd>
     <dt>Run</dt><dd>{{ fd.collection.schedule }} ({{ fd.collection.timezone }})</dd>

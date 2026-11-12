@@ -42,7 +42,7 @@ def flightdeals_cost(config: FlightDealsConfig) -> WatchCost:
         detail += f" + jusqu'à {cold} vérification(s) Google (démarrage à froid)"
     if raw_month > config.serpapi.monthly_budget:
         detail += f" ; plafonné par le budget interne de {config.serpapi.monthly_budget}/mois (des runs seront sautés en fin de mois)"
-    return WatchCost("flightdeals", "Bons plans Asie (flightdeals)", FLIGHTDEALS_KEY_ENV, per_day, per_month, detail)
+    return WatchCost("flightdeals", "Bons plans (flightdeals)", FLIGHTDEALS_KEY_ENV, per_day, per_month, detail)
 
 
 def trip_watch_cost(watch_id: str, config: TripWatchConfig) -> WatchCost:

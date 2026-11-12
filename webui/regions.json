@@ -1,0 +1,1310 @@
+[
+ {
+  "name": "Afrique",
+  "id": "/m/0dg3n1",
+  "kind": "région",
+  "wikidata": "Q15"
+ },
+ {
+  "name": "Afrique australe",
+  "id": "/m/02c59t",
+  "kind": "région",
+  "wikidata": "Q27394"
+ },
+ {
+  "name": "Afrique de l'Est",
+  "id": "/m/01mqb6",
+  "kind": "région",
+  "wikidata": "Q27407"
+ },
+ {
+  "name": "Afrique de l'Ouest",
+  "id": "/m/0hqjh",
+  "kind": "région",
+  "wikidata": "Q4412"
+ },
+ {
+  "name": "Afrique du Nord",
+  "id": "/m/05g2v",
+  "kind": "région",
+  "wikidata": "Q27381"
+ },
+ {
+  "name": "Amérique centrale",
+  "id": "/m/01tzh",
+  "kind": "région",
+  "wikidata": "Q27611"
+ },
+ {
+  "name": "Amérique du Nord",
+  "id": "/m/059g4",
+  "kind": "région",
+  "wikidata": "Q49"
+ },
+ {
+  "name": "Amérique du Sud",
+  "id": "/m/06n3y",
+  "kind": "région",
+  "wikidata": "Q18"
+ },
+ {
+  "name": "Asie",
+  "id": "/m/0j0k",
+  "kind": "région",
+  "wikidata": "Q48"
+ },
+ {
+  "name": "Asie centrale",
+  "id": "/m/01z5y",
+  "kind": "région",
+  "wikidata": "Q27275"
+ },
+ {
+  "name": "Asie de l'Est",
+  "id": "/m/02qnk",
+  "kind": "région",
+  "wikidata": "Q27231"
+ },
+ {
+  "name": "Asie du Sud",
+  "id": "/m/06nn1",
+  "kind": "région",
+  "wikidata": "Q771405"
+ },
+ {
+  "name": "Asie du Sud-Est",
+  "id": "/m/073q1",
+  "kind": "région",
+  "wikidata": "Q11708"
+ },
+ {
+  "name": "Caraïbes",
+  "id": "/m/0261m",
+  "kind": "région",
+  "wikidata": "Q664609"
+ },
+ {
+  "name": "Europe",
+  "id": "/m/02j9z",
+  "kind": "région",
+  "wikidata": "Q46"
+ },
+ {
+  "name": "Europe de l'Est",
+  "id": "/m/09b69",
+  "kind": "région",
+  "wikidata": "Q27468"
+ },
+ {
+  "name": "Europe de l'Ouest",
+  "id": "/m/0852h",
+  "kind": "région",
+  "wikidata": "Q27496"
+ },
+ {
+  "name": "Europe du Nord",
+  "id": "/m/01531v",
+  "kind": "région",
+  "wikidata": "Q27479"
+ },
+ {
+  "name": "Europe du Sud",
+  "id": "/m/0250wj",
+  "kind": "région",
+  "wikidata": "Q27449"
+ },
+ {
+  "name": "Moyen-Orient",
+  "id": "/m/04wsz",
+  "kind": "région",
+  "wikidata": "Q7204"
+ },
+ {
+  "name": "Scandinavie",
+  "id": "/m/06mx8",
+  "kind": "région",
+  "wikidata": "Q21195"
+ },
+ {
+  "name": "Afghanistan",
+  "id": "/m/0jdd",
+  "kind": "pays",
+  "wikidata": "Q889"
+ },
+ {
+  "name": "Afrique du Sud",
+  "id": "/m/0hzlz",
+  "kind": "pays",
+  "wikidata": "Q258"
+ },
+ {
+  "name": "Albanie",
+  "id": "/m/0jdx",
+  "kind": "pays",
+  "wikidata": "Q222"
+ },
+ {
+  "name": "Algérie",
+  "id": "/m/0h3y",
+  "kind": "pays",
+  "wikidata": "Q262"
+ },
+ {
+  "name": "Allemagne",
+  "id": "/m/0345h",
+  "kind": "pays",
+  "wikidata": "Q183"
+ },
+ {
+  "name": "Andorre",
+  "id": "/m/0hg5",
+  "kind": "pays",
+  "wikidata": "Q228"
+ },
+ {
+  "name": "Angola",
+  "id": "/m/0j4b",
+  "kind": "pays",
+  "wikidata": "Q916"
+ },
+ {
+  "name": "Antigua-et-Barbuda",
+  "id": "/m/0l3h",
+  "kind": "pays",
+  "wikidata": "Q781"
+ },
+ {
+  "name": "Arabie saoudite",
+  "id": "/m/01z215",
+  "kind": "pays",
+  "wikidata": "Q851"
+ },
+ {
+  "name": "Argentine",
+  "id": "/m/0jgd",
+  "kind": "pays",
+  "wikidata": "Q414"
+ },
+ {
+  "name": "Arménie",
+  "id": "/m/0jgx",
+  "kind": "pays",
+  "wikidata": "Q399"
+ },
+ {
+  "name": "Australie",
+  "id": "/m/0chghy",
+  "kind": "pays",
+  "wikidata": "Q408"
+ },
+ {
+  "name": "Autriche",
+  "id": "/m/0h7x",
+  "kind": "pays",
+  "wikidata": "Q40"
+ },
+ {
+  "name": "Azerbaïdjan",
+  "id": "/m/0jhd",
+  "kind": "pays",
+  "wikidata": "Q227"
+ },
+ {
+  "name": "Bahamas",
+  "id": "/m/0160w",
+  "kind": "pays",
+  "wikidata": "Q778"
+ },
+ {
+  "name": "Bahreïn",
+  "id": "/m/0161c",
+  "kind": "pays",
+  "wikidata": "Q398"
+ },
+ {
+  "name": "Bangladesh",
+  "id": "/m/0162b",
+  "kind": "pays",
+  "wikidata": "Q902"
+ },
+ {
+  "name": "Barbade",
+  "id": "/m/0162v",
+  "kind": "pays",
+  "wikidata": "Q244"
+ },
+ {
+  "name": "Belgique",
+  "id": "/m/0154j",
+  "kind": "pays",
+  "wikidata": "Q31"
+ },
+ {
+  "name": "Belize",
+  "id": "/m/0164b",
+  "kind": "pays",
+  "wikidata": "Q242"
+ },
+ {
+  "name": "Bhoutan",
+  "id": "/m/07bxhl",
+  "kind": "pays",
+  "wikidata": "Q917"
+ },
+ {
+  "name": "Birmanie",
+  "id": "/m/04xn_",
+  "kind": "pays",
+  "wikidata": "Q836"
+ },
+ {
+  "name": "Biélorussie",
+  "id": "/m/0163v",
+  "kind": "pays",
+  "wikidata": "Q184"
+ },
+ {
+  "name": "Bolivie",
+  "id": "/m/0165v",
+  "kind": "pays",
+  "wikidata": "Q750"
+ },
+ {
+  "name": "Bosnie-Herzégovine",
+  "id": "/m/0166b",
+  "kind": "pays",
+  "wikidata": "Q225"
+ },
+ {
+  "name": "Botswana",
+  "id": "/m/0166v",
+  "kind": "pays",
+  "wikidata": "Q963"
+ },
+ {
+  "name": "Brunei",
+  "id": "/m/0167v",
+  "kind": "pays",
+  "wikidata": "Q921"
+ },
+ {
+  "name": "Brésil",
+  "id": "/m/015fr",
+  "kind": "pays",
+  "wikidata": "Q155"
+ },
+ {
+  "name": "Bulgarie",
+  "id": "/m/015qh",
+  "kind": "pays",
+  "wikidata": "Q219"
+ },
+ {
+  "name": "Burkina Faso",
+  "id": "/m/01699",
+  "kind": "pays",
+  "wikidata": "Q965"
+ },
+ {
+  "name": "Burundi",
+  "id": "/m/0169t",
+  "kind": "pays",
+  "wikidata": "Q967"
+ },
+ {
+  "name": "Bénin",
+  "id": "/m/0164v",
+  "kind": "pays",
+  "wikidata": "Q962"
+ },
+ {
+  "name": "Cambodge",
+  "id": "/m/01xbgx",
+  "kind": "pays",
+  "wikidata": "Q424"
+ },
+ {
+  "name": "Cameroun",
+  "id": "/m/01nln",
+  "kind": "pays",
+  "wikidata": "Q1009"
+ },
+ {
+  "name": "Canada",
+  "id": "/m/0d060g",
+  "kind": "pays",
+  "wikidata": "Q16"
+ },
+ {
+  "name": "Cap-Vert",
+  "id": "/m/01nqj",
+  "kind": "pays",
+  "wikidata": "Q1011"
+ },
+ {
+  "name": "Chili",
+  "id": "/m/01p1v",
+  "kind": "pays",
+  "wikidata": "Q298"
+ },
+ {
+  "name": "Chine",
+  "id": "/m/0d05w3",
+  "kind": "pays",
+  "wikidata": "Q148"
+ },
+ {
+  "name": "Chypre",
+  "id": "/m/01ppq",
+  "kind": "pays",
+  "wikidata": "Q229"
+ },
+ {
+  "name": "Colombie",
+  "id": "/m/01ls2",
+  "kind": "pays",
+  "wikidata": "Q739"
+ },
+ {
+  "name": "Comores",
+  "id": "/m/01n6c",
+  "kind": "pays",
+  "wikidata": "Q970"
+ },
+ {
+  "name": "Corée du Nord",
+  "id": "/m/05b7q",
+  "kind": "pays",
+  "wikidata": "Q423"
+ },
+ {
+  "name": "Corée du Sud",
+  "id": "/m/06qd3",
+  "kind": "pays",
+  "wikidata": "Q884"
+ },
+ {
+  "name": "Costa Rica",
+  "id": "/m/01p8s",
+  "kind": "pays",
+  "wikidata": "Q800"
+ },
+ {
+  "name": "Croatie",
+  "id": "/m/01pj7",
+  "kind": "pays",
+  "wikidata": "Q224"
+ },
+ {
+  "name": "Cuba",
+  "id": "/m/0d04z6",
+  "kind": "pays",
+  "wikidata": "Q241"
+ },
+ {
+  "name": "Côte d'Ivoire",
+  "id": "/m/0fv4v",
+  "kind": "pays",
+  "wikidata": "Q1008"
+ },
+ {
+  "name": "Danemark",
+  "id": "/m/0k6nt",
+  "kind": "pays",
+  "wikidata": "Q35"
+ },
+ {
+  "name": "Djibouti",
+  "id": "/m/027jk",
+  "kind": "pays",
+  "wikidata": "Q977"
+ },
+ {
+  "name": "Dominique",
+  "id": "/m/027nb",
+  "kind": "pays",
+  "wikidata": "Q784"
+ },
+ {
+  "name": "Espagne",
+  "id": "/m/06mkj",
+  "kind": "pays",
+  "wikidata": "Q29"
+ },
+ {
+  "name": "Estonie",
+  "id": "/m/02kmm",
+  "kind": "pays",
+  "wikidata": "Q191"
+ },
+ {
+  "name": "Eswatini",
+  "id": "/m/06v36",
+  "kind": "pays",
+  "wikidata": "Q1050"
+ },
+ {
+  "name": "Fidji",
+  "id": "/m/02wt0",
+  "kind": "pays",
+  "wikidata": "Q712"
+ },
+ {
+  "name": "Finlande",
+  "id": "/m/02vzc",
+  "kind": "pays",
+  "wikidata": "Q33"
+ },
+ {
+  "name": "France",
+  "id": "/m/0f8l9c",
+  "kind": "pays",
+  "wikidata": "Q142"
+ },
+ {
+  "name": "Gabon",
+  "id": "/m/03548",
+  "kind": "pays",
+  "wikidata": "Q1000"
+ },
+ {
+  "name": "Gambie",
+  "id": "/m/0hdx8",
+  "kind": "pays",
+  "wikidata": "Q1005"
+ },
+ {
+  "name": "Ghana",
+  "id": "/m/035dk",
+  "kind": "pays",
+  "wikidata": "Q117"
+ },
+ {
+  "name": "Grenade",
+  "id": "/m/035yg",
+  "kind": "pays",
+  "wikidata": "Q769"
+ },
+ {
+  "name": "Grèce",
+  "id": "/m/035qy",
+  "kind": "pays",
+  "wikidata": "Q41"
+ },
+ {
+  "name": "Guatemala",
+  "id": "/m/0345_",
+  "kind": "pays",
+  "wikidata": "Q774"
+ },
+ {
+  "name": "Guinée",
+  "id": "/m/03676",
+  "kind": "pays",
+  "wikidata": "Q1006"
+ },
+ {
+  "name": "Guinée équatoriale",
+  "id": "/m/02kcz",
+  "kind": "pays",
+  "wikidata": "Q983"
+ },
+ {
+  "name": "Guinée-Bissau",
+  "id": "/m/036b_",
+  "kind": "pays",
+  "wikidata": "Q1007"
+ },
+ {
+  "name": "Guyana",
+  "id": "/m/034m8",
+  "kind": "pays",
+  "wikidata": "Q734"
+ },
+ {
+  "name": "Géorgie",
+  "id": "/m/0d0kn",
+  "kind": "pays",
+  "wikidata": "Q230"
+ },
+ {
+  "name": "Haïti",
+  "id": "/m/03gyl",
+  "kind": "pays",
+  "wikidata": "Q790"
+ },
+ {
+  "name": "Honduras",
+  "id": "/m/03h2c",
+  "kind": "pays",
+  "wikidata": "Q783"
+ },
+ {
+  "name": "Hongrie",
+  "id": "/m/03gj2",
+  "kind": "pays",
+  "wikidata": "Q28"
+ },
+ {
+  "name": "Inde",
+  "id": "/m/03rk0",
+  "kind": "pays",
+  "wikidata": "Q668"
+ },
+ {
+  "name": "Indonésie",
+  "id": "/m/03ryn",
+  "kind": "pays",
+  "wikidata": "Q252"
+ },
+ {
+  "name": "Irak",
+  "id": "/m/0d05q4",
+  "kind": "pays",
+  "wikidata": "Q796"
+ },
+ {
+  "name": "Iran",
+  "id": "/m/03shp",
+  "kind": "pays",
+  "wikidata": "Q794"
+ },
+ {
+  "name": "Irlande",
+  "id": "/m/03rt9",
+  "kind": "pays",
+  "wikidata": "Q27"
+ },
+ {
+  "name": "Islande",
+  "id": "/m/03rj0",
+  "kind": "pays",
+  "wikidata": "Q189"
+ },
+ {
+  "name": "Israël",
+  "id": "/m/03spz",
+  "kind": "pays",
+  "wikidata": "Q801"
+ },
+ {
+  "name": "Italie",
+  "id": "/m/03rjj",
+  "kind": "pays",
+  "wikidata": "Q38"
+ },
+ {
+  "name": "Jamaïque",
+  "id": "/m/03_r3",
+  "kind": "pays",
+  "wikidata": "Q766"
+ },
+ {
+  "name": "Japon",
+  "id": "/m/03_3d",
+  "kind": "pays",
+  "wikidata": "Q17"
+ },
+ {
+  "name": "Jordanie",
+  "id": "/m/03__y",
+  "kind": "pays",
+  "wikidata": "Q810"
+ },
+ {
+  "name": "Kazakhstan",
+  "id": "/m/047lj",
+  "kind": "pays",
+  "wikidata": "Q232"
+ },
+ {
+  "name": "Kenya",
+  "id": "/m/019rg5",
+  "kind": "pays",
+  "wikidata": "Q114"
+ },
+ {
+  "name": "Kirghizistan",
+  "id": "/m/0jt3tjf",
+  "kind": "pays",
+  "wikidata": "Q813"
+ },
+ {
+  "name": "Kiribati",
+  "id": "/m/047t_",
+  "kind": "pays",
+  "wikidata": "Q710"
+ },
+ {
+  "name": "Kosovo",
+  "id": "/m/04fh3",
+  "kind": "pays",
+  "wikidata": "Q1246"
+ },
+ {
+  "name": "Koweït",
+  "id": "/m/047yc",
+  "kind": "pays",
+  "wikidata": "Q817"
+ },
+ {
+  "name": "Laos",
+  "id": "/m/04hhv",
+  "kind": "pays",
+  "wikidata": "Q819"
+ },
+ {
+  "name": "Lesotho",
+  "id": "/m/04hvw",
+  "kind": "pays",
+  "wikidata": "Q1013"
+ },
+ {
+  "name": "Lettonie",
+  "id": "/m/04g5k",
+  "kind": "pays",
+  "wikidata": "Q211"
+ },
+ {
+  "name": "Liban",
+  "id": "/m/04hqz",
+  "kind": "pays",
+  "wikidata": "Q822"
+ },
+ {
+  "name": "Liberia",
+  "id": "/m/04hzj",
+  "kind": "pays",
+  "wikidata": "Q1014"
+ },
+ {
+  "name": "Libye",
+  "id": "/m/04gqr",
+  "kind": "pays",
+  "wikidata": "Q1016"
+ },
+ {
+  "name": "Liechtenstein",
+  "id": "/m/04j53",
+  "kind": "pays",
+  "wikidata": "Q347"
+ },
+ {
+  "name": "Lituanie",
+  "id": "/m/04gzd",
+  "kind": "pays",
+  "wikidata": "Q37"
+ },
+ {
+  "name": "Luxembourg",
+  "id": "/m/04g61",
+  "kind": "pays",
+  "wikidata": "Q32"
+ },
+ {
+  "name": "Macédoine du Nord",
+  "id": "/m/0bjv6",
+  "kind": "pays",
+  "wikidata": "Q221"
+ },
+ {
+  "name": "Madagascar",
+  "id": "/m/04sj3",
+  "kind": "pays",
+  "wikidata": "Q1019"
+ },
+ {
+  "name": "Malaisie",
+  "id": "/m/09pmkv",
+  "kind": "pays",
+  "wikidata": "Q833"
+ },
+ {
+  "name": "Malawi",
+  "id": "/m/04tr1",
+  "kind": "pays",
+  "wikidata": "Q1020"
+ },
+ {
+  "name": "Maldives",
+  "id": "/m/04ty8",
+  "kind": "pays",
+  "wikidata": "Q826"
+ },
+ {
+  "name": "Mali",
+  "id": "/m/04v09",
+  "kind": "pays",
+  "wikidata": "Q912"
+ },
+ {
+  "name": "Malte",
+  "id": "/m/04v3q",
+  "kind": "pays",
+  "wikidata": "Q233"
+ },
+ {
+  "name": "Maroc",
+  "id": "/m/04wgh",
+  "kind": "pays",
+  "wikidata": "Q1028"
+ },
+ {
+  "name": "Maurice",
+  "id": "/m/04vs9",
+  "kind": "pays",
+  "wikidata": "Q1027"
+ },
+ {
+  "name": "Mauritanie",
+  "id": "/m/04vjh",
+  "kind": "pays",
+  "wikidata": "Q1025"
+ },
+ {
+  "name": "Mexique",
+  "id": "/m/0b90_r",
+  "kind": "pays",
+  "wikidata": "Q96"
+ },
+ {
+  "name": "Moldavie",
+  "id": "/m/04w4s",
+  "kind": "pays",
+  "wikidata": "Q217"
+ },
+ {
+  "name": "Monaco",
+  "id": "/m/04w58",
+  "kind": "pays",
+  "wikidata": "Q235"
+ },
+ {
+  "name": "Mongolie",
+  "id": "/m/04w8f",
+  "kind": "pays",
+  "wikidata": "Q711"
+ },
+ {
+  "name": "Monténégro",
+  "id": "/m/056vv",
+  "kind": "pays",
+  "wikidata": "Q236"
+ },
+ {
+  "name": "Mozambique",
+  "id": "/m/04wlh",
+  "kind": "pays",
+  "wikidata": "Q1029"
+ },
+ {
+  "name": "Namibie",
+  "id": "/m/05bmq",
+  "kind": "pays",
+  "wikidata": "Q1030"
+ },
+ {
+  "name": "Nauru",
+  "id": "/m/05br2",
+  "kind": "pays",
+  "wikidata": "Q697"
+ },
+ {
+  "name": "Nicaragua",
+  "id": "/m/05c74",
+  "kind": "pays",
+  "wikidata": "Q811"
+ },
+ {
+  "name": "Niger",
+  "id": "/m/05cc1",
+  "kind": "pays",
+  "wikidata": "Q1032"
+ },
+ {
+  "name": "Nigeria",
+  "id": "/m/05cgv",
+  "kind": "pays",
+  "wikidata": "Q1033"
+ },
+ {
+  "name": "Norvège",
+  "id": "/m/05b4w",
+  "kind": "pays",
+  "wikidata": "Q20"
+ },
+ {
+  "name": "Nouvelle-Zélande",
+  "id": "/m/0ctw_b",
+  "kind": "pays",
+  "wikidata": "Q664"
+ },
+ {
+  "name": "Népal",
+  "id": "/m/016zwt",
+  "kind": "pays",
+  "wikidata": "Q837"
+ },
+ {
+  "name": "Oman",
+  "id": "/m/05l8y",
+  "kind": "pays",
+  "wikidata": "Q842"
+ },
+ {
+  "name": "Ouganda",
+  "id": "/m/07tp2",
+  "kind": "pays",
+  "wikidata": "Q1036"
+ },
+ {
+  "name": "Ouzbékistan",
+  "id": "/m/07t_x",
+  "kind": "pays",
+  "wikidata": "Q265"
+ },
+ {
+  "name": "Pakistan",
+  "id": "/m/05sb1",
+  "kind": "pays",
+  "wikidata": "Q843"
+ },
+ {
+  "name": "Palaos",
+  "id": "/m/05tr7",
+  "kind": "pays",
+  "wikidata": "Q695"
+ },
+ {
+  "name": "Panama",
+  "id": "/m/05qx1",
+  "kind": "pays",
+  "wikidata": "Q804"
+ },
+ {
+  "name": "Papouasie-Nouvelle-Guinée",
+  "id": "/m/05qkp",
+  "kind": "pays",
+  "wikidata": "Q691"
+ },
+ {
+  "name": "Paraguay",
+  "id": "/m/05v10",
+  "kind": "pays",
+  "wikidata": "Q733"
+ },
+ {
+  "name": "Pays-Bas",
+  "id": "/m/059j2",
+  "kind": "pays",
+  "wikidata": "Q55"
+ },
+ {
+  "name": "Philippines",
+  "id": "/m/05v8c",
+  "kind": "pays",
+  "wikidata": "Q928"
+ },
+ {
+  "name": "Pologne",
+  "id": "/m/05qhw",
+  "kind": "pays",
+  "wikidata": "Q36"
+ },
+ {
+  "name": "Portugal",
+  "id": "/m/05r4w",
+  "kind": "pays",
+  "wikidata": "Q45"
+ },
+ {
+  "name": "Pérou",
+  "id": "/m/016wzw",
+  "kind": "pays",
+  "wikidata": "Q419"
+ },
+ {
+  "name": "Qatar",
+  "id": "/m/0697s",
+  "kind": "pays",
+  "wikidata": "Q846"
+ },
+ {
+  "name": "Roumanie",
+  "id": "/m/06c1y",
+  "kind": "pays",
+  "wikidata": "Q218"
+ },
+ {
+  "name": "Royaume-Uni",
+  "id": "/m/07ssc",
+  "kind": "pays",
+  "wikidata": "Q145"
+ },
+ {
+  "name": "Russie",
+  "id": "/m/06bnz",
+  "kind": "pays",
+  "wikidata": "Q159"
+ },
+ {
+  "name": "Rwanda",
+  "id": "/m/06dfg",
+  "kind": "pays",
+  "wikidata": "Q1037"
+ },
+ {
+  "name": "République centrafricaine",
+  "id": "/m/01nyl",
+  "kind": "pays",
+  "wikidata": "Q929"
+ },
+ {
+  "name": "République dominicaine",
+  "id": "/m/027rn",
+  "kind": "pays",
+  "wikidata": "Q786"
+ },
+ {
+  "name": "République du Congo",
+  "id": "/m/01rxw",
+  "kind": "pays",
+  "wikidata": "Q971"
+ },
+ {
+  "name": "République démocratique du Congo",
+  "id": "/m/088xp",
+  "kind": "pays",
+  "wikidata": "Q974"
+ },
+ {
+  "name": "Saint-Christophe-et-Niévès",
+  "id": "/m/06ryl",
+  "kind": "pays",
+  "wikidata": "Q763"
+ },
+ {
+  "name": "Saint-Marin",
+  "id": "/m/06sff",
+  "kind": "pays",
+  "wikidata": "Q238"
+ },
+ {
+  "name": "Saint-Vincent-et-les-Grenadines",
+  "id": "/m/06s6l",
+  "kind": "pays",
+  "wikidata": "Q757"
+ },
+ {
+  "name": "Sainte-Lucie",
+  "id": "/m/06s0l",
+  "kind": "pays",
+  "wikidata": "Q760"
+ },
+ {
+  "name": "Salvador",
+  "id": "/m/02k8k",
+  "kind": "pays",
+  "wikidata": "Q792"
+ },
+ {
+  "name": "Samoa",
+  "id": "/m/06s9y",
+  "kind": "pays",
+  "wikidata": "Q683"
+ },
+ {
+  "name": "Sao Tomé-et-Principe",
+  "id": "/m/0j681",
+  "kind": "pays",
+  "wikidata": "Q1039"
+ },
+ {
+  "name": "Serbie",
+  "id": "/m/077qn",
+  "kind": "pays",
+  "wikidata": "Q403"
+ },
+ {
+  "name": "Seychelles",
+  "id": "/m/06sw9",
+  "kind": "pays",
+  "wikidata": "Q1042"
+ },
+ {
+  "name": "Sierra Leone",
+  "id": "/m/06s_2",
+  "kind": "pays",
+  "wikidata": "Q1044"
+ },
+ {
+  "name": "Singapour",
+  "id": "/m/06t2t",
+  "kind": "pays",
+  "wikidata": "Q334"
+ },
+ {
+  "name": "Slovaquie",
+  "id": "/m/06npd",
+  "kind": "pays",
+  "wikidata": "Q214"
+ },
+ {
+  "name": "Slovénie",
+  "id": "/m/06t8v",
+  "kind": "pays",
+  "wikidata": "Q215"
+ },
+ {
+  "name": "Somalie",
+  "id": "/m/06tgw",
+  "kind": "pays",
+  "wikidata": "Q1045"
+ },
+ {
+  "name": "Soudan",
+  "id": "/m/06tw8",
+  "kind": "pays",
+  "wikidata": "Q1049"
+ },
+ {
+  "name": "Soudan du Sud",
+  "id": "/m/05rznz",
+  "kind": "pays",
+  "wikidata": "Q958"
+ },
+ {
+  "name": "Sri Lanka",
+  "id": "/m/06m_5",
+  "kind": "pays",
+  "wikidata": "Q854"
+ },
+ {
+  "name": "Suisse",
+  "id": "/m/06mzp",
+  "kind": "pays",
+  "wikidata": "Q39"
+ },
+ {
+  "name": "Suriname",
+  "id": "/m/06nnj",
+  "kind": "pays",
+  "wikidata": "Q730"
+ },
+ {
+  "name": "Suède",
+  "id": "/m/0d0vqn",
+  "kind": "pays",
+  "wikidata": "Q34"
+ },
+ {
+  "name": "Syrie",
+  "id": "/m/06vbd",
+  "kind": "pays",
+  "wikidata": "Q858"
+ },
+ {
+  "name": "Sénégal",
+  "id": "/m/06srk",
+  "kind": "pays",
+  "wikidata": "Q1041"
+ },
+ {
+  "name": "Tadjikistan",
+  "id": "/m/07dvs",
+  "kind": "pays",
+  "wikidata": "Q863"
+ },
+ {
+  "name": "Tanzanie",
+  "id": "/m/07dzf",
+  "kind": "pays",
+  "wikidata": "Q924"
+ },
+ {
+  "name": "Taïwan",
+  "id": "/m/06f32",
+  "kind": "pays",
+  "wikidata": "Q865"
+ },
+ {
+  "name": "Tchad",
+  "id": "/m/01p1b",
+  "kind": "pays",
+  "wikidata": "Q657"
+ },
+ {
+  "name": "Tchéquie",
+  "id": "/m/01mjq",
+  "kind": "pays",
+  "wikidata": "Q213"
+ },
+ {
+  "name": "Thaïlande",
+  "id": "/m/07f1x",
+  "kind": "pays",
+  "wikidata": "Q869"
+ },
+ {
+  "name": "Timor oriental",
+  "id": "/m/02lx0",
+  "kind": "pays",
+  "wikidata": "Q574"
+ },
+ {
+  "name": "Togo",
+  "id": "/m/07f5x",
+  "kind": "pays",
+  "wikidata": "Q945"
+ },
+ {
+  "name": "Tonga",
+  "id": "/m/07fb6",
+  "kind": "pays",
+  "wikidata": "Q678"
+ },
+ {
+  "name": "Trinité-et-Tobago",
+  "id": "/m/09lxtg",
+  "kind": "pays",
+  "wikidata": "Q754"
+ },
+ {
+  "name": "Tunisie",
+  "id": "/m/07fj_",
+  "kind": "pays",
+  "wikidata": "Q948"
+ },
+ {
+  "name": "Turkménistan",
+  "id": "/m/01c4pv",
+  "kind": "pays",
+  "wikidata": "Q874"
+ },
+ {
+  "name": "Turquie",
+  "id": "/m/01znc_",
+  "kind": "pays",
+  "wikidata": "Q43"
+ },
+ {
+  "name": "Tuvalu",
+  "id": "/m/07fsv",
+  "kind": "pays",
+  "wikidata": "Q672"
+ },
+ {
+  "name": "Ukraine",
+  "id": "/m/07t21",
+  "kind": "pays",
+  "wikidata": "Q212"
+ },
+ {
+  "name": "Uruguay",
+  "id": "/m/07twz",
+  "kind": "pays",
+  "wikidata": "Q77"
+ },
+ {
+  "name": "Vanuatu",
+  "id": "/m/07z5n",
+  "kind": "pays",
+  "wikidata": "Q686"
+ },
+ {
+  "name": "Vatican",
+  "id": "/m/07ytt",
+  "kind": "pays",
+  "wikidata": "Q237"
+ },
+ {
+  "name": "Venezuela",
+  "id": "/m/07ylj",
+  "kind": "pays",
+  "wikidata": "Q717"
+ },
+ {
+  "name": "Vietnam",
+  "id": "/m/01crd5",
+  "kind": "pays",
+  "wikidata": "Q881"
+ },
+ {
+  "name": "Yémen",
+  "id": "/m/01z88t",
+  "kind": "pays",
+  "wikidata": "Q805"
+ },
+ {
+  "name": "Zambie",
+  "id": "/m/088vb",
+  "kind": "pays",
+  "wikidata": "Q953"
+ },
+ {
+  "name": "Zimbabwe",
+  "id": "/m/088q4",
+  "kind": "pays",
+  "wikidata": "Q954"
+ },
+ {
+  "name": "Égypte",
+  "id": "/m/02k54",
+  "kind": "pays",
+  "wikidata": "Q79"
+ },
+ {
+  "name": "Émirats arabes unis",
+  "id": "/m/0j1z8",
+  "kind": "pays",
+  "wikidata": "Q878"
+ },
+ {
+  "name": "Équateur",
+  "id": "/m/02k1b",
+  "kind": "pays",
+  "wikidata": "Q736"
+ },
+ {
+  "name": "Érythrée",
+  "id": "/m/02khs",
+  "kind": "pays",
+  "wikidata": "Q986"
+ },
+ {
+  "name": "État de Palestine",
+  "id": "/m/01k0p4",
+  "kind": "pays",
+  "wikidata": "Q219060"
+ },
+ {
+  "name": "États fédérés de Micronésie",
+  "id": "/m/03188",
+  "kind": "pays",
+  "wikidata": "Q702"
+ },
+ {
+  "name": "États-Unis",
+  "id": "/m/09c7w0",
+  "kind": "pays",
+  "wikidata": "Q30"
+ },
+ {
+  "name": "Éthiopie",
+  "id": "/m/019pcs",
+  "kind": "pays",
+  "wikidata": "Q115"
+ },
+ {
+  "name": "Îles Marshall",
+  "id": "/m/04v6v",
+  "kind": "pays",
+  "wikidata": "Q709"
+ },
+ {
+  "name": "Îles Salomon",
+  "id": "/m/01n8qg",
+  "kind": "pays",
+  "wikidata": "Q685"
+ }
+]
