@@ -172,10 +172,16 @@ def send_message(bot_token: str, chat_id: str, text: str, *, timeout_seconds: fl
         raise TelegramError(f"Telegram a renvoye ok=false: {data}")
 
 
+def with_title(title: str, text: str) -> str:
+    """Prefixe un message du nom de la veille (veilles multiples) ; titre vide = message
+    historique inchange."""
+    return f"\U0001F3F7 {title}\n{text}" if title else text
+
+
 def send_deal_notification(
-    bot_token: str, chat_id: str, deal: DealMessage, *, timeout_seconds: float = 15.0
+    bot_token: str, chat_id: str, deal: DealMessage, *, timeout_seconds: float = 15.0, title: str = ""
 ) -> None:
-    text = render_message(deal)
+    text = with_title(title, render_message(deal))
     send_message(bot_token, chat_id, text, timeout_seconds=timeout_seconds)
     logger.info(
         "Notification Telegram envoyee: %s -> %s, %s %s", deal.origin, deal.destination, deal.price, deal.currency
@@ -183,9 +189,9 @@ def send_deal_notification(
 
 
 def send_google_signal_notification(
-    bot_token: str, chat_id: str, msg: GoogleSignalMessage, *, timeout_seconds: float = 15.0
+    bot_token: str, chat_id: str, msg: GoogleSignalMessage, *, timeout_seconds: float = 15.0, title: str = ""
 ) -> None:
-    text = render_google_signal_message(msg)
+    text = with_title(title, render_google_signal_message(msg))
     send_message(bot_token, chat_id, text, timeout_seconds=timeout_seconds)
     logger.info(
         "Signal Google envoye: %s -> %s, %s %s (price_level=%s)",

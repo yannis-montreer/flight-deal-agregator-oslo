@@ -16,7 +16,7 @@ machine. Trois services, deux images :
 
 | Service | Rôle | Périmètre actuel |
 |---|---|---|
-| `flightdeals` | Détection proactive de deals, produit principal | OSL → Asie du Sud-Est, novembre, séjours 6-14 nuits |
+| `flightdeals` | Détection proactive de deals : veille principale (`config/config.yaml`) + une veille par fichier de `deals/` | ex. OSL → Asie du Sud-Est, séjours 6-14 nuits |
 | `trip-watch` | Alertes sur des trajets précis, une par fichier de `watches/` | ex. OSL → Santiago, 12-18 janvier 2027, séjour 30-40j, 1 escale exacte, Premium Economy |
 | `webui` | Interface locale d'édition (http://127.0.0.1:8765) | voir plus bas |
 
@@ -112,7 +112,14 @@ YAML à la main :
 quelques minutes sans redémarrage), case « Active » pour une pause, « Supprimer » range le
 fichier dans `watches/.archive/` (l'historique `data/trip_watch_<nom>.db` est conservé).
 
-**Clés** : chaque alerte choisit sa clé par **nom** de variable de `.env` (`api_key_env`). Le
+**Veilles bons plans** : bouton « Nouvelle veille » (fichier `deals/<nom>.yaml`, modèle copié de
+`config/config.yaml`, avec `name`, `api_key_env` et `db_file`), pris en compte sans redémarrage
+par le service `flightdeals` ([flightdeals/multi.py](flightdeals/multi.py)). Chaque veille a sa
+base (`data/flightdeals_<nom>.db`), son budget interne, sa clé, et ses messages Telegram portent
+son nom. La veille principale (`config/config.yaml`, `data/flightdeals.db`) ne se supprime pas,
+elle se met en pause.
+
+**Clés** : chaque alerte ou veille choisit sa clé par **nom** de variable de `.env` (`api_key_env`). Le
 service `trip-watch` publie dans `status/keys.json` les noms des clés présentes et les compteurs
 de leur compte (`account.json`, gratuit) — jamais les valeurs. Ajouter une clé : une ligne
 `SERPAPI_KEY_3=...` dans `.env` (le nom doit contenir `SERPAPI_KEY`), puis `docker compose up -d`.

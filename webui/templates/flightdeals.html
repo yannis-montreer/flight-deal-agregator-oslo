@@ -1,12 +1,32 @@
 {% extends "base.html" %}
-{% block title %}Bons plans — Veilles{% endblock %}
+{% set title = "Nouvelle veille bons plans" if is_new else (v.name or "Bons plans (flightdeals)") %}
+{% block title %}{{ title }} — Veilles{% endblock %}
 {% block content %}
 <p><a href="/">← Retour</a></p>
-<h1>Bons plans (flightdeals)</h1>
-<p class="sub">Les réglages avancés (score, dédoublonnage, journaux) restent dans <code>config/config.yaml</code>.</p>
+<h1>{{ title }}</h1>
+<p class="sub">
+  {% if is_new %}Exploration d'une zone : Google propose chaque jour les destinations les moins chères, et une alerte part quand un prix est anormalement bas par rapport à l'historique de la veille.
+  Les réglages avancés sont copiés depuis la veille principale. Il faut environ 7 jours d'historique avant les premiers vrais deals.
+  {% else %}Fichier <code>{{ "config/config.yaml" if is_main else "deals/" ~ veille_id ~ ".yaml" }}</code>. Les réglages avancés (score, dédoublonnage, journaux) restent dans ce fichier.{% endif %}
+</p>
 {% if error %}<p class="msg err">{{ error }}</p>{% endif %}
-<form method="post" class="card">
+<form method="post" action="{{ '/deals/new' if is_new else '/deals/' ~ veille_id }}" class="card">
   <div class="grid">
+    <div>
+      <label for="name">Nom de la veille <span class="hint">{{ "facultatif pour la veille principale ; " if is_main else "" }}affiché dans les messages Telegram</span></label>
+      <input type="text" id="name" name="name" maxlength="60" value="{{ v.name }}" placeholder="{{ 'ex : Italie au printemps' if not is_main else '' }}">
+    </div>
+    <div>
+      <label for="api_key_env">Clé SerpApi <span class="hint">celle dont le quota paiera les recherches</span></label>
+      <select id="api_key_env" name="api_key_env">
+        {% for k in key_options %}<option value="{{ k.name }}" {% if v.api_key_env == k.name %}selected{% endif %}>{{ k.name }} — {{ k.used }}/{{ k.quota }} déjà réservées</option>{% endfor %}
+      </select>
+      {% if not registry_ok %}<span class="hint">Liste des clés de .env pas encore publiée par le service des alertes.</span>{% endif %}
+    </div>
+    <div>
+      <label>État</label>
+      <div class="checks"><label><input type="checkbox" name="enabled" {% if v.enabled %}checked{% endif %}> Active <span class="hint">(décoché = en pause, aucun coût)</span></label></div>
+    </div>
     <div>
       <label for="region">Destination (pays ou région)
         <span class="hint">Efface le champ, tape les premières lettres (ex : « Ita ») et choisis dans la liste ; vide = partout</span></label>
@@ -64,8 +84,9 @@
     </div>
   </div>
   <div class="actions">
-    <button class="btn" type="submit">Enregistrer</button>
+    <button class="btn" type="submit">{{ "Créer la veille" if is_new else "Enregistrer" }}</button>
     <a class="btn secondary" href="/">Annuler</a>
+    {% if not is_new and not is_main %}<a class="btn danger" href="/deals/{{ veille_id }}/delete">Supprimer…</a>{% endif %}
   </div>
 </form>
 {% endblock %}

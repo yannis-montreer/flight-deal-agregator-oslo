@@ -124,6 +124,16 @@ class Config:
     cold_start_check: ColdStartCheckConfig
     logging: LoggingConfig
     secrets: Secrets
+    # Veilles multiples (voir flightdeals/multi.py). Valeurs par defaut = veille historique.
+    name: Optional[str] = None            # nom affiche dans les messages ; None = messages historiques inchanges
+    api_key_env: str = "SERPAPI_KEY"      # NOM de la variable d'environnement de la cle (jamais la valeur)
+    db_file: Optional[str] = None         # base de la veille dans le dossier de donnees ; None = FLIGHTDEALS_DB_PATH
+    veille_id: str = "main"               # "main" = config/config.yaml, sinon nom du fichier de deals/
+
+
+DEFAULT_API_KEY_ENV = "SERPAPI_KEY"
+_ENV_NAME_RE = re.compile(r"^[A-Z_][A-Z0-9_]*$")
+_DB_FILE_RE = re.compile(r"^[A-Za-z0-9_.-]+\.db$")
 
 
 def _default_config_path() -> Path:
@@ -140,9 +150,9 @@ def _require_env(name: str) -> str:
     return value
 
 
-def _load_secrets() -> Secrets:
+def _load_secrets(api_key_env: str = DEFAULT_API_KEY_ENV) -> Secrets:
     return Secrets(
-        serpapi_key=_require_env("SERPAPI_KEY"),
+        serpapi_key=_require_env(api_key_env),
         telegram_bot_token=_require_env("TELEGRAM_BOT_TOKEN"),
         telegram_chat_id=_require_env("TELEGRAM_CHAT_ID"),
     )
@@ -155,8 +165,23 @@ def load_config(path: "Path | str | None" = None, *, require_secrets: bool = Tru
     if not config_path.exists():
         raise ConfigError(f"Fichier de config introuvable: {config_path}")
 
-    with config_path.open("r", encoding="utf-8") as f:
-        raw = yaml.safe_load(f) or {}
+    try:
+        with config_path.open("r", encoding="utf-8") as f:
+            raw = yaml.safe_load(f) or {}
+    except yaml.YAMLError as exc:
+        raise ConfigError(f"YAML illisible dans {config_path}: {exc}") from exc
+    if not isinstance(raw, dict):
+        raise ConfigError(f"{config_path} doit contenir des cles/valeurs YAML")
+
+    name = raw.get("name")
+    if name is not None and (not isinstance(name, str) or not name.strip() or len(name) > 60):
+        raise ConfigError(f"name doit etre un texte de 1 a 60 caracteres, recu: {name!r}")
+    api_key_env = raw.get("api_key_env") or DEFAULT_API_KEY_ENV
+    if not isinstance(api_key_env, str) or not _ENV_NAME_RE.match(api_key_env):
+        raise ConfigError(f"api_key_env doit etre un nom de variable (ex: SERPAPI_KEY_3), recu: {api_key_env!r}")
+    db_file = raw.get("db_file")
+    if db_file is not None and (not isinstance(db_file, str) or not _DB_FILE_RE.match(db_file)):
+        raise ConfigError(f"db_file doit etre un simple nom de fichier .db, recu: {db_file!r}")
 
     try:
         collection = CollectionConfig(
@@ -251,7 +276,7 @@ def load_config(path: "Path | str | None" = None, *, require_secrets: bool = Tru
             f"recu: {cold_start_check.max_candidates_per_run}"
         )
 
-    secrets = _load_secrets() if require_secrets else Secrets("", "", "")
+    secrets = _load_secrets(api_key_env) if require_secrets else Secrets("", "", "")
 
     return Config(
         origin=origin,
@@ -265,4 +290,7 @@ def load_config(path: "Path | str | None" = None, *, require_secrets: bool = Tru
         cold_start_check=cold_start_check,
         logging=logging_cfg,
         secrets=secrets,
+        name=name.strip() if name else None,
+        api_key_env=api_key_env,
+        db_file=db_file,
     )

@@ -31,7 +31,19 @@ class WatchCost:
     detail: str
 
 
-def flightdeals_cost(config: FlightDealsConfig) -> WatchCost:
+def deal_cost_id(veille_id: str) -> str:
+    return "flightdeals" if veille_id == "main" else f"deal:{veille_id}"
+
+
+def deal_label(config: FlightDealsConfig) -> str:
+    return config.name or "Bons plans (flightdeals)"
+
+
+def flightdeals_cost(config: FlightDealsConfig, veille_id: str = "main") -> WatchCost:
+    key_env = getattr(config, "api_key_env", FLIGHTDEALS_KEY_ENV)
+    cost_id, label = deal_cost_id(veille_id), deal_label(config)
+    if not config.collection.enabled:
+        return WatchCost(cost_id, label, key_env, 0, 0, "en pause : aucune recherche")
     explore = len(config.serpapi.travel_durations)
     cold = config.cold_start_check.max_candidates_per_run if config.cold_start_check.enabled else 0
     per_day = explore + cold
@@ -43,7 +55,7 @@ def flightdeals_cost(config: FlightDealsConfig) -> WatchCost:
         detail += f" + jusqu'à {cold} vérification(s) Google (démarrage à froid)"
     if raw_month > config.serpapi.monthly_budget:
         detail += f" ; plafonné par le budget interne de {config.serpapi.monthly_budget}/mois (des runs seront sautés en fin de mois)"
-    return WatchCost("flightdeals", "Bons plans (flightdeals)", FLIGHTDEALS_KEY_ENV, per_day, per_month, detail)
+    return WatchCost(cost_id, label, key_env, per_day, per_month, detail)
 
 
 def trip_watch_cost(watch_id: str, config: TripWatchConfig) -> WatchCost:

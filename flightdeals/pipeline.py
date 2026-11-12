@@ -169,6 +169,12 @@ def run_once(config: Config, db_path: "Path | str") -> RunSummary:
         conn.close()
 
 
+def _title_kwargs(config: Config) -> dict:
+    """Veilles multiples : chaque message porte le nom de sa veille. Veille sans nom (la
+    veille historique) : appel strictement identique a avant."""
+    return {"title": config.name} if config.name else {}
+
+
 def _send_daily_summary(config: Config, conn, summary: RunSummary, month_key: str) -> None:
     """Recap quotidien envoye APRES chaque run, deal detecte ou non (demande explicite de
     l'utilisateur) : les seuils de detection sont volontairement stricts (spec section 10),
@@ -181,13 +187,14 @@ def _send_daily_summary(config: Config, conn, summary: RunSummary, month_key: st
     requests_used = get_requests_used(conn, month_key)
 
     if summary.skipped_budget:
+        suffix = f" — {config.name}" if config.name else ""
         text = (
-            "⚠️ Run du jour saute (budget SerpApi insuffisant)\n"
+            f"⚠️ Run du jour saute (budget SerpApi insuffisant){suffix}\n"
             f"{requests_used}/{config.serpapi.monthly_budget} requetes utilisees ce mois"
         )
     else:
         text = (
-            "\U0001F4CA Recap quotidien — Flight Deal Aggregator OSL\n"
+            f"\U0001F4CA Recap quotidien — {config.name or 'Flight Deal Aggregator OSL'}\n"
             f"{summary.observations_collected} destinations scannees, {summary.observations_stored} stockees\n"
             f"{summary.deals_triggered} deal(s) detecte(s) aujourd'hui\n"
             f"Budget SerpApi : {requests_used}/{config.serpapi.monthly_budget} requetes ce mois"
@@ -471,7 +478,8 @@ def _check_cold_start_signals(
                 )
                 try:
                     send_google_signal_notification(
-                        config.secrets.telegram_bot_token, config.secrets.telegram_chat_id, signal_message
+                        config.secrets.telegram_bot_token, config.secrets.telegram_chat_id, signal_message,
+                        **_title_kwargs(config),
                     )
                 except TelegramError:
                     logger.exception(
@@ -579,7 +587,9 @@ def _dedup_and_notify(
     notified_count = 0
     for index, (obs_id, deal) in enumerate(to_send):
         try:
-            send_deal_notification(config.secrets.telegram_bot_token, config.secrets.telegram_chat_id, deal)
+            send_deal_notification(
+                config.secrets.telegram_bot_token, config.secrets.telegram_chat_id, deal, **_title_kwargs(config)
+            )
         except TelegramError:
             logger.exception(
                 "Echec d'envoi Telegram pour %s -> %s (ignore, run continue, retente demain "

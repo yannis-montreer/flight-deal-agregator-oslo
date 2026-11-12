@@ -27,7 +27,14 @@ from webui import costs as cost_mod
 from webui import projection as proj_mod
 from webui.currencies import CURRENCIES
 from trip_watch.config import DEFAULT_API_KEY_ENV, ENV_NAME_RE
-from webui.store import archive_document, create_document, load_document, save_document, set_list, set_value
+from ruamel.yaml.scalarstring import DoubleQuotedScalarString
+
+from webui.store import (
+    archive_document, create_document, dump_document, load_document, save_document, set_list, set_value,
+)
+
+MAIN_DEAL_ID = "main"
+DEFAULT_DEAL_KEY_ENV = "SERPAPI_KEY"
 
 TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
 WATCH_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,40}$")
@@ -168,7 +175,7 @@ def new_watch_text(watch_id: str, form: dict, key_env: str) -> str:
 
 def create_app(
     flightdeals_path: Path, watches_dir: Path, allowed_hosts: Optional[list[str]] = None,
-    status_dir: Optional[Path] = None,
+    status_dir: Optional[Path] = None, deals_dir: Optional[Path] = None,
 ) -> FastAPI:
     allowed_hosts = allowed_hosts or ["127.0.0.1", "localhost"]
     app = FastAPI(title="Veilles", docs_url=None, redoc_url=None, openapi_url=None)
@@ -216,6 +223,32 @@ def create_app(
         except CONFIG_ERRORS as exc:
             return None, str(exc)
 
+    # Veilles "bons plans" : "main" = config/config.yaml (historique), les autres = deals/<id>.yaml.
+    def deal_path(veille_id: str) -> Path:
+        if veille_id == MAIN_DEAL_ID:
+            return flightdeals_path
+        path = deals_dir / f"{veille_id}.yaml" if deals_dir is not None else None
+        if path is None or not WATCH_ID_RE.match(veille_id) or not path.is_file():
+            raise FileNotFoundError(veille_id)
+        return path
+
+    def load_deals() -> list[WatchView]:
+        paths = [(MAIN_DEAL_ID, flightdeals_path)]
+        if deals_dir is not None and deals_dir.is_dir():
+            paths += [(p.stem, p) for p in sorted(deals_dir.glob("*.yaml"))
+                      if WATCH_ID_RE.match(p.stem) and p.stem != MAIN_DEAL_ID]
+        views = []
+        for vid, path in paths:
+            view = WatchView(vid, path)
+            try:
+                view.config = load_flightdeals_config(path, require_secrets=False)
+                view.cost = cost_mod.flightdeals_cost(view.config, vid)
+                view.warnings = tuple(flightdeals_warnings(view.config))
+            except CONFIG_ERRORS as exc:
+                view.error = str(exc)
+            views.append(view)
+        return views
+
     def read_registry() -> Optional[dict]:
         """Registre des cles publie par le service des alertes (noms + compteurs, jamais de
         secret). None s'il n'existe pas encore."""
@@ -233,14 +266,12 @@ def create_app(
     def key_choices(registry: Optional[dict], current: str = "") -> list[str]:
         names = key_names(registry)
         if names is None:  # registre indisponible : cles deja utilisees + cle par defaut
-            names = sorted({w.config.api_key_env for w in load_watches() if w.config} | {DEFAULT_API_KEY_ENV})
+            names = sorted({w.config.api_key_env for w in load_watches() + load_deals() if w.config}
+                           | {DEFAULT_API_KEY_ENV})
         return sorted(set(names) | ({current} if current else set()))
 
     def all_costs(replace_id: Optional[str] = None, replacement: Optional[cost_mod.WatchCost] = None) -> list:
-        result = []
-        fd_config, _ = load_flightdeals()
-        if fd_config is not None:
-            result.append(cost_mod.flightdeals_cost(fd_config))
+        result = [d.cost for d in load_deals() if d.cost is not None]
         result += [w.cost for w in load_watches() if w.cost is not None]
         if replace_id is not None:
             result = [c for c in result if c.watch_id != replace_id] + [replacement]
@@ -249,11 +280,10 @@ def create_app(
     def consumers_by_key() -> dict[str, list[proj_mod.Consumer]]:
         """Qui consomme quelle cle, a quelle heure, combien par run (alertes actives seulement)."""
         result: dict[str, list[proj_mod.Consumer]] = {}
-        fd_config, _ = load_flightdeals()
-        if fd_config is not None and fd_config.collection.enabled:
-            cost = cost_mod.flightdeals_cost(fd_config)
-            result.setdefault(cost.key_env, []).append(proj_mod.Consumer(
-                cost.label, cost.per_day, fd_config.collection.schedule, fd_config.collection.timezone))
+        for d in load_deals():
+            if d.config and d.config.collection.enabled:
+                result.setdefault(d.cost.key_env, []).append(proj_mod.Consumer(
+                    d.cost.label, d.cost.per_day, d.config.collection.schedule, d.config.collection.timezone))
         for w in load_watches():
             if w.config and w.config.enabled:
                 result.setdefault(w.config.api_key_env, []).append(proj_mod.Consumer(
@@ -298,44 +328,129 @@ def create_app(
 
     @app.get("/", response_class=HTMLResponse)
     def index(request: Request, saved: str = "", deleted: str = ""):
-        fd_config, fd_error = load_flightdeals()
         watches = load_watches()
         costs = all_costs()
         registry = read_registry()
         return TEMPLATES.TemplateResponse(request, "index.html", {
-            "fd": fd_config, "fd_error": fd_error,
-            "fd_cost": cost_mod.flightdeals_cost(fd_config) if fd_config else None,
-            "fd_warnings": flightdeals_warnings(fd_config) if fd_config else [],
+            "deals": load_deals(), "deals_enabled": deals_dir is not None,
             "watches": watches, "budgets": budget_rows(costs, registry), "saved": saved, "deleted": deleted,
             "registry": registry,
             "month_label": month_label, "region_label": region_label, "classes": TRAVEL_CLASSES,
             "airport_city": airport_city,
         })
 
-    @app.get("/flightdeals", response_class=HTMLResponse)
-    def flightdeals_form(request: Request):
+    @app.get("/flightdeals")
+    def flightdeals_legacy():
+        return RedirectResponse("/deals/main", status_code=303)
+
+    def _key_names_including(registry, current: str) -> Optional[list[str]]:
+        names = key_names(registry)
+        return None if names is None else sorted(set(names) | {current})
+
+    # /deals/new est declare AVANT /deals/{veille_id}.
+    @app.get("/deals/new", response_class=HTMLResponse)
+    def deal_new_form(request: Request):
         fd_config, fd_error = load_flightdeals()
         if fd_config is None:
-            return _page_error(request, f"Le fichier actuel est invalide, à corriger à la main : {fd_error}")
-        return _render_flightdeals(request, flightdeals_form_values(fd_config), None)
+            return _page_error(request, f"La veille principale est invalide (sert de modèle) : {fd_error}")
+        registry = read_registry()
+        values = flightdeals_form_values(fd_config)
+        totals = cost_mod.totals_by_key(all_costs())
+        choices = key_choices(registry)
+        values.update({"name": "", "region": "", "enabled": "on",
+                       "api_key_env": max(choices, key=lambda k: cost_mod.quota_for(k, registry) - totals.get(k, 0))})
+        return _render_flightdeals(request, None, values, None, registry)
 
-    @app.post("/flightdeals", response_class=HTMLResponse)
-    async def flightdeals_save(request: Request):
+    @app.post("/deals/new", response_class=HTMLResponse)
+    async def deal_create(request: Request):
         form_data = await request.form()
         form = dict(form_data)
         form["travel_durations"] = form_data.getlist("travel_durations")
         registry = read_registry()
         try:
-            doc = load_document(flightdeals_path)
-            apply_flightdeals_form(doc, form)
-            save_document(
-                flightdeals_path, doc,
+            if deals_dir is None:
+                raise FormError("Veilles multiples non configurées (WEBUI_DEALS_DIR absent).")
+            name = _text(form, "name", "Nom de la veille")
+            base = slugify(name)
+            veille_id, n = base, 2
+            while (deals_dir / f"{veille_id}.yaml").exists() or veille_id in (MAIN_DEAL_ID, "new"):
+                veille_id, n = f"{base}-{n}", n + 1
+            doc = load_document(flightdeals_path)  # modele : la veille principale (seuils avances inclus)
+            apply_flightdeals_form(doc, form, key_names(registry), is_main=False)
+            doc.insert(min(2, len(doc)), "db_file", f"flightdeals_{veille_id}.db")
+            original = flightdeals_path.read_bytes().decode("utf-8")
+            header = f"# Veille creee depuis l'interface le {date.today().isoformat()} (modele : config/config.yaml).\n"
+            create_document(
+                deals_dir / f"{veille_id}.yaml", header + dump_document(doc, original=original).replace("\r\n", "\n"),
                 validate=lambda p: load_flightdeals_config(p, require_secrets=False),
-                check=lambda cfg: budget_check(registry, "flightdeals", cost_mod.flightdeals_cost(cfg)),
+                check=lambda cfg: budget_check(registry, cost_mod.deal_cost_id(veille_id), cost_mod.flightdeals_cost(cfg, veille_id)),
+            )
+        except (FormError, cost_mod.BudgetError, FileExistsError, *CONFIG_ERRORS) as exc:
+            return _render_flightdeals(request, None, form, str(exc), registry, status_code=400)
+        return RedirectResponse(f"/?saved={veille_id}", status_code=303)
+
+    @app.get("/deals/{veille_id}", response_class=HTMLResponse)
+    def deal_form(request: Request, veille_id: str):
+        try:
+            path = deal_path(veille_id)
+        except FileNotFoundError:
+            return _page_error(request, "Veille introuvable.", status_code=404)
+        try:
+            config = load_flightdeals_config(path, require_secrets=False)
+        except CONFIG_ERRORS as exc:
+            return _page_error(request, f"Le fichier actuel est invalide, à corriger à la main : {exc}")
+        return _render_flightdeals(request, veille_id, flightdeals_form_values(config), None, read_registry())
+
+    @app.post("/deals/{veille_id}", response_class=HTMLResponse)
+    async def deal_save(request: Request, veille_id: str):
+        try:
+            path = deal_path(veille_id)
+        except FileNotFoundError:
+            return _page_error(request, "Veille introuvable.", status_code=404)
+        form_data = await request.form()
+        form = dict(form_data)
+        form["travel_durations"] = form_data.getlist("travel_durations")
+        registry = read_registry()
+        try:
+            current = load_flightdeals_config(path, require_secrets=False)
+            doc = load_document(path)
+            apply_flightdeals_form(doc, form, _key_names_including(registry, current.api_key_env),
+                                   is_main=veille_id == MAIN_DEAL_ID)
+            save_document(
+                path, doc,
+                validate=lambda p: load_flightdeals_config(p, require_secrets=False),
+                check=lambda cfg: budget_check(registry, cost_mod.deal_cost_id(veille_id), cost_mod.flightdeals_cost(cfg, veille_id)),
             )
         except (FormError, cost_mod.BudgetError, *CONFIG_ERRORS) as exc:
-            return _render_flightdeals(request, form, str(exc), status_code=400)
-        return RedirectResponse("/?saved=flightdeals", status_code=303)
+            return _render_flightdeals(request, veille_id, form, str(exc), registry, status_code=400)
+        return RedirectResponse(f"/?saved={veille_id}", status_code=303)
+
+    @app.get("/deals/{veille_id}/delete", response_class=HTMLResponse)
+    def deal_delete_confirm(request: Request, veille_id: str):
+        if veille_id == MAIN_DEAL_ID:
+            return _page_error(request, "La veille principale ne se supprime pas : mets-la en pause.", status_code=400)
+        try:
+            path = deal_path(veille_id)
+        except FileNotFoundError:
+            return _page_error(request, "Veille introuvable.", status_code=404)
+        try:
+            config = load_flightdeals_config(path, require_secrets=False)
+            label, db_file = cost_mod.deal_label(config), config.db_file
+        except CONFIG_ERRORS:
+            label, db_file = veille_id, None
+        return TEMPLATES.TemplateResponse(request, "delete.html", {
+            "watch_id": veille_id, "label": label, "db_file": db_file, "kind": "deals"})
+
+    @app.post("/deals/{veille_id}/delete", response_class=HTMLResponse)
+    def deal_delete(request: Request, veille_id: str):
+        if veille_id == MAIN_DEAL_ID:
+            return _page_error(request, "La veille principale ne se supprime pas : mets-la en pause.", status_code=400)
+        try:
+            path = deal_path(veille_id)
+        except FileNotFoundError:
+            return _page_error(request, "Veille introuvable.", status_code=404)
+        archive_document(path)
+        return RedirectResponse(f"/?deleted={veille_id}", status_code=303)
 
     # /watches/new est declare AVANT /watches/{watch_id} (sinon "new" serait pris pour un nom).
     @app.get("/watches/new", response_class=HTMLResponse)
@@ -413,7 +528,8 @@ def create_app(
             label, db_file = config.destination_name, config.db_file
         except CONFIG_ERRORS:
             label, db_file = watch_id, None
-        return TEMPLATES.TemplateResponse(request, "delete.html", {"watch_id": watch_id, "label": label, "db_file": db_file})
+        return TEMPLATES.TemplateResponse(request, "delete.html", {
+            "watch_id": watch_id, "label": label, "db_file": db_file, "kind": "watches"})
 
     @app.post("/watches/{watch_id}/delete", response_class=HTMLResponse)
     def watch_delete(request: Request, watch_id: str):
@@ -424,8 +540,16 @@ def create_app(
         archive_document(path)
         return RedirectResponse(f"/?deleted={watch_id}", status_code=303)
 
-    def _render_flightdeals(request, values, error, status_code=200):
+    def _key_options(registry, current_key):
+        totals = cost_mod.totals_by_key(all_costs())
+        return [{"name": k, "quota": cost_mod.quota_for(k, registry), "used": totals.get(k, 0)}
+                for k in key_choices(registry, current_key)]
+
+    def _render_flightdeals(request, veille_id, values, error, registry, status_code=200):
         return TEMPLATES.TemplateResponse(request, "flightdeals.html", {
+            "veille_id": veille_id, "is_new": veille_id is None, "is_main": veille_id == MAIN_DEAL_ID,
+            "key_options": _key_options(registry, values.get("api_key_env", "")),
+            "registry_ok": registry is not None, "deals_enabled": deals_dir is not None,
             "v": values, "error": error, "durations": TRAVEL_DURATIONS,
             # Ordre chronologique a partir du mois en cours (novembre 2026, decembre 2026, janvier 2027...).
             "month_options": [
@@ -456,6 +580,9 @@ def create_app(
 
 def flightdeals_form_values(config) -> dict:
     return {
+        "name": config.name or "",
+        "api_key_env": config.api_key_env,
+        "enabled": "on" if config.collection.enabled else "",
         "schedule": config.collection.schedule,
         "month": "" if config.serpapi.month is None else str(config.serpapi.month),
         "region": region_label(config.serpapi.arrival_area_id) if config.serpapi.arrival_area_id else "",
@@ -470,7 +597,20 @@ def flightdeals_form_values(config) -> dict:
     }
 
 
-def apply_flightdeals_form(doc, form: dict) -> None:
+def apply_flightdeals_form(doc, form: dict, key_names: Optional[list[str]] = None, *, is_main: bool = True) -> None:
+    """`key_names` : cles presentes dans .env (registre) ; None = registre indisponible.
+    `is_main` : veille historique (nom facultatif ; sans nom, ses messages restent inchanges)."""
+    name = (form.get("name") or "").strip()
+    if not is_main and not name:
+        raise FormError("Nom de la veille : obligatoire (il apparaît dans les messages Telegram).")
+    if len(name) > 60:
+        raise FormError("Nom de la veille : 60 caractères maximum.")
+    key_env = (form.get("api_key_env") or "").strip() or DEFAULT_DEAL_KEY_ENV
+    if not ENV_NAME_RE.match(key_env):
+        raise FormError("Clé SerpApi : nom de variable invalide.")
+    if key_names is not None and key_env not in key_names:
+        raise FormError(f"Clé SerpApi : « {key_env} » n'est pas présente dans le fichier .env de la NUC.")
+    enabled = bool(form.get("enabled"))
     schedule = _text(form, "schedule", "Heure du run")
     month_raw = (form.get("month") or "").strip()
     month = None if month_raw == "" else _int(form, "month", "Mois", 1, 12)
@@ -486,6 +626,17 @@ def apply_flightdeals_form(doc, form: dict) -> None:
     cold_max = _int(form, "max_candidates_per_run", "Vérifications Google max", 0, 20)
     summary = bool(form.get("daily_summary_enabled"))
 
+    # Champs propres aux veilles multiples : ajoutes en tete de fichier s'ils n'existent pas
+    # encore, et jamais ajoutes inutilement a la veille principale (fichier historique intact).
+    for key, value, quoted in (("name", name or None, True), ("api_key_env", key_env, False)):
+        if key in doc:
+            if value is None:
+                del doc[key]
+            else:
+                set_value(doc, key, value, quoted=quoted)
+        elif value is not None and not (key == "api_key_env" and value == DEFAULT_DEAL_KEY_ENV and is_main):
+            doc.insert(0, key, DoubleQuotedScalarString(value) if quoted else value)
+    set_value(doc["collection"], "enabled", enabled)
     set_value(doc["collection"], "schedule", schedule, quoted=True)
     set_value(doc["serpapi"], "month", month)
     set_value(doc["serpapi"], "arrival_area_id", area, quoted=True)
@@ -615,5 +766,6 @@ def create_app_from_env() -> FastAPI:
     return create_app(
         Path(os.environ.get("WEBUI_FLIGHTDEALS_CONFIG", "config/config.yaml")),
         Path(os.environ.get("WEBUI_WATCHES_DIR", "watches")),
+        deals_dir=Path(os.environ["WEBUI_DEALS_DIR"]) if os.environ.get("WEBUI_DEALS_DIR") else None,
         status_dir=Path(os.environ["WEBUI_STATUS_DIR"]) if os.environ.get("WEBUI_STATUS_DIR") else None,
     )

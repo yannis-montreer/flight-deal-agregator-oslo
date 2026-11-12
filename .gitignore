@@ -38,3 +38,8 @@ watches/.history/
 # Registre des cles publie par le service des alertes (local, regenere)
 status/*.json
 watches/.archive/
+
+# Veilles bons plans creees depuis l'interface (reglages locaux a la machine)
+deals/*.yaml
+deals/.history/
+deals/.archive/

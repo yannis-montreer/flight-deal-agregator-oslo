@@ -4,29 +4,38 @@
 <p class="sub">Les modifications sont prises en compte sans redémarrage : en quelques minutes pour les alertes, au run suivant pour les bons plans.</p>
 
 {% if saved %}<p class="msg ok">Modification enregistrée. L'ancienne version est conservée dans <code>.history/</code>.</p>{% endif %}
-{% if deleted %}<p class="msg ok">Alerte « {{ deleted }} » supprimée (fichier rangé dans <code>watches/.archive/</code>, historique conservé).</p>{% endif %}
+{% if deleted %}<p class="msg ok">« {{ deleted }} » supprimée (fichier rangé dans <code>.archive/</code>, historique conservé).</p>{% endif %}
 
+<div class="card-head" style="margin: 24px 0 12px">
+  <h2>Veilles bons plans</h2>
+  {% if deals_enabled %}<a class="btn" href="/deals/new">+ Nouvelle veille</a>{% endif %}
+</div>
+
+{% for d in deals %}
 <section class="card">
   <div class="card-head">
-    <h2>Bons plans (flightdeals)</h2>
-    {% if fd %}<a class="btn" href="/flightdeals">Modifier</a>{% endif %}
+    <h2>{{ d.config.name if d.config and d.config.name else ("Bons plans (flightdeals)" if d.watch_id == "main" else d.watch_id) }}
+      <span class="muted">({{ "principale" if d.watch_id == "main" else d.watch_id }})</span>
+      {% if d.config and not d.config.collection.enabled %}<span class="badge">en pause</span>{% endif %}</h2>
+    {% if d.config %}<a class="btn" href="/deals/{{ d.watch_id }}">Modifier</a>{% endif %}
   </div>
-  {% if fd_error %}
-    <p class="msg err">Fichier invalide : {{ fd_error }}</p>
+  {% if d.error %}
+    <p class="msg err">Fichier invalide (veille ignorée par le service) : {{ d.error }}</p>
   {% else %}
+  {% set fd = d.config %}
   <dl>
     <dt>Destination</dt><dd>{{ region_label(fd.serpapi.arrival_area_id) }}</dd>
     <dt>Départ en</dt><dd>{{ month_label(fd.serpapi.month) }}</dd>
     <dt>Séjour</dt><dd>{{ fd.deal.min_trip_length_nights }} à {{ fd.deal.max_trip_length_nights }} nuits</dd>
     <dt>Baisse minimale</dt><dd>{{ (fd.deal.minimum_discount * 100) | round | int }} %</dd>
     <dt>Run</dt><dd>{{ fd.collection.schedule }} ({{ fd.collection.timezone }})</dd>
-    <dt>Clé SerpApi</dt><dd><code>{{ fd_cost.key_env }}</code></dd>
-    <dt>Coût</dt><dd>{{ fd_cost.per_month }} recherches/mois max <span class="muted">— {{ fd_cost.detail }}</span></dd>
+    <dt>Clé SerpApi</dt><dd><code>{{ d.cost.key_env }}</code></dd>
+    <dt>Coût</dt><dd>{{ d.cost.per_month }} recherches/mois max <span class="muted">— {{ d.cost.detail }}</span></dd>
   </dl>
-  {% for w in fd_warnings %}<p class="msg warn">{{ w }}</p>{% endfor %}
+  {% for w in d.warnings %}<p class="msg warn">{{ w }}</p>{% endfor %}
   {% endif %}
 </section>
-
+{% endfor %}
 <div class="card-head" style="margin: 24px 0 12px">
   <h2>Alertes trajet</h2>
   <a class="btn" href="/watches/new">+ Nouvelle alerte</a>

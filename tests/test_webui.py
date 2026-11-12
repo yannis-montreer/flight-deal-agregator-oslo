@@ -44,6 +44,7 @@ def _fd_form(**overrides):
         "min_trip_length_nights": "6", "max_trip_length_nights": "14", "minimum_discount": "30",
         "schedule": "10:30", "monthly_budget": "200", "cold_start_enabled": "on",
         "max_candidates_per_run": "3", "daily_summary_enabled": "on",
+        "enabled": "on", "api_key_env": "SERPAPI_KEY", "name": "",
     }
     form.update(overrides)
     return form
@@ -88,7 +89,7 @@ def test_unchanged_save_writes_nothing(env):
     # production via l'interface : ses valeurs ne sont pas figees).
     from webui.app import flightdeals_form_values
     current = flightdeals_form_values(load_fd(fd_path, require_secrets=False))
-    response = client.post("/flightdeals", data=current, follow_redirects=False)
+    response = client.post("/deals/main", data=current, follow_redirects=False)
     assert response.status_code == 303
     assert fd_path.read_bytes() == before
     assert _history(fd_path.parent) == []
@@ -98,7 +99,7 @@ def test_flightdeals_save_keeps_comments_quotes_and_backup(env):
     client, fd_path, _ = env
     original = fd_path.read_text(encoding="utf-8")
     response = client.post(
-        "/flightdeals", data=_fd_form(month="12", travel_durations=["2", "3"], schedule="09:15"), follow_redirects=False
+        "/deals/main", data=_fd_form(month="12", travel_durations=["2", "3"], schedule="09:15"), follow_redirects=False
     )
     assert response.status_code == 303
     text = fd_path.read_text(encoding="utf-8")
@@ -119,7 +120,7 @@ def test_flightdeals_save_keeps_comments_quotes_and_backup(env):
 
 def test_flightdeals_everywhere_and_all_months(env):
     client, fd_path, _ = env
-    client.post("/flightdeals", data=_fd_form(month="", region=""), follow_redirects=False)
+    client.post("/deals/main", data=_fd_form(month="", region=""), follow_redirects=False)
     raw = yaml.safe_load(fd_path.read_text(encoding="utf-8"))
     assert raw["serpapi"]["month"] is None and raw["serpapi"]["arrival_area_id"] is None
 
@@ -205,17 +206,17 @@ def test_invalid_watch_input_rejected(env, overrides, message):
 def test_invalid_flightdeals_input_rejected(env):
     client, fd_path, _ = env
     before = fd_path.read_bytes()
-    assert client.post("/flightdeals", data=_fd_form(travel_durations=[])).status_code == 400
-    assert client.post("/flightdeals", data=_fd_form(min_trip_length_nights="20")).status_code == 400
+    assert client.post("/deals/main", data=_fd_form(travel_durations=[])).status_code == 400
+    assert client.post("/deals/main", data=_fd_form(min_trip_length_nights="20")).status_code == 400
     assert fd_path.read_bytes() == before
 
 
 def test_cross_site_post_refused(env):
     client, fd_path, _ = env
     before = fd_path.read_bytes()
-    response = client.post("/flightdeals", data=_fd_form(month="12"), headers={"Origin": "https://evil.example"})
+    response = client.post("/deals/main", data=_fd_form(month="12"), headers={"Origin": "https://evil.example"})
     assert response.status_code == 403
-    response = client.post("/flightdeals", data=_fd_form(month="12"), headers={"Sec-Fetch-Site": "cross-site"})
+    response = client.post("/deals/main", data=_fd_form(month="12"), headers={"Sec-Fetch-Site": "cross-site"})
     assert response.status_code == 403
     assert fd_path.read_bytes() == before
 
@@ -223,7 +224,7 @@ def test_cross_site_post_refused(env):
 def test_same_origin_post_accepted(env):
     client, _, _ = env
     response = client.post(
-        "/flightdeals", data=_fd_form(), headers={"Origin": "http://localhost:8765"}, follow_redirects=False
+        "/deals/main", data=_fd_form(), headers={"Origin": "http://localhost:8765"}, follow_redirects=False
     )
     assert response.status_code == 303
 
@@ -243,7 +244,7 @@ def test_unknown_or_unsafe_watch_ids(env, watch_id):
 
 def test_region_chosen_by_name_is_stored_as_google_id(env):
     client, fd_path, _ = env
-    response = client.post("/flightdeals", data=_fd_form(region="italie"), follow_redirects=False)
+    response = client.post("/deals/main", data=_fd_form(region="italie"), follow_redirects=False)
     assert response.status_code == 303
     assert 'arrival_area_id: "/m/03rjj"' in fd_path.read_text(encoding="utf-8")
     page = client.get("/").text
@@ -253,14 +254,14 @@ def test_region_chosen_by_name_is_stored_as_google_id(env):
 
 def test_region_raw_id_still_accepted(env):
     client, fd_path, _ = env
-    client.post("/flightdeals", data=_fd_form(region="/g/11abc_def"), follow_redirects=False)
+    client.post("/deals/main", data=_fd_form(region="/g/11abc_def"), follow_redirects=False)
     assert 'arrival_area_id: "/g/11abc_def"' in fd_path.read_text(encoding="utf-8")
 
 
 def test_unknown_region_rejected(env):
     client, fd_path, _ = env
     before = fd_path.read_bytes()
-    response = client.post("/flightdeals", data=_fd_form(region="Atlantide"))
+    response = client.post("/deals/main", data=_fd_form(region="Atlantide"))
     assert response.status_code == 400 and "inconnue" in response.text
     assert fd_path.read_bytes() == before
 

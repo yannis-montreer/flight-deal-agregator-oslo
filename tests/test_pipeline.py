@@ -850,3 +850,34 @@ class TestColdStartSignal:
         _install_fake_serpapi(monkeypatch, make_client())  # meme prix, meme destination, meme jour
         run_once(config, db_path)
         assert len(sent_messages) == 1  # pas de 2e envoi : ni reapparition (gap 14j), ni baisse suffisante
+
+
+class TestNamedVeille:
+    """Veilles multiples : une veille nommee signe ses messages ; la veille historique non."""
+
+    def test_named_veille_titles_its_daily_summary(self, tmp_path, monkeypatch):
+        fake_client = _FakeSerpApiClient(
+            account_info={"total_searches_left": 200},
+            search_responses=[_explore_response([]), _explore_response([]), _explore_response([])],
+        )
+        _install_fake_serpapi(monkeypatch, fake_client)
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+        config = _make_config(
+            name="Italie",
+            notification=NotificationConfig(telegram=True, send_delay_seconds=0.0, daily_summary_enabled=True),
+        )
+        run_once(config, tmp_path / "test.db")
+        assert "Recap quotidien — Italie" in sent_messages[0]["text"]
+
+    def test_unnamed_veille_keeps_historical_title(self, tmp_path, monkeypatch):
+        fake_client = _FakeSerpApiClient(
+            account_info={"total_searches_left": 200},
+            search_responses=[_explore_response([]), _explore_response([]), _explore_response([])],
+        )
+        _install_fake_serpapi(monkeypatch, fake_client)
+        sent_messages: list = []
+        _install_fake_telegram(monkeypatch, sent_messages)
+        config = _make_config(notification=NotificationConfig(telegram=True, send_delay_seconds=0.0, daily_summary_enabled=True))
+        run_once(config, tmp_path / "test.db")
+        assert "Recap quotidien — Flight Deal Aggregator OSL" in sent_messages[0]["text"]

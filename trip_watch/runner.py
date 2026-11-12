@@ -23,14 +23,13 @@ from pathlib import Path
 from typing import Callable, Optional
 from zoneinfo import ZoneInfo
 
-from flightdeals.scheduler import seconds_until_next_run
+from flightdeals.scheduler import RESCAN_SECONDS, WatchScheduler  # noqa: F401 (reexport)
 
 from trip_watch.config import ConfigError, TripWatchConfig, load_config
 
 logger = logging.getLogger(__name__)
 
 WATCH_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,40}$")
-RESCAN_SECONDS = 300
 
 
 def watch_files(watch_dir: Path) -> list[Path]:
@@ -47,57 +46,6 @@ def load_watches(watch_dir: Path, *, require_secrets: bool = True) -> tuple[dict
         except (ConfigError, OSError) as exc:
             errors[path.stem] = str(exc)
     return configs, errors
-
-
-def _local_date(moment: datetime, tz_name: str) -> date:
-    return moment.astimezone(ZoneInfo(tz_name)).date()
-
-
-@dataclass
-class _Plan:
-    schedule_key: tuple
-    due_at: datetime
-
-
-class WatchScheduler:
-    def __init__(self) -> None:
-        self.plans: dict[str, _Plan] = {}
-        self.last_run_date: dict[str, date] = {}
-
-    def _next_due(self, watch_id: str, config: TripWatchConfig, now: datetime) -> datetime:
-        due = now + timedelta(seconds=seconds_until_next_run(now, config.schedule, config.timezone))
-        if self.last_run_date.get(watch_id) == _local_date(due, config.timezone):
-            due += timedelta(days=1)  # deja tourne aujourd'hui : jamais deux fois le meme jour
-        return due
-
-    def refresh(self, configs: dict[str, TripWatchConfig], now: datetime) -> list[str]:
-        """Met a jour le plan ; renvoie les alertes dont la planification a change."""
-        changed = []
-        active = {wid: c for wid, c in configs.items() if c.enabled}
-        for wid in list(self.plans):
-            if wid not in active:
-                del self.plans[wid]
-                changed.append(wid)
-        for wid, config in active.items():
-            key = (config.schedule, config.timezone)
-            plan = self.plans.get(wid)
-            if plan is None or plan.schedule_key != key:
-                self.plans[wid] = _Plan(key, self._next_due(wid, config, now))
-                changed.append(wid)
-        return changed
-
-    def due(self, now: datetime) -> list[str]:
-        return sorted(wid for wid, plan in self.plans.items() if plan.due_at <= now)
-
-    def mark_done(self, watch_id: str, config: TripWatchConfig, finished_at: datetime) -> None:
-        self.last_run_date[watch_id] = _local_date(self.plans[watch_id].due_at, config.timezone)
-        self.plans[watch_id] = _Plan((config.schedule, config.timezone), self._next_due(watch_id, config, finished_at))
-
-    def seconds_to_sleep(self, now: datetime, cap: float = RESCAN_SECONDS) -> float:
-        if not self.plans:
-            return cap
-        soonest = min(plan.due_at for plan in self.plans.values())
-        return max(1.0, min(cap, (soonest - now).total_seconds()))
 
 
 def run_cycle(
