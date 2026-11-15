@@ -51,9 +51,11 @@ class TripWatchConfig:
     watch_id: str = ""      # nom du fichier sans .yaml (ex: "santiago")
     enabled: bool = True    # false = alerte en pause (aucune recherche, aucun cout)
     db_file: str = ""       # fichier SQLite de l'alerte, dans le dossier de donnees
+    stops_rule: str = "exact"  # "exact" : exactement required_stops escales ; "at_most" : au plus
 
 
 DB_FILE_RE = re.compile(r"^[A-Za-z0-9_.-]+\.db$")
+STOPS_RULES = ("exact", "at_most")
 
 
 def _default_config_path() -> Path:
@@ -109,6 +111,9 @@ def load_config(path: "Path | str | None" = None, *, require_secrets: bool = Tru
     filters = raw.get("filters", {})
     required_stops = filters.get("required_stops", 1)
     travel_class = filters.get("travel_class", 2)
+    stops_rule = filters.get("stops_rule", "exact")
+    if stops_rule not in STOPS_RULES:
+        raise ConfigError(f"filters.stops_rule doit valoir exact ou at_most, recu: {stops_rule!r}")
 
     if required_stops < 0:
         raise ConfigError(f"filters.required_stops doit etre >= 0, recu: {required_stops}")
@@ -138,6 +143,7 @@ def load_config(path: "Path | str | None" = None, *, require_secrets: bool = Tru
             # Une base par alerte : les historiques ne se melangent jamais. Santiago garde
             # explicitement sa base historique (db_file: trip_watch.db dans son fichier).
             db_file=raw.get("db_file") or f"trip_watch_{config_path.stem}.db",
+            stops_rule=stops_rule,
         )
     except KeyError as exc:
         raise ConfigError(f"Cle de config manquante dans {config_path}: {exc}") from exc

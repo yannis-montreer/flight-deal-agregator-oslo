@@ -42,6 +42,20 @@ WATCH_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,40}$")
 MONTHS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août",
              "septembre", "octobre", "novembre", "décembre"]
 TRAVEL_CLASSES = {1: "Economy", 2: "Premium Economy", 3: "Affaires", 4: "Première"}
+# Valeur du menu "Escales" -> (required_stops, stops_rule). "maxN" = au plus N escales.
+STOPS_OPTIONS = {
+    "0": "Vol direct", "1": "1 escale exactement", "max1": "Direct ou 1 escale",
+    "2": "2 escales exactement", "max2": "Jusqu'à 2 escales", "3": "3 escales exactement",
+}
+
+
+def stops_value(required_stops: int, stops_rule: str) -> str:
+    return f"max{required_stops}" if stops_rule == "at_most" and required_stops > 0 else str(required_stops)
+
+
+def stops_text(config) -> str:
+    value = stops_value(config.required_stops, getattr(config, "stops_rule", "exact"))
+    return STOPS_OPTIONS.get(value, f"{config.required_stops} escale(s)")
 TRAVEL_DURATIONS = {1: "Week-end", 2: "~1 semaine", 3: "~2 semaines"}
 
 # Pays et grandes regions -> identifiant Google (voir build_regions.py, source Wikidata).
@@ -170,6 +184,8 @@ def new_watch_text(watch_id: str, form: dict, key_env: str) -> str:
         f"departure:\n  center: {q(form['departure_center'])}\n  tolerance_days: {form['departure_tolerance_days']}\n\n"
         f"duration:\n  center_days: {form['duration_center_days']}\n  tolerance_days: {form['duration_tolerance_days']}\n\n"
         f"filters:\n  required_stops: {form['required_stops']}\n  travel_class: {form['travel_class']}\n"
+        + ("  stops_rule: at_most   # au plus required_stops escales (directs compris)\n"
+           if form.get("stops_rule") == "at_most" else "")
     )
 
 
@@ -336,6 +352,7 @@ def create_app(
             "watches": watches, "budgets": budget_rows(costs, registry), "saved": saved, "deleted": deleted,
             "registry": registry,
             "month_label": month_label, "region_label": region_label, "classes": TRAVEL_CLASSES,
+            "stops_text": stops_text,
             "airport_city": airport_city,
         })
 
@@ -568,6 +585,7 @@ def create_app(
         return TEMPLATES.TemplateResponse(request, "watch.html", {
             "watch_id": watch_id, "is_new": watch_id is None, "v": values, "error": error,
             "classes": TRAVEL_CLASSES, "key_options": key_options, "registry_ok": registry is not None,
+            "stops_options": STOPS_OPTIONS,
             "airports": AIRPORTS, "airport_label": airport_label, "currencies": CURRENCIES,
         }, status_code=status_code)
 
@@ -664,7 +682,7 @@ def watch_form_values(config) -> dict:
         "departure_tolerance_days": str(config.departure_tolerance_days),
         "duration_center_days": str(config.duration_center_days),
         "duration_tolerance_days": str(config.duration_tolerance_days),
-        "required_stops": str(config.required_stops),
+        "required_stops": stops_value(config.required_stops, getattr(config, "stops_rule", "exact")),
         "travel_class": str(config.travel_class),
     }
 
@@ -695,6 +713,11 @@ def parse_watch_form(form: dict, key_names: Optional[list[str]]) -> dict:
         raise FormError("Clé SerpApi : nom de variable invalide.")
     if key_names is not None and key_env not in key_names:
         raise FormError(f"Clé SerpApi : « {key_env} » n'est pas présente dans le fichier .env de la NUC.")
+    stops_raw = (form.get("required_stops") or "").strip()
+    if stops_raw not in STOPS_OPTIONS:
+        raise FormError("Escales : choisis une valeur dans la liste.")
+    stops_rule = "at_most" if stops_raw.startswith("max") else "exact"
+    required_stops = int(stops_raw.removeprefix("max"))
     schedule = _text(form, "schedule", "Heure du run")
     if not re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", schedule):
         raise FormError("Heure du run : format HH:MM attendu.")
@@ -710,7 +733,8 @@ def parse_watch_form(form: dict, key_names: Optional[list[str]]) -> dict:
         "departure_tolerance_days": _int(form, "departure_tolerance_days", "Tolérance départ (jours)", 0, 30),
         "duration_center_days": _int(form, "duration_center_days", "Durée du séjour (jours)", 1, 365),
         "duration_tolerance_days": _int(form, "duration_tolerance_days", "Tolérance durée (jours)", 0, 60),
-        "required_stops": _int(form, "required_stops", "Escales", 0, 3),
+        "required_stops": required_stops,
+        "stops_rule": stops_rule,
         "travel_class": _int(form, "travel_class", "Classe", 1, 4),
     }
 
@@ -728,6 +752,9 @@ def apply_watch_form(doc, values: dict) -> None:
     set_value(doc["duration"], "center_days", values["duration_center_days"])
     set_value(doc["duration"], "tolerance_days", values["duration_tolerance_days"])
     set_value(doc["filters"], "required_stops", values["required_stops"])
+    # stops_rule n'est ecrit que s'il existe deja ou s'il differe du defaut (fichiers existants intacts).
+    if "stops_rule" in doc["filters"] or values["stops_rule"] != "exact":
+        set_value(doc["filters"], "stops_rule", values["stops_rule"])
     set_value(doc["filters"], "travel_class", values["travel_class"])
 
 # ---------- avertissements (non bloquants) ----------

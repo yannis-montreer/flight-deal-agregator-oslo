@@ -51,9 +51,20 @@ def today_duration(center_days: int, tolerance_days: int, today: date) -> int:
     return durations[today.toordinal() % len(durations)]
 
 
+def stops_match(stops: int, required_stops: int, stops_rule: str) -> bool:
+    """Filtre cote client (gratuit : la recherche renvoie deja directs ET avec escales)."""
+    return stops <= required_stops if stops_rule == "at_most" else stops == required_stops
+
+
+def stops_label(required_stops: int, stops_rule: str) -> str:
+    if stops_rule == "at_most":
+        return "vol direct" if required_stops == 0 else f"direct ou jusqu'a {required_stops} escale(s)"
+    return f"{required_stops} escale(s)"
+
+
 def _search_one(
     client: SerpApiClient, *, origin: str, destination: str, outbound_date: date, return_date: date, currency: str,
-    required_stops: int, travel_class: int,
+    required_stops: int, travel_class: int, stops_rule: str = "exact",
 ) -> DailyResult:
     params = {
         "engine": "google_flights",
@@ -91,12 +102,12 @@ def _search_one(
     all_candidates = (data.get("best_flights") or []) + (data.get("other_flights") or [])
     candidates = [
         c for c in all_candidates
-        if max(len(c.get("flights", [])) - 1, 0) == required_stops
+        if stops_match(max(len(c.get("flights", [])) - 1, 0), required_stops, stops_rule)
         and isinstance(c.get("price"), (int, float)) and not isinstance(c.get("price"), bool)
     ]
     if not candidates:
         return _error(
-            data.get("error") or f"aucun vol a {required_stops} escale(s) trouve",
+            data.get("error") or f"aucun vol a {stops_label(required_stops, stops_rule)} trouve",
             price_level=insights.get("price_level"), search_url=search_url,
         )
 
@@ -160,6 +171,7 @@ def run_daily_check(config: TripWatchConfig, db_path: "Path | str") -> None:
                     client, origin=config.origin, destination=config.destination,
                     outbound_date=dep, return_date=ret, currency=config.currency,
                     required_stops=config.required_stops, travel_class=config.travel_class,
+                    stops_rule=getattr(config, "stops_rule", "exact"),
                 )
 
                 obs_id = insert_observation(

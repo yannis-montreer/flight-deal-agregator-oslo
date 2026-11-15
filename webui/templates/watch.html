@@ -56,9 +56,9 @@
       <input type="number" id="duration_tolerance_days" name="duration_tolerance_days" min="0" value="{{ v.duration_tolerance_days }}">
     </div>
     <div>
-      <label for="required_stops">Escales (exactement)</label>
+      <label for="required_stops">Escales <span class="hint">« Direct ou 1 escale » : sans recherche en plus</span></label>
       <select id="required_stops" name="required_stops">
-        {% for n in range(0, 4) %}<option value="{{ n }}" {% if v.required_stops == n|string %}selected{% endif %}>{{ "Vol direct" if n == 0 else n ~ " escale" ~ ("s" if n > 1 else "") }}</option>{% endfor %}
+        {% for value, label in stops_options.items() %}<option value="{{ value }}" {% if v.required_stops == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
       </select>
     </div>
     <div>
