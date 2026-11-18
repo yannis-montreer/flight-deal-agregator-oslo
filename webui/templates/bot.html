@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}{{ "Nouveau bot" if is_new else v.alias }} — Veilles{% endblock %}
+{% block content %}
+<p><a href="/bots">← Bots et clés</a></p>
+<h1>{{ "Nouveau bot" if is_new else v.alias }}</h1>
+{% if is_new %}
+<ol class="sub">
+  <li>Ton ami (ou toi) crée un bot dans Telegram avec <strong>@BotFather</strong> (commande <code>/newbot</code>) et copie le token.</li>
+  <li>Ton ami ouvre ce bot dans Telegram, appuie sur <strong>Démarrer</strong> et envoie un message (ex : « bonjour »).</li>
+  <li>Colle le token ci-dessous et clique sur <strong>Trouver le chat ID</strong>.</li>
+</ol>
+{% endif %}
+{% if error %}<p class="msg err">{{ error }}</p>{% endif %}
+<form method="post" action="{{ '/bots/new' if is_new else '/bots/' ~ bot_id }}" class="card">
+  <div class="grid">
+    <div>
+      <label for="alias">Nom du bot <span class="hint">pour le reconnaître ici (ex : « Anna »)</span></label>
+      <input type="text" id="alias" name="alias" maxlength="40" value="{{ v.alias }}">
+    </div>
+    <div>
+      <label for="token">Token <span class="hint">{% if is_new %}fourni par @BotFather{% else %}actuel : {{ v.masked }} — laisse vide pour le garder{% endif %}</span></label>
+      <input type="password" id="token" name="token" autocomplete="off" value="{{ v.token }}" placeholder="123456789:AAH…">
+    </div>
+    <div>
+      <label for="chat_id">Chat ID <span class="hint">la conversation où envoyer les alertes</span></label>
+      <input type="text" id="chat_id" name="chat_id" value="{{ v.chat_id }}" placeholder="ex : 123456789">
+      {% if chats %}
+      <span class="hint">Conversation(s) trouvée(s) :</span>
+      <div class="checks">{% for c in chats %}<label><input type="radio" name="chat_pick" value="{{ c.chat_id }}" {% if v.chat_id == c.chat_id %}checked{% endif %} onclick="document.getElementById('chat_id').value=this.value"> {{ c.label }} <code>{{ c.chat_id }}</code></label>{% endfor %}</div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn secondary" type="submit" name="action" value="detect">Trouver le chat ID</button>
+    <button class="btn" type="submit" name="action" value="save">{{ "Ajouter le bot" if is_new else "Enregistrer" }}</button>
+    <a class="btn secondary" href="/bots">Annuler</a>
+  </div>
+</form>
+<p class="muted">Le token est enregistré sur la NUC (secrets/store.json, hors git) et n'est plus jamais réaffiché.</p>
+{% endblock %}

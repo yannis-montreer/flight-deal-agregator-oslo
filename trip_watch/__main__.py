@@ -14,6 +14,7 @@ import os
 import time
 from pathlib import Path
 
+from flightdeals import secret_store
 from flightdeals.collectors.serpapi_client import SerpApiClient
 from flightdeals.logging_setup import setup_logging
 
@@ -27,6 +28,13 @@ logger = logging.getLogger(__name__)
 def _fetch_account(api_key: str) -> dict:
     with SerpApiClient(api_key=api_key) as client:
         return client.get_account_info()  # gratuit : ne consomme aucune recherche
+
+
+def _store_stamp() -> float:
+    try:
+        return (secret_store.store_dir() / secret_store.STORE_FILENAME).stat().st_mtime
+    except OSError:
+        return 0.0
 
 
 def main() -> None:
@@ -50,6 +58,7 @@ def main() -> None:
         )
     keys.publish(status_dir, _fetch_account)
     last_publish = time.monotonic()
+    store_stamp = _store_stamp()
 
     scheduler = WatchScheduler()
     previous_errors: dict[str, str] = {}
@@ -58,9 +67,11 @@ def main() -> None:
         executed, previous_errors = run_cycle(
             scheduler, watch_dir, data_dir, run_daily_check, now, utc_now, previous_errors
         )
-        if executed or time.monotonic() - last_publish >= keys.REFRESH_SECONDS:
-            keys.publish(status_dir, _fetch_account, quiet=not executed)
-            last_publish = time.monotonic()
+        # Cle ajoutee/supprimee depuis l'interface : republie sans attendre l'heure suivante.
+        stamp = _store_stamp()
+        if executed or stamp != store_stamp or time.monotonic() - last_publish >= keys.REFRESH_SECONDS:
+            keys.publish(status_dir, _fetch_account, quiet=not executed and stamp == store_stamp)
+            last_publish, store_stamp = time.monotonic(), stamp
         time.sleep(scheduler.seconds_to_sleep(utc_now()))
 
 

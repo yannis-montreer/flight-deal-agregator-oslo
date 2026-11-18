@@ -43,3 +43,7 @@ watches/.archive/
 deals/*.yaml
 deals/.history/
 deals/.archive/
+
+# Secrets ajoutes depuis l'interface (bots Telegram des amis, cles SerpApi) : jamais commites
+secrets/*
+!secrets/.gitkeep

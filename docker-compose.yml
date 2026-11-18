@@ -11,8 +11,11 @@ services:
       # principale reste config/config.yaml + data/flightdeals.db.
       - FLIGHTDEALS_DEALS_DIR=/app/deals
       - FLIGHTDEALS_DATA_DIR=/data
+      - FLIGHTDEALS_SECRETS_DIR=/app/secrets
     volumes:
       - ./deals:/app/deals:ro
+      # Bots Telegram des amis et cles SerpApi ajoutes depuis l'interface (hors git).
+      - ./secrets:/app/secrets:ro
       # Bind mount (pas named volume) : la DB SQLite et les logs restent inspectables/
       # sauvegardables avec des outils de fichiers ordinaires, quel que soit l'hote final
       # (VPS / Raspberry Pi / local) — pas besoin de `docker volume inspect`.
@@ -44,15 +47,19 @@ services:
       - TRIP_WATCH_DIR=/app/watches
       - TRIP_WATCH_DATA_DIR=/data
       - TRIP_WATCH_STATUS_DIR=/status
+      - FLIGHTDEALS_SECRETS_DIR=/app/secrets
     volumes:
       - ./data:/data
+      - ./secrets:/app/secrets:ro
       # Montage du DOSSIER (pas des fichiers) : l'interface cree/remplace les fichiers de
       # facon atomique ; un montage de fichier seul resterait accroche a l'ancienne version.
       - ./watches:/app/watches:ro
       # Registre des cles pour l'interface : NOMS + compteurs du compte, jamais de secret.
       - ./status:/status
   # Interface locale d'edition des veilles (http://127.0.0.1:8765, depuis la NUC uniquement).
-  # Aucun secret : pas d'env_file. N'ecrit que dans config/ et watches/ (jamais data/).
+  # Pas d'env_file : ne voit jamais les secrets de .env. Seuls secrets manipules : ceux
+  # ajoutes depuis l'interface (bots des amis, cles SerpApi), dans secrets/store.json, jamais
+  # reaffiches. N'ecrit que dans config/, watches/, deals/ et secrets/ (jamais data/).
   webui:
     build:
       context: .
@@ -64,6 +71,7 @@ services:
       - WEBUI_WATCHES_DIR=/cfg/watches
       - WEBUI_DEALS_DIR=/cfg/deals
       - WEBUI_STATUS_DIR=/cfg/status
+      - WEBUI_SECRETS_DIR=/cfg/secrets
       # Quota mensuel par cle, seulement pour forcer une valeur (sinon : forfait reel lu par
       # le service des alertes, ou 250), ex: SERPAPI_KEY_3=1000
       - WEBUI_KEY_QUOTAS=
@@ -74,6 +82,7 @@ services:
       - ./watches:/cfg/watches
       - ./deals:/cfg/deals
       - ./status:/cfg/status:ro
+      - ./secrets:/cfg/secrets
 
 # Les deux conteneurs restent autonomes sans compose : `docker run -d --restart unless-stopped
 # --env-file .env -v ./data:/data flightdeals` fonctionne seul (config baked-in dans l'image),

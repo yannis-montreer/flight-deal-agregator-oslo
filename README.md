@@ -106,7 +106,8 @@ YAML à la main :
 - le coût SerpApi mensuel (pire cas) est calculé par clé, et un enregistrement qui
   dépasserait le quota d'une clé est refusé (quota 250 par défaut, surchargeable via
   `WEBUI_KEY_QUOTAS` dans `docker-compose.yml`) ;
-- l'interface n'a accès à aucun secret ni à `data/`.
+- l'interface n'a accès ni à `.env` ni à `data/` ; les seuls secrets qu'elle manipule sont
+  ceux qu'on y ajoute (bots des amis, clés SerpApi), jamais réaffichés.
 
 **Alertes** : bouton « Nouvelle alerte » (fichier `watches/<nom>.yaml` créé, pris en compte en
 quelques minutes sans redémarrage), case « Active » pour une pause, « Supprimer » range le
@@ -122,7 +123,18 @@ elle se met en pause.
 **Clés** : chaque alerte ou veille choisit sa clé par **nom** de variable de `.env` (`api_key_env`). Le
 service `trip-watch` publie dans `status/keys.json` les noms des clés présentes et les compteurs
 de leur compte (`account.json`, gratuit) — jamais les valeurs. Ajouter une clé : une ligne
-`SERPAPI_KEY_3=...` dans `.env` (le nom doit contenir `SERPAPI_KEY`), puis `docker compose up -d`.
+`SERPAPI_KEY_3=...` dans `.env` (le nom doit contenir `SERPAPI_KEY`), puis `docker compose up -d`. Ou, plus simple, depuis
+la page **Bots et clés** de l'interface (clé vérifiée par `account.json`, rangée dans
+`secrets/store.json`).
+
+**Bots Telegram (amis)** : page **Bots et clés** → « Ajouter un bot » : l'ami crée son bot avec
+@BotFather, lui envoie un message, on colle le token, « Trouver le chat ID » le récupère
+(`getUpdates`), « Envoyer un test » vérifie. Chaque alerte ou veille coche ensuite ses
+destinataires dans « Envoyer à » (champ `notify: [main, anna]`, absent = bot principal seul).
+Les résultats (deals, signaux Google, digest) partent vers les bots cochés ; les messages
+techniques (récap quotidien, budget, quota) restent réservés au bot principal de `.env`.
+Les tokens et clés ajoutés ainsi sont dans `secrets/store.json` (hors git, hors image Docker,
+monté en lecture seule dans les services) : ce fichier n'est pas dans la sauvegarde de `data/`.
 
 ## Spike (historique)
 

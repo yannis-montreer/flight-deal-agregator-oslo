@@ -291,9 +291,23 @@ def _send_daily_digest(
     config: TripWatchConfig, result: DailyResult, is_new_min: bool, duration_days: int,
     remaining_searches: Optional[int],
 ) -> None:
-    text = _format_daily_digest(config, result, is_new_min, duration_days, remaining_searches)
-    try:
-        send_message(config.telegram_bot_token, config.telegram_chat_id, text)
-        logger.info("Digest quotidien envoye")
-    except TelegramError:
-        logger.exception("Echec d'envoi du digest quotidien (ignore, on reessaiera demain)")
+    bots = tuple(getattr(config, "bots", ()))
+    if tuple(getattr(config, "notify", ("main",))) == ("main",) or not bots:
+        text = _format_daily_digest(config, result, is_new_min, duration_days, remaining_searches)
+        try:
+            send_message(config.telegram_bot_token, config.telegram_chat_id, text)
+            logger.info("Digest quotidien envoye")
+        except TelegramError:
+            logger.exception("Echec d'envoi du digest quotidien (ignore, on reessaiera demain)")
+        return
+
+    # Plusieurs destinataires (bots d'amis) : le quota SerpApi est une info technique,
+    # reservee au bot principal.
+    for bot in bots:
+        quota = remaining_searches if bot.bot_id == "main" else None
+        text = _format_daily_digest(config, result, is_new_min, duration_days, quota)
+        try:
+            send_message(bot.token, bot.chat_id, text)
+            logger.info("Digest quotidien envoye au bot %s", bot.alias)
+        except TelegramError as exc:
+            logger.error("Echec d'envoi du digest au bot %s (ignore) : %s", bot.alias, exc)

@@ -179,24 +179,50 @@ def with_title(title: str, text: str) -> str:
 
 
 def send_deal_notification(
-    bot_token: str, chat_id: str, deal: DealMessage, *, timeout_seconds: float = 15.0, title: str = ""
+    bot_token: str, chat_id: str, deal: DealMessage, *, timeout_seconds: float = 15.0, title: str = "",
+    bots=None,
 ) -> None:
+    """`bots` : destinataires de la veille ; None = (bot_token, chat_id) seul (historique)."""
     text = with_title(title, render_message(deal))
-    send_message(bot_token, chat_id, text, timeout_seconds=timeout_seconds)
+    if bots:
+        send_to_bots(bots, text, timeout_seconds=timeout_seconds)
+    else:
+        send_message(bot_token, chat_id, text, timeout_seconds=timeout_seconds)
     logger.info(
         "Notification Telegram envoyee: %s -> %s, %s %s", deal.origin, deal.destination, deal.price, deal.currency
     )
 
 
 def send_google_signal_notification(
-    bot_token: str, chat_id: str, msg: GoogleSignalMessage, *, timeout_seconds: float = 15.0, title: str = ""
+    bot_token: str, chat_id: str, msg: GoogleSignalMessage, *, timeout_seconds: float = 15.0, title: str = "",
+    bots=None,
 ) -> None:
     text = with_title(title, render_google_signal_message(msg))
-    send_message(bot_token, chat_id, text, timeout_seconds=timeout_seconds)
+    if bots:
+        send_to_bots(bots, text, timeout_seconds=timeout_seconds)
+    else:
+        send_message(bot_token, chat_id, text, timeout_seconds=timeout_seconds)
     logger.info(
         "Signal Google envoye: %s -> %s, %s %s (price_level=%s)",
         msg.origin, msg.destination, msg.price, msg.currency, msg.price_level,
     )
+
+
+def send_to_bots(bots, text: str, *, timeout_seconds: float = 15.0) -> list[str]:
+    """Envoie `text` a chaque bot destinataire d'une veille (bot principal et/ou bots des amis).
+    Un echec sur un bot est journalise (alias seulement, jamais le token) et n'empeche pas les
+    autres. Renvoie les identifiants des bots servis ; leve TelegramError si AUCUN envoi n'a
+    reussi (l'appelant ne marque alors rien comme notifie et reessaiera au prochain run)."""
+    sent: list[str] = []
+    for bot in bots:
+        try:
+            send_message(bot.token, bot.chat_id, text, timeout_seconds=timeout_seconds)
+            sent.append(bot.bot_id)
+        except TelegramError as exc:
+            logger.error("Echec d'envoi Telegram vers le bot %s : %s", bot.alias, exc)
+    if not sent:
+        raise TelegramError("aucun bot destinataire n'a pu etre joint")
+    return sent
 
 
 def throttled_send(

@@ -171,8 +171,13 @@ def run_once(config: Config, db_path: "Path | str") -> RunSummary:
 
 def _title_kwargs(config: Config) -> dict:
     """Veilles multiples : chaque message porte le nom de sa veille. Veille sans nom (la
-    veille historique) : appel strictement identique a avant."""
-    return {"title": config.name} if config.name else {}
+    veille historique) : appel strictement identique a avant. Une veille qui envoie a d'autres
+    bots que le principal (amis) passe la liste de ses bots ; les messages techniques (recap,
+    budget) restent envoyes au seul bot principal."""
+    kwargs: dict = {"title": config.name} if config.name else {}
+    if tuple(getattr(config, "notify", ("main",))) != ("main",) and getattr(config, "bots", ()):
+        kwargs["bots"] = config.bots
+    return kwargs
 
 
 def _send_daily_summary(config: Config, conn, summary: RunSummary, month_key: str) -> None:

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Nouvelle clé SerpApi — Veilles{% endblock %}
+{% block content %}
+<p><a href="/bots">← Bots et clés</a></p>
+<h1>Nouvelle clé SerpApi</h1>
+<p class="sub">Compte gratuit sur serpapi.com (250 recherches/mois), puis copie la clé depuis serpapi.com/manage-api-key.
+  La clé est vérifiée auprès de SerpApi (appel gratuit, aucune recherche consommée).</p>
+{% if error %}<p class="msg err">{{ error }}</p>{% endif %}
+<form method="post" action="/keys/new" class="card">
+  <div class="grid">
+    <div>
+      <label for="suffix">Nom <span class="hint">la clé s'appellera SERPAPI_KEY_&lt;nom&gt; (ex : ANNA)</span></label>
+      <input type="text" id="suffix" name="suffix" maxlength="30" value="{{ v.suffix }}" placeholder="ANNA">
+    </div>
+    <div>
+      <label for="value">Clé</label>
+      <input type="password" id="value" name="value" autocomplete="off">
+    </div>
+  </div>
+  <div class="actions">
+    <button class="btn" type="submit">Ajouter la clé</button>
+    <a class="btn secondary" href="/bots">Annuler</a>
+  </div>
+</form>
+{% endblock %}

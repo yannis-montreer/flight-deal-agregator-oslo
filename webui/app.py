@@ -23,6 +23,8 @@ from trip_watch.config import ConfigError as TripWatchConfigError
 from trip_watch.config import load_config as load_trip_watch_config
 from trip_watch.tracker import departure_dates
 
+from flightdeals import secret_store
+from webui import bots as bots_mod
 from webui import costs as cost_mod
 from webui import projection as proj_mod
 from webui.currencies import CURRENCIES
@@ -165,6 +167,34 @@ def slugify(name: str) -> str:
     return re.sub(r"[^a-z0-9]+", "-", ascii_name.lower()).strip("-")[:30] or "alerte"
 
 
+def notify_line(ids: list[str]) -> str:
+    return "" if list(ids) == [secret_store.MAIN_BOT_ID] else f"notify: [{', '.join(ids)}]   # bots Telegram destinataires\n"
+
+
+def set_notify(doc, ids: list[str]) -> None:
+    """`notify` n'est ecrit que s'il existe deja ou differe du defaut (bot principal seul) :
+    les fichiers existants restent intacts."""
+    from ruamel.yaml.comments import CommentedSeq
+    if "notify" in doc:
+        set_list(doc, "notify", ids)
+    elif list(ids) != [secret_store.MAIN_BOT_ID]:
+        seq = CommentedSeq(ids)
+        seq.fa.set_flow_style()
+        keys = list(doc.keys())
+        anchor = next((k for k in ("enabled", "api_key_env", "name") if k in keys), None)
+        doc.insert(keys.index(anchor) + 1 if anchor else 0, "notify", seq)
+
+
+def parse_notify_form(form: dict, bot_ids: Optional[list[str]]) -> list[str]:
+    ids = [i for i in (form.get("notify") or []) if isinstance(i, str)]
+    if not ids:
+        raise FormError("Envoyer à : coche au moins un bot.")
+    for bot_id in ids:
+        if not secret_store.BOT_ID_RE.match(bot_id) or (bot_ids is not None and bot_id not in bot_ids):
+            raise FormError(f"Envoyer à : bot « {bot_id} » inconnu (voir « Bots et clés »).")
+    return list(dict.fromkeys(ids))
+
+
 def new_watch_text(watch_id: str, form: dict, key_env: str) -> str:
     """Contenu d'un nouveau fichier d'alerte. Les valeurs ont deja ete controlees par
     validate_watch_form ; json.dumps produit une chaine YAML entre guillemets valide."""
@@ -174,6 +204,7 @@ def new_watch_text(watch_id: str, form: dict, key_env: str) -> str:
         f"# Modifiable depuis l'interface (http://127.0.0.1:8765).\n\n"
         f"api_key_env: {key_env}\n"
         f"enabled: {'true' if form['enabled'] else 'false'}\n"
+        + notify_line(form.get("notify") or [secret_store.MAIN_BOT_ID]) +
         f"db_file: trip_watch_{watch_id}.db\n\n"
         f"destination_name: {q(form['destination_name'], ensure_ascii=False)}\n"
         f"origin: {form['origin']}\n"
@@ -192,6 +223,8 @@ def new_watch_text(watch_id: str, form: dict, key_env: str) -> str:
 def create_app(
     flightdeals_path: Path, watches_dir: Path, allowed_hosts: Optional[list[str]] = None,
     status_dir: Optional[Path] = None, deals_dir: Optional[Path] = None,
+    secrets_dir: Optional[Path] = None, fetch_account: Optional[Callable[[str], dict]] = None,
+    telegram: Any = None,
 ) -> FastAPI:
     allowed_hosts = allowed_hosts or ["127.0.0.1", "localhost"]
     app = FastAPI(title="Veilles", docs_url=None, redoc_url=None, openapi_url=None)
@@ -276,8 +309,48 @@ def create_app(
         except (OSError, ValueError):
             return None
 
+    def stored_keys() -> list[str]:
+        return secret_store.stored_key_names(secrets_dir) if secrets_dir is not None else []
+
     def key_names(registry: Optional[dict]) -> Optional[list[str]]:
-        return sorted(k["name"] for k in registry["keys"] if isinstance(k.get("name"), str)) if registry else None
+        """Cles connues : registre du service des alertes (.env et interface) + cles tout juste
+        ajoutees depuis l'interface (pas encore republiees). None = registre indisponible."""
+        if not registry:
+            return None
+        return sorted({k["name"] for k in registry["keys"] if isinstance(k.get("name"), str)} | set(stored_keys()))
+
+    def bot_options() -> list[dict]:
+        options = [{"id": secret_store.MAIN_BOT_ID, "alias": secret_store.MAIN_BOT_ALIAS}]
+        if secrets_dir is not None:
+            try:
+                bots = secret_store.read_store(secrets_dir)["bots"]
+            except secret_store.StoreError:
+                bots = {}
+            options += sorted(({"id": i, "alias": str(e.get("alias") or i)} for i, e in bots.items()
+                               if isinstance(e, dict) and secret_store.BOT_ID_RE.match(i) and i != secret_store.MAIN_BOT_ID),
+                              key=lambda o: o["alias"].casefold())
+        return options
+
+    def bot_ids() -> list[str]:
+        return [o["id"] for o in bot_options()]
+
+    def bot_alias(bot_id: str) -> str:
+        return next((o["alias"] for o in bot_options() if o["id"] == bot_id), f"{bot_id} (inconnu)")
+
+    def usage() -> dict:
+        result: dict = {"bots": {}, "keys": {}}
+        for d in load_deals():
+            if d.config:
+                label = cost_mod.deal_label(d.config)
+                for b in d.config.notify:
+                    result["bots"].setdefault(b, []).append(label)
+                result["keys"].setdefault(d.config.api_key_env, []).append(label)
+        for w in load_watches():
+            if w.config:
+                for b in w.config.notify:
+                    result["bots"].setdefault(b, []).append(w.config.destination_name)
+                result["keys"].setdefault(w.config.api_key_env, []).append(w.config.destination_name)
+        return result
 
     def key_choices(registry: Optional[dict], current: str = "") -> list[str]:
         names = key_names(registry)
@@ -318,7 +391,7 @@ def create_app(
 
     def budget_rows(costs: list, registry: Optional[dict]) -> list[dict]:
         by_name = {k.get("name"): k for k in (registry or {}).get("keys", [])}
-        names = sorted(set(cost_mod.totals_by_key(costs)) | set(by_name))
+        names = sorted(set(cost_mod.totals_by_key(costs)) | set(by_name) | set(stored_keys()))
         consumers = consumers_by_key()
         rows = []
         for key_env in names:
@@ -332,7 +405,8 @@ def create_app(
                 "users": [c.label for c in costs if c.key_env == key_env and c.per_month > 0],
                 "over": total > quota,
                 "left": entry.get("searches_left"),
-                "missing": registry is not None and key_env not in by_name,
+                "missing": registry is not None and key_env not in by_name and key_env not in stored_keys(),
+                "pending": key_env not in by_name and key_env in stored_keys(),
                 "error": entry.get("error"),
             })
         return rows
@@ -353,7 +427,7 @@ def create_app(
             "registry": registry,
             "month_label": month_label, "region_label": region_label, "classes": TRAVEL_CLASSES,
             "stops_text": stops_text,
-            "airport_city": airport_city,
+            "airport_city": airport_city, "bot_alias": bot_alias, "bots_enabled": secrets_dir is not None,
         })
 
     @app.get("/flightdeals")
@@ -383,6 +457,8 @@ def create_app(
         form_data = await request.form()
         form = dict(form_data)
         form["travel_durations"] = form_data.getlist("travel_durations")
+        # Cases "Envoyer a" absentes du formulaire : destinataires inchanges.
+        form["notify"] = form_data.getlist("notify") if form_data.get("notify_shown") else None
         registry = read_registry()
         try:
             if deals_dir is None:
@@ -393,7 +469,7 @@ def create_app(
             while (deals_dir / f"{veille_id}.yaml").exists() or veille_id in (MAIN_DEAL_ID, "new"):
                 veille_id, n = f"{base}-{n}", n + 1
             doc = load_document(flightdeals_path)  # modele : la veille principale (seuils avances inclus)
-            apply_flightdeals_form(doc, form, key_names(registry), is_main=False)
+            apply_flightdeals_form(doc, form, key_names(registry), is_main=False, bot_ids=bot_ids())
             doc.insert(min(2, len(doc)), "db_file", f"flightdeals_{veille_id}.db")
             original = flightdeals_path.read_bytes().decode("utf-8")
             header = f"# Veille creee depuis l'interface le {date.today().isoformat()} (modele : config/config.yaml).\n"
@@ -427,12 +503,14 @@ def create_app(
         form_data = await request.form()
         form = dict(form_data)
         form["travel_durations"] = form_data.getlist("travel_durations")
+        # Cases "Envoyer a" absentes du formulaire : destinataires inchanges.
+        form["notify"] = form_data.getlist("notify") if form_data.get("notify_shown") else None
         registry = read_registry()
         try:
             current = load_flightdeals_config(path, require_secrets=False)
             doc = load_document(path)
             apply_flightdeals_form(doc, form, _key_names_including(registry, current.api_key_env),
-                                   is_main=veille_id == MAIN_DEAL_ID)
+                                   is_main=veille_id == MAIN_DEAL_ID, bot_ids=bot_ids())
             save_document(
                 path, doc,
                 validate=lambda p: load_flightdeals_config(p, require_secrets=False),
@@ -481,10 +559,13 @@ def create_app(
 
     @app.post("/watches/new", response_class=HTMLResponse)
     async def watch_create(request: Request):
-        form = dict(await request.form())
+        form_data = await request.form()
+        form = dict(form_data)
+        # Cases "Envoyer a" absentes du formulaire : destinataires inchanges.
+        form["notify"] = form_data.getlist("notify") if form_data.get("notify_shown") else None
         registry = read_registry()
         try:
-            values = parse_watch_form(form, key_names(registry))
+            values = parse_watch_form(form, key_names(registry), bot_ids())
             base = slugify(values["destination_name"])
             watch_id, n = base, 2
             while (watches_dir / f"{watch_id}.yaml").exists() or watch_id == "new":
@@ -516,14 +597,17 @@ def create_app(
             path = watch_path(watch_id)
         except FileNotFoundError:
             return _page_error(request, "Alerte introuvable.", status_code=404)
-        form = dict(await request.form())
+        form_data = await request.form()
+        form = dict(form_data)
+        # Cases "Envoyer a" absentes du formulaire : destinataires inchanges.
+        form["notify"] = form_data.getlist("notify") if form_data.get("notify_shown") else None
         registry = read_registry()
         try:
             current = load_trip_watch_config(path, require_secrets=False)
             names = key_names(registry)
             if names is not None and current.api_key_env not in names:
                 names = names + [current.api_key_env]  # garder la cle actuelle reste possible
-            values = parse_watch_form(form, names)
+            values = parse_watch_form(form, names, bot_ids())
             doc = load_document(path)
             apply_watch_form(doc, values)
             save_document(
@@ -572,7 +656,7 @@ def create_app(
             "month_options": [
                 (m, month_label(m)) for m in sorted(range(1, 13), key=lambda m: (month_year(m), m))
             ],
-            "regions": REGIONS,
+            "regions": REGIONS, "bot_options": bot_options(),
         }, status_code=status_code)
 
     def _render_watch(request, watch_id, values, error, registry, status_code=200):
@@ -587,11 +671,28 @@ def create_app(
             "classes": TRAVEL_CLASSES, "key_options": key_options, "registry_ok": registry is not None,
             "stops_options": STOPS_OPTIONS,
             "airports": AIRPORTS, "airport_label": airport_label, "currencies": CURRENCIES,
+            "bot_options": bot_options(),
         }, status_code=status_code)
 
     def _page_error(request, message, status_code=500):
         return TEMPLATES.TemplateResponse(request, "error.html", {"message": message}, status_code=status_code)
+
+    if secrets_dir is not None:
+        def env_keys() -> Optional[list[str]]:
+            registry = read_registry()
+            if registry is None:
+                return None
+            return sorted(k["name"] for k in registry["keys"] if isinstance(k.get("name"), str) and k.get("source", "env") == "env")
+
+        bots_mod.register(app, TEMPLATES, secrets_dir, usage, env_keys,
+                          fetch_account or _fetch_account, telegram or bots_mod.telegram_tools)
     return app
+
+
+def _fetch_account(api_key: str) -> dict:
+    from flightdeals.collectors.serpapi_client import SerpApiClient
+    with SerpApiClient(api_key=api_key) as client:
+        return client.get_account_info()  # gratuit : ne consomme aucune recherche
 
 
 # ---------- conversions formulaire <-> fichier ----------
@@ -612,10 +713,12 @@ def flightdeals_form_values(config) -> dict:
         "cold_start_enabled": "on" if config.cold_start_check.enabled else "",
         "max_candidates_per_run": str(config.cold_start_check.max_candidates_per_run),
         "daily_summary_enabled": "on" if config.notification.daily_summary_enabled else "",
+        "notify": list(config.notify),
     }
 
 
-def apply_flightdeals_form(doc, form: dict, key_names: Optional[list[str]] = None, *, is_main: bool = True) -> None:
+def apply_flightdeals_form(doc, form: dict, key_names: Optional[list[str]] = None, *, is_main: bool = True,
+                           bot_ids: Optional[list[str]] = None) -> None:
     """`key_names` : cles presentes dans .env (registre) ; None = registre indisponible.
     `is_main` : veille historique (nom facultatif ; sans nom, ses messages restent inchanges)."""
     name = (form.get("name") or "").strip()
@@ -643,6 +746,7 @@ def apply_flightdeals_form(doc, form: dict, key_names: Optional[list[str]] = Non
     cold_enabled = bool(form.get("cold_start_enabled"))
     cold_max = _int(form, "max_candidates_per_run", "Vérifications Google max", 0, 20)
     summary = bool(form.get("daily_summary_enabled"))
+    notify = parse_notify_form(form, bot_ids) if form.get("notify") is not None else None
 
     # Champs propres aux veilles multiples : ajoutes en tete de fichier s'ils n'existent pas
     # encore, et jamais ajoutes inutilement a la veille principale (fichier historique intact).
@@ -654,6 +758,8 @@ def apply_flightdeals_form(doc, form: dict, key_names: Optional[list[str]] = Non
                 set_value(doc, key, value, quoted=quoted)
         elif value is not None and not (key == "api_key_env" and value == DEFAULT_DEAL_KEY_ENV and is_main):
             doc.insert(0, key, DoubleQuotedScalarString(value) if quoted else value)
+    if notify is not None:
+        set_notify(doc, notify)
     set_value(doc["collection"], "enabled", enabled)
     set_value(doc["collection"], "schedule", schedule, quoted=True)
     set_value(doc["serpapi"], "month", month)
@@ -684,6 +790,7 @@ def watch_form_values(config) -> dict:
         "duration_tolerance_days": str(config.duration_tolerance_days),
         "required_stops": stops_value(config.required_stops, getattr(config, "stops_rule", "exact")),
         "travel_class": str(config.travel_class),
+        "notify": list(config.notify),
     }
 
 
@@ -693,11 +800,11 @@ def new_watch_defaults(key_env: str, today: Optional[date] = None) -> dict:
         "api_key_env": key_env, "enabled": "on", "destination_name": "", "origin": "OSL", "destination": "",
         "currency": "NOK", "schedule": "10:30", "departure_center": (today + timedelta(days=60)).isoformat(),
         "departure_tolerance_days": "1", "duration_center_days": "14", "duration_tolerance_days": "2",
-        "required_stops": "1", "travel_class": "1",
+        "required_stops": "1", "travel_class": "1", "notify": [secret_store.MAIN_BOT_ID],
     }
 
 
-def parse_watch_form(form: dict, key_names: Optional[list[str]]) -> dict:
+def parse_watch_form(form: dict, key_names: Optional[list[str]], bot_ids: Optional[list[str]] = None) -> dict:
     """Controle et normalise les champs d'une alerte. `key_names` : cles connues du service
     des alertes (registre) ; None = registre indisponible, on ne controle que le format."""
     center_raw = _text(form, "departure_center", "Date de départ centrale")
@@ -736,12 +843,15 @@ def parse_watch_form(form: dict, key_names: Optional[list[str]]) -> dict:
         "required_stops": required_stops,
         "stops_rule": stops_rule,
         "travel_class": _int(form, "travel_class", "Classe", 1, 4),
+        "notify": parse_notify_form(form, bot_ids) if form.get("notify") is not None else None,  # None = inchange
     }
 
 
 def apply_watch_form(doc, values: dict) -> None:
     set_value(doc, "api_key_env", values["api_key_env"])
     set_value(doc, "enabled", values["enabled"])
+    if values["notify"] is not None:
+        set_notify(doc, values["notify"])
     set_value(doc, "destination_name", values["destination_name"])
     set_value(doc, "origin", values["origin"])
     set_value(doc, "destination", values["destination"])
@@ -795,4 +905,5 @@ def create_app_from_env() -> FastAPI:
         Path(os.environ.get("WEBUI_WATCHES_DIR", "watches")),
         deals_dir=Path(os.environ["WEBUI_DEALS_DIR"]) if os.environ.get("WEBUI_DEALS_DIR") else None,
         status_dir=Path(os.environ["WEBUI_STATUS_DIR"]) if os.environ.get("WEBUI_STATUS_DIR") else None,
+        secrets_dir=Path(os.environ["WEBUI_SECRETS_DIR"]) if os.environ.get("WEBUI_SECRETS_DIR") else None,
     )

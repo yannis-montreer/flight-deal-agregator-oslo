@@ -21,6 +21,8 @@ from typing import Optional
 
 import yaml
 from dotenv import load_dotenv
+
+from flightdeals import secret_store
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 # Charge .env s'il existe (dev local hors Docker) ; no-op silencieux sinon. En conteneur, les
@@ -129,6 +131,10 @@ class Config:
     api_key_env: str = "SERPAPI_KEY"      # NOM de la variable d'environnement de la cle (jamais la valeur)
     db_file: Optional[str] = None         # base de la veille dans le dossier de donnees ; None = FLIGHTDEALS_DB_PATH
     veille_id: str = "main"               # "main" = config/config.yaml, sinon nom du fichier de deals/
+    # Bots Telegram destinataires des resultats (voir secret_store). Les messages techniques
+    # (recap, budget) vont toujours au bot principal de .env.
+    notify: tuple = ("main",)
+    bots: tuple = ()                      # Bot resolus (vide si require_secrets=False)
 
 
 DEFAULT_API_KEY_ENV = "SERPAPI_KEY"
@@ -151,8 +157,12 @@ def _require_env(name: str) -> str:
 
 
 def _load_secrets(api_key_env: str = DEFAULT_API_KEY_ENV) -> Secrets:
+    # Cle de .env, ou ajoutee depuis l'interface (secrets/store.json).
+    serpapi_key = secret_store.resolve_key(api_key_env)
+    if not serpapi_key:
+        raise ConfigError(f"Cle SerpApi requise manquante: {api_key_env} (ni dans .env, ni ajoutee depuis l'interface).")
     return Secrets(
-        serpapi_key=_require_env(api_key_env),
+        serpapi_key=serpapi_key,
         telegram_bot_token=_require_env("TELEGRAM_BOT_TOKEN"),
         telegram_chat_id=_require_env("TELEGRAM_CHAT_ID"),
     )
@@ -179,6 +189,10 @@ def load_config(path: "Path | str | None" = None, *, require_secrets: bool = Tru
     api_key_env = raw.get("api_key_env") or DEFAULT_API_KEY_ENV
     if not isinstance(api_key_env, str) or not _ENV_NAME_RE.match(api_key_env):
         raise ConfigError(f"api_key_env doit etre un nom de variable (ex: SERPAPI_KEY_3), recu: {api_key_env!r}")
+    try:
+        notify = secret_store.parse_notify(raw.get("notify"))
+    except ValueError as exc:
+        raise ConfigError(str(exc)) from exc
     db_file = raw.get("db_file")
     if db_file is not None and (not isinstance(db_file, str) or not _DB_FILE_RE.match(db_file)):
         raise ConfigError(f"db_file doit etre un simple nom de fichier .db, recu: {db_file!r}")
@@ -277,6 +291,12 @@ def load_config(path: "Path | str | None" = None, *, require_secrets: bool = Tru
         )
 
     secrets = _load_secrets(api_key_env) if require_secrets else Secrets("", "", "")
+    bots: tuple = ()
+    if require_secrets:
+        try:
+            bots = secret_store.resolve_bots(notify)
+        except secret_store.StoreError as exc:
+            raise ConfigError(str(exc)) from exc
 
     return Config(
         origin=origin,
@@ -293,4 +313,6 @@ def load_config(path: "Path | str | None" = None, *, require_secrets: bool = Tru
         name=name.strip() if name else None,
         api_key_env=api_key_env,
         db_file=db_file,
+        notify=notify,
+        bots=bots,
     )

@@ -16,6 +16,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Mapping, Optional
 
+from flightdeals import secret_store
+
 logger = logging.getLogger(__name__)
 
 KEY_NAME_RE = re.compile(r"^[A-Z0-9_]*SERPAPI_KEY[A-Z0-9_]*$")
@@ -30,19 +32,36 @@ def available_key_names(environ: Mapping[str, str]) -> list[str]:
     return sorted(name for name, value in environ.items() if KEY_NAME_RE.match(name) and value.strip())
 
 
+def available_keys(environ: Mapping[str, str], stored: Mapping[str, str]) -> dict[str, tuple[str, str]]:
+    """NOM -> (valeur, origine "env" ou "interface"). A nom egal, .env l'emporte."""
+    keys = {name: (value.strip(), "interface") for name, value in stored.items()
+            if isinstance(value, str) and value.strip() and KEY_NAME_RE.match(name)}
+    keys.update({name: (environ[name].strip(), "env") for name in available_key_names(environ)})
+    return dict(sorted(keys.items()))
+
+
+def stored_keys(directory: Optional[Path] = None) -> dict[str, str]:
+    try:
+        return dict(secret_store.read_store(directory)["serpapi_keys"])
+    except secret_store.StoreError:
+        logger.warning("Fichier de secrets de l'interface illisible : cles ajoutees depuis l'interface ignorees")
+        return {}
+
+
 def _as_int(value: Any) -> Optional[int]:
     return value if isinstance(value, int) and not isinstance(value, bool) else None
 
 
-def build_registry(environ: Mapping[str, str], fetch_account: Callable[[str], dict]) -> dict:
+def build_registry(environ: Mapping[str, str], fetch_account: Callable[[str], dict],
+                   stored: Optional[Mapping[str, str]] = None) -> dict:
     keys = []
-    for name in available_key_names(environ):
+    for name, (value, source) in available_keys(environ, stored or {}).items():
         entry: dict[str, Any] = {
-            "name": name, "searches_per_month": None, "searches_left": None,
+            "name": name, "source": source, "searches_per_month": None, "searches_left": None,
             "used_this_period": None, "renewal_date": None, "error": None,
         }
         try:
-            account = fetch_account(environ[name].strip())
+            account = fetch_account(value)
             entry["searches_per_month"] = _as_int(account.get("searches_per_month"))
             entry["searches_left"] = _as_int(account.get("total_searches_left"))
             entry["used_this_period"] = _as_int(account.get("this_month_usage"))
@@ -69,7 +88,7 @@ def publish(status_dir: Optional[Path], fetch_account: Callable[[str], dict], *,
     if status_dir is None:
         return
     try:
-        registry = build_registry(os.environ, fetch_account)
+        registry = build_registry(os.environ, fetch_account, stored_keys())
         write_registry(status_dir, registry)
         (logger.debug if quiet else logger.info)("Registre des cles publie : %s", ", ".join(k["name"] for k in registry["keys"]) or "aucune")
     except Exception:  # noqa: BLE001

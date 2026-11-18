@@ -27,6 +27,11 @@
       <div class="checks"><label><input type="checkbox" name="enabled" {% if v.enabled %}checked{% endif %}> Active <span class="hint">(décoché = en pause, aucun coût)</span></label></div>
     </div>
     <div>
+      <label>Envoyer à <span class="hint">bots Telegram qui reçoivent les résultats (<a href="/bots">gérer les bots</a>)</span></label>
+      <input type="hidden" name="notify_shown" value="1">
+      <div class="checks">{% for b in bot_options %}<label><input type="checkbox" name="notify" value="{{ b.id }}" {% if b.id in (v.notify if v.notify is defined and v.notify is not none else ['main']) %}checked{% endif %}> {{ b.alias }}</label>{% endfor %}</div>
+    </div>
+    <div>
       <label for="origin">Aéroport de départ <span class="hint">efface, tape la ville (ex : « Oslo ») et choisis</span></label>
       <input type="text" id="origin" name="origin" list="airports" autocomplete="off" value="{{ v.origin }}">
       <span class="hint">{{ airport_label(v.origin|upper) if v.origin else "" }}</span>

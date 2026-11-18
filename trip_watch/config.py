@@ -14,6 +14,8 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import yaml
 from dotenv import load_dotenv
 
+from flightdeals import secret_store
+
 load_dotenv()
 
 
@@ -52,6 +54,8 @@ class TripWatchConfig:
     enabled: bool = True    # false = alerte en pause (aucune recherche, aucun cout)
     db_file: str = ""       # fichier SQLite de l'alerte, dans le dossier de donnees
     stops_rule: str = "exact"  # "exact" : exactement required_stops escales ; "at_most" : au plus
+    notify: tuple = ("main",)  # bots Telegram destinataires du digest (voir flightdeals.secret_store)
+    bots: tuple = ()           # Bot resolus (vide si require_secrets=False)
 
 
 DB_FILE_RE = re.compile(r"^[A-Za-z0-9_.-]+\.db$")
@@ -86,19 +90,28 @@ def load_config(path: "Path | str | None" = None, *, require_secrets: bool = Tru
         raise ConfigError(f"api_key_env doit etre un nom de variable (ex: SERPAPI_KEY_3), recu: {api_key_env!r}")
 
     if api_key_env:
-        api_key = os.environ.get(api_key_env, "").strip()
+        api_key = secret_store.resolve_key(api_key_env)
         missing_key_msg = f"{api_key_env} (api_key_env) manquant dans l'environnement"
     else:
-        api_key = (os.environ.get(DEFAULT_API_KEY_ENV) or os.environ.get("SERPAPI_KEY", "")).strip()
+        api_key = secret_store.resolve_key(DEFAULT_API_KEY_ENV) or secret_store.resolve_key("SERPAPI_KEY")
         missing_key_msg = "SEARCH_SERPAPI_KEY (ou SERPAPI_KEY a defaut) manquant dans l'environnement"
     bot_token = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
     chat_id = os.environ.get("TELEGRAM_CHAT_ID", "").strip()
 
+    try:
+        notify = secret_store.parse_notify(raw.get("notify"))
+    except ValueError as exc:
+        raise ConfigError(str(exc)) from exc
+    bots: tuple = ()
     if require_secrets:
         if not api_key:
             raise ConfigError(missing_key_msg)
         if not bot_token or not chat_id:
             raise ConfigError("TELEGRAM_BOT_TOKEN / TELEGRAM_CHAT_ID manquant dans l'environnement")
+        try:
+            bots = secret_store.resolve_bots(notify)
+        except secret_store.StoreError as exc:
+            raise ConfigError(str(exc)) from exc
 
     timezone = raw.get("timezone", "UTC")  # defaut UTC si absent (retro-compatible)
     try:
@@ -144,6 +157,8 @@ def load_config(path: "Path | str | None" = None, *, require_secrets: bool = Tru
             # explicitement sa base historique (db_file: trip_watch.db dans son fichier).
             db_file=raw.get("db_file") or f"trip_watch_{config_path.stem}.db",
             stops_rule=stops_rule,
+            notify=notify,
+            bots=bots,
         )
     except KeyError as exc:
         raise ConfigError(f"Cle de config manquante dans {config_path}: {exc}") from exc

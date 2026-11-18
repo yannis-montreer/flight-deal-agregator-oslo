@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
-<h1>Veilles</h1>
+<div class="card-head"><h1>Veilles</h1>{% if bots_enabled %}<a class="btn secondary" href="/bots">Bots et clés</a>{% endif %}</div>
 <p class="sub">Les modifications sont prises en compte sans redémarrage : en quelques minutes pour les alertes, au run suivant pour les bons plans.</p>
 
 {% if saved %}<p class="msg ok">Modification enregistrée. L'ancienne version est conservée dans <code>.history/</code>.</p>{% endif %}
@@ -30,6 +30,7 @@
     <dt>Baisse minimale</dt><dd>{{ (fd.deal.minimum_discount * 100) | round | int }} %</dd>
     <dt>Run</dt><dd>{{ fd.collection.schedule }} ({{ fd.collection.timezone }})</dd>
     <dt>Clé SerpApi</dt><dd><code>{{ d.cost.key_env }}</code></dd>
+    <dt>Envoi à</dt><dd>{% for b in fd.notify %}{{ bot_alias(b) }}{{ ", " if not loop.last }}{% endfor %}</dd>
     <dt>Coût</dt><dd>{{ d.cost.per_month }} recherches/mois max <span class="muted">— {{ d.cost.detail }}</span></dd>
   </dl>
   {% for w in d.warnings %}<p class="msg warn">{{ w }}</p>{% endfor %}
@@ -58,6 +59,7 @@
     <dt>Séjour</dt><dd>{{ c.duration_center_days }} ± {{ c.duration_tolerance_days }} jours</dd>
     <dt>Run</dt><dd>{{ c.schedule }} ({{ c.timezone }})</dd>
     <dt>Clé SerpApi</dt><dd><code>{{ c.api_key_env }}</code></dd>
+    <dt>Envoi à</dt><dd>{% for b in c.notify %}{{ bot_alias(b) }}{{ ", " if not loop.last }}{% endfor %}</dd>
     <dt>Coût</dt><dd>{{ w.cost.per_month }} recherches/mois max <span class="muted">— {{ w.cost.detail }}</span></dd>
   </dl>
   {% for msg in w.warnings %}<p class="msg warn">{{ msg }}</p>{% endfor %}
@@ -98,12 +100,14 @@
       <div class="bar{% if b.over %} over{% endif %}"><span style="width: {{ b.percent }}%"></span></div>
     {% endif %}
     <span class="muted" style="display:block">{% if b.users %}Utilisée par : {{ b.users | join(", ") }}{% else %}Libre{% endif %}</span>
-    {% if b.missing %}<p class="msg warn">Cette clé n'est pas dans le fichier .env de la NUC : les alertes qui l'utilisent sont ignorées.</p>{% endif %}
+    {% if b.missing %}<p class="msg warn">Cette clé n'est ni dans le fichier .env de la NUC ni dans « Bots et clés » : les alertes qui l'utilisent sont ignorées.</p>{% endif %}
+    {% if b.pending %}<p class="muted">Clé ajoutée depuis l'interface : compteurs SerpApi lus dans les 5 prochaines minutes.</p>{% endif %}
     {% if b.error %}<p class="msg warn">Compte SerpApi injoignable pour cette clé ({{ b.error }}) : clé invalide ou réseau.</p>{% endif %}
   </div>
   {% endfor %}
   <details style="margin-top:16px">
     <summary>Ajouter une clé SerpApi</summary>
+    <p class="muted">Le plus simple : <a href="/keys/new">l'ajouter depuis l'interface</a>. Ou dans .env :</p>
     <ol class="muted">
       <li>Sur la NUC, ouvre <code>C:\Users\salon\flight-deal-agregator-oslo\.env</code> avec le Bloc-notes.</li>
       <li>Ajoute une ligne <code>SERPAPI_KEY_3=ta_clé</code> (le nom doit contenir <code>SERPAPI_KEY</code>), enregistre.</li>
