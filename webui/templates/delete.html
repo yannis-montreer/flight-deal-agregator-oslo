@@ -1,19 +1,18 @@
 {% extends "base.html" %}
-{% set what = "la veille" if kind == "deals" else "l'alerte" %}
-{% block title %}Supprimer {{ label }} — Veilles{% endblock %}
+{% block title %}{{ _("Supprimer") }} {{ label }} — {{ _("Veilles") }}{% endblock %}
 {% block content %}
-<p><a href="/{{ kind }}/{{ watch_id }}">← Retour</a></p>
-<h1>Supprimer {{ what }} « {{ label }} » ?</h1>
+<p><a href="/{{ kind }}/{{ watch_id }}">{{ _("← Retour") }}</a></p>
+<h1>{{ _("Supprimer la veille « {name} » ?", name=label) if kind == "deals" else _("Supprimer l'alerte « {name} » ?", name=label) }}</h1>
 <form method="post" action="/{{ kind }}/{{ watch_id }}/delete" class="card">
-  <p>Elle s'arrête : plus aucune recherche ni message Telegram.</p>
+  <p>{{ _("Elle s'arrête : plus aucune recherche ni message Telegram.") }}</p>
   <p class="muted">
-    Rien n'est effacé : son fichier est rangé dans <code>{{ kind }}/.archive/</code>
-    {% if db_file %}et son historique de prix reste dans <code>data/{{ db_file }}</code>{% endif %}.
-    Pour une simple pause, décoche plutôt « Active » dans le formulaire.
+    {{ _("Rien n'est effacé : son fichier est rangé dans <code>{folder}/.archive/</code>", folder=kind) }}
+    {% if db_file %}{{ _("et son historique de prix reste dans <code>data/{db}</code>", db=db_file) }}{% endif %}.
+    {{ _("Pour une simple pause, décoche plutôt « Active » dans le formulaire.") }}
   </p>
   <div class="actions">
-    <button class="btn danger" type="submit">Supprimer</button>
-    <a class="btn secondary" href="/{{ kind }}/{{ watch_id }}">Annuler</a>
+    <button class="btn danger" type="submit">{{ _("Supprimer") }}</button>
+    <a class="btn secondary" href="/{{ kind }}/{{ watch_id }}">{{ _("Annuler") }}</a>
   </div>
 </form>
 {% endblock %}

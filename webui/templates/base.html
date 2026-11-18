@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="fr">
+<html lang="{{ lang }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{% block title %}Veilles{% endblock %}</title>
+<title>{% block title %}{{ _("Veilles") }}{% endblock %}</title>
 <style>
   :root {
     --bg: #f6f5f2; --card: #ffffff; --text: #1f2328; --muted: #656d76; --border: #d8dee4;
@@ -55,11 +55,13 @@
     width: 100%; padding: 7px 9px; border: 1px solid var(--border); border-radius: 6px;
     background: var(--bg); color: var(--text); font: inherit; }
   .checks label { font-weight: 400; display: inline-flex; gap: 6px; margin-right: 14px; }
+  nav.lang { text-align: right; font-size: .9rem; margin: -8px 0 8px; }
   .actions { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
 </style>
 </head>
 <body>
 <main>
+<nav class="lang">{% if lang == "en" %}<a href="/lang/fr?next={{ current_path | urlencode }}" lang="fr">Français</a>{% else %}<a href="/lang/en?next={{ current_path | urlencode }}" lang="en">English</a>{% endif %}</nav>
 {% block content %}{% endblock %}
 </main>
 </body>

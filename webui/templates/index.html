@@ -1,120 +1,119 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card-head"><h1>Veilles</h1>{% if bots_enabled %}<a class="btn secondary" href="/bots">Bots et clés</a>{% endif %}</div>
-<p class="sub">Les modifications sont prises en compte sans redémarrage : en quelques minutes pour les alertes, au run suivant pour les bons plans.</p>
+<div class="card-head"><h1>{{ _("Veilles") }}</h1>{% if bots_enabled %}<a class="btn secondary" href="/bots">{{ _("Bots et clés") }}</a>{% endif %}</div>
+<p class="sub">{{ _("Les modifications sont prises en compte sans redémarrage : en quelques minutes pour les alertes, au run suivant pour les bons plans.") }}</p>
 
-{% if saved %}<p class="msg ok">Modification enregistrée. L'ancienne version est conservée dans <code>.history/</code>.</p>{% endif %}
-{% if deleted %}<p class="msg ok">« {{ deleted }} » supprimée (fichier rangé dans <code>.archive/</code>, historique conservé).</p>{% endif %}
+{% if saved %}<p class="msg ok">{{ _("Modification enregistrée. L'ancienne version est conservée dans <code>.history/</code>.") }}</p>{% endif %}
+{% if deleted %}<p class="msg ok">{{ _("« {name} » supprimée (fichier rangé dans <code>.archive/</code>, historique conservé).", name=deleted) }}</p>{% endif %}
 
 <div class="card-head" style="margin: 24px 0 12px">
-  <h2>Veilles bons plans</h2>
-  {% if deals_enabled %}<a class="btn" href="/deals/new">+ Nouvelle veille</a>{% endif %}
+  <h2>{{ _("Veilles bons plans") }}</h2>
+  {% if deals_enabled %}<a class="btn" href="/deals/new">{{ _("+ Nouvelle veille") }}</a>{% endif %}
 </div>
 
 {% for d in deals %}
 <section class="card">
   <div class="card-head">
-    <h2>{{ d.config.name if d.config and d.config.name else ("Bons plans (flightdeals)" if d.watch_id == "main" else d.watch_id) }}
-      <span class="muted">({{ "principale" if d.watch_id == "main" else d.watch_id }})</span>
-      {% if d.config and not d.config.collection.enabled %}<span class="badge">en pause</span>{% endif %}</h2>
-    {% if d.config %}<a class="btn" href="/deals/{{ d.watch_id }}">Modifier</a>{% endif %}
+    <h2>{{ d.config.name if d.config and d.config.name else (_("Bons plans (flightdeals)") if d.watch_id == "main" else d.watch_id) }}
+      <span class="muted">({{ _("principale") if d.watch_id == "main" else d.watch_id }})</span>
+      {% if d.config and not d.config.collection.enabled %}<span class="badge">{{ _("en pause") }}</span>{% endif %}</h2>
+    {% if d.config %}<a class="btn" href="/deals/{{ d.watch_id }}">{{ _("Modifier") }}</a>{% endif %}
   </div>
   {% if d.error %}
-    <p class="msg err">Fichier invalide (veille ignorée par le service) : {{ d.error }}</p>
+    <p class="msg err">{{ _("Fichier invalide (veille ignorée par le service) :") }} {{ tr(d.error) }}</p>
   {% else %}
   {% set fd = d.config %}
   <dl>
-    <dt>Destination</dt><dd>{{ region_label(fd.serpapi.arrival_area_id) }}</dd>
-    <dt>Départ en</dt><dd>{{ month_label(fd.serpapi.month) }}</dd>
-    <dt>Séjour</dt><dd>{{ fd.deal.min_trip_length_nights }} à {{ fd.deal.max_trip_length_nights }} nuits</dd>
-    <dt>Baisse minimale</dt><dd>{{ (fd.deal.minimum_discount * 100) | round | int }} %</dd>
-    <dt>Run</dt><dd>{{ fd.collection.schedule }} ({{ fd.collection.timezone }})</dd>
-    <dt>Clé SerpApi</dt><dd><code>{{ d.cost.key_env }}</code></dd>
-    <dt>Envoi à</dt><dd>{% for b in fd.notify %}{{ bot_alias(b) }}{{ ", " if not loop.last }}{% endfor %}</dd>
-    <dt>Coût</dt><dd>{{ d.cost.per_month }} recherches/mois max <span class="muted">— {{ d.cost.detail }}</span></dd>
+    <dt>{{ _("Destination") }}</dt><dd>{{ region_label(fd.serpapi.arrival_area_id) if fd.serpapi.arrival_area_id else _("Partout") }}</dd>
+    <dt>{{ _("Départ en") }}</dt><dd>{{ month_label(fd.serpapi.month) }}</dd>
+    <dt>{{ _("Séjour") }}</dt><dd>{{ _("{a} à {b} nuits", a=fd.deal.min_trip_length_nights, b=fd.deal.max_trip_length_nights) }}</dd>
+    <dt>{{ _("Baisse minimale") }}</dt><dd>{{ (fd.deal.minimum_discount * 100) | round | int }} %</dd>
+    <dt>{{ _("Run") }}</dt><dd>{{ fd.collection.schedule }} ({{ fd.collection.timezone }})</dd>
+    <dt>{{ _("Clé SerpApi") }}</dt><dd><code>{{ d.cost.key_env }}</code></dd>
+    <dt>{{ _("Envoi à") }}</dt><dd>{% for b in fd.notify %}{{ tr(bot_alias(b)) }}{{ ", " if not loop.last }}{% endfor %}</dd>
+    <dt>{{ _("Coût") }}</dt><dd>{{ _("{n} recherches/mois max", n=d.cost.per_month) }} <span class="muted">— {{ tr(d.cost.detail) }}</span></dd>
   </dl>
-  {% for w in d.warnings %}<p class="msg warn">{{ w }}</p>{% endfor %}
+  {% for w in d.warnings %}<p class="msg warn">{{ tr(w) }}</p>{% endfor %}
   {% endif %}
 </section>
 {% endfor %}
 <div class="card-head" style="margin: 24px 0 12px">
-  <h2>Alertes trajet</h2>
-  <a class="btn" href="/watches/new">+ Nouvelle alerte</a>
+  <h2>{{ _("Alertes trajet") }}</h2>
+  <a class="btn" href="/watches/new">{{ _("+ Nouvelle alerte") }}</a>
 </div>
 
 {% for w in watches %}
 <section class="card">
   <div class="card-head">
     <h2>{{ w.config.destination_name if w.config else w.watch_id }} <span class="muted">({{ w.watch_id }})</span>
-      {% if w.config and not w.config.enabled %}<span class="badge">en pause</span>{% endif %}</h2>
-    {% if w.config %}<a class="btn" href="/watches/{{ w.watch_id }}">Modifier</a>{% endif %}
+      {% if w.config and not w.config.enabled %}<span class="badge">{{ _("en pause") }}</span>{% endif %}</h2>
+    {% if w.config %}<a class="btn" href="/watches/{{ w.watch_id }}">{{ _("Modifier") }}</a>{% endif %}
   </div>
   {% if w.error %}
-    <p class="msg err">Fichier invalide (alerte ignorée par le service) : {{ w.error }}</p>
+    <p class="msg err">{{ _("Fichier invalide (alerte ignorée par le service) :") }} {{ tr(w.error) }}</p>
   {% else %}
   {% set c = w.config %}
   <dl>
-    <dt>Trajet</dt><dd>{{ c.origin }} ({{ airport_city(c.origin) }}) → {{ c.destination }} ({{ airport_city(c.destination) }}) — {{ classes[c.travel_class] }}, {{ stops_text(c) }}</dd>
-    <dt>Départ</dt><dd>{{ c.departure_center.strftime("%d/%m/%Y") }} ± {{ c.departure_tolerance_days }} j</dd>
-    <dt>Séjour</dt><dd>{{ c.duration_center_days }} ± {{ c.duration_tolerance_days }} jours</dd>
-    <dt>Run</dt><dd>{{ c.schedule }} ({{ c.timezone }})</dd>
-    <dt>Clé SerpApi</dt><dd><code>{{ c.api_key_env }}</code></dd>
-    <dt>Envoi à</dt><dd>{% for b in c.notify %}{{ bot_alias(b) }}{{ ", " if not loop.last }}{% endfor %}</dd>
-    <dt>Coût</dt><dd>{{ w.cost.per_month }} recherches/mois max <span class="muted">— {{ w.cost.detail }}</span></dd>
+    <dt>{{ _("Trajet") }}</dt><dd>{{ c.origin }} ({{ airport_city(c.origin) }}) → {{ c.destination }} ({{ airport_city(c.destination) }}) — {{ _(classes[c.travel_class]) }}, {{ _(stops_text(c)) }}</dd>
+    <dt>{{ _("Départ") }}</dt><dd>{{ c.departure_center.strftime("%d/%m/%Y") }} ± {{ c.departure_tolerance_days }} {{ _("j") }}</dd>
+    <dt>{{ _("Séjour") }}</dt><dd>{{ _("{a} ± {b} jours", a=c.duration_center_days, b=c.duration_tolerance_days) }}</dd>
+    <dt>{{ _("Run") }}</dt><dd>{{ c.schedule }} ({{ c.timezone }})</dd>
+    <dt>{{ _("Clé SerpApi") }}</dt><dd><code>{{ c.api_key_env }}</code></dd>
+    <dt>{{ _("Envoi à") }}</dt><dd>{% for b in c.notify %}{{ tr(bot_alias(b)) }}{{ ", " if not loop.last }}{% endfor %}</dd>
+    <dt>{{ _("Coût") }}</dt><dd>{{ _("{n} recherches/mois max", n=w.cost.per_month) }} <span class="muted">— {{ tr(w.cost.detail) }}</span></dd>
   </dl>
-  {% for msg in w.warnings %}<p class="msg warn">{{ msg }}</p>{% endfor %}
+  {% for msg in w.warnings %}<p class="msg warn">{{ tr(msg) }}</p>{% endfor %}
   {% endif %}
 </section>
 {% else %}
-<p class="muted">Aucune alerte.</p>
+<p class="muted">{{ _("Aucune alerte.") }}</p>
 {% endfor %}
 
 <section class="card">
-  <h2>Clés SerpApi</h2>
-  <p class="muted">Projection jusqu'à la réinitialisation de chaque clé = déjà consommé (compte SerpApi) + runs restants des alertes actives.
-    Barre foncée : consommé ; claire : prévu.{% if registry %} Compteurs SerpApi lus le {{ registry.updated_at[:16].replace("T", " ") }} UTC (rafraîchis toutes les heures).{% endif %}</p>
+  <h2>{{ _("Clés SerpApi") }}</h2>
+  <p class="muted">{{ _("Projection jusqu'à la réinitialisation de chaque clé = déjà consommé (compte SerpApi) + runs restants des alertes actives. Barre foncée : consommé ; claire : prévu.") }}
+    {% if registry %}{{ _("Compteurs SerpApi lus le {when} UTC (rafraîchis toutes les heures).", when=registry.updated_at[:16].replace("T", " ")) }}{% endif %}</p>
   {% for b in budgets %}
   {% set p = b.projection %}
   <div style="margin-top:16px">
     <strong><code>{{ b.key_env }}</code></strong>
     {% if p %}
-      : {{ p.projected }} / {{ p.quota }} d'ici la réinitialisation du <strong>{{ p.renewal.strftime("%d/%m") }}</strong>
-      <span class="muted">(dans {{ p.days_left }} j)</span>
+      : {{ _("{projected} / {quota} d'ici la réinitialisation du <strong>{date}</strong>", projected=p.projected, quota=p.quota, date=p.renewal.strftime("%d/%m")) }}
+      <span class="muted">({{ _("dans {n} j", n=p.days_left) }})</span>
       <div class="bar stacked{% if p.warn %} over{% endif %}">
         <span class="used" style="width: {{ p.percent(p.used) }}%"></span><span class="planned" style="width: {{ [p.percent(p.projected) - p.percent(p.used), 0] | max }}%"></span>
       </div>
-      <span class="muted">Déjà consommé : {{ p.used }} — prévu par les alertes : {{ p.planned }}
-        {% if p.planned_by %}({% for label, n in p.planned_by.items() %}{{ label }} {{ n }}{{ ", " if not loop.last }}{% endfor %}){% endif %}
-        — {{ (100 * p.ratio) | round | int }} % du quota</span>
+      <span class="muted">{{ _("Déjà consommé : {used} — prévu par les alertes : {planned}", used=p.used, planned=p.planned) }}
+        {% if p.planned_by %}({% for label, n in p.planned_by.items() %}{{ tr(label) }} {{ n }}{{ ", " if not loop.last }}{% endfor %}){% endif %}
+        — {{ _("{pct} % du quota", pct=(100 * p.ratio) | round | int) }}</span>
       {% if p.warn %}
       <p class="msg {{ 'err' if p.exhaust_on else 'warn' }}">
-        {% if p.exhaust_on %}Quota épuisé vers le {{ p.exhaust_on.strftime("%d/%m") }}, avant la réinitialisation du {{ p.renewal.strftime("%d/%m") }} :
-        les recherches suivantes échoueront.{% else %}Plus de 95 % du quota sera utilisé avant la réinitialisation.{% endif %}
-        Mets une alerte de cette clé en pause (case « Active ») ou réduis sa plage de dates.
+        {% if p.exhaust_on %}{{ _("Quota épuisé vers le {when}, avant la réinitialisation du {renewal} : les recherches suivantes échoueront.", when=p.exhaust_on.strftime("%d/%m"), renewal=p.renewal.strftime("%d/%m")) }}{% else %}{{ _("Plus de 95 % du quota sera utilisé avant la réinitialisation.") }}{% endif %}
+        {{ _("Mets une alerte de cette clé en pause (case « Active ») ou réduis sa plage de dates.") }}
       </p>
       {% endif %}
-      <span class="muted" style="display:block">Réservé sur un mois complet (pire cas 31 j) : {{ b.total }} / {{ b.quota }}</span>
+      <span class="muted" style="display:block">{{ _("Réservé sur un mois complet (pire cas 31 j) : {total} / {quota}", total=b.total, quota=b.quota) }}</span>
     {% else %}
-      : {{ b.total }} / {{ b.quota }} réservées
-      {% if b.left is not none %}<span class="muted">— {{ b.left }} recherches restantes</span>{% endif %}
+      : {{ _("{total} / {quota} réservées", total=b.total, quota=b.quota) }}
+      {% if b.left is not none %}<span class="muted">— {{ _("{n} recherches restantes", n=b.left) }}</span>{% endif %}
       <div class="bar{% if b.over %} over{% endif %}"><span style="width: {{ b.percent }}%"></span></div>
     {% endif %}
-    <span class="muted" style="display:block">{% if b.users %}Utilisée par : {{ b.users | join(", ") }}{% else %}Libre{% endif %}</span>
-    {% if b.missing %}<p class="msg warn">Cette clé n'est ni dans le fichier .env de la NUC ni dans « Bots et clés » : les alertes qui l'utilisent sont ignorées.</p>{% endif %}
-    {% if b.pending %}<p class="muted">Clé ajoutée depuis l'interface : compteurs SerpApi lus dans les 5 prochaines minutes.</p>{% endif %}
-    {% if b.error %}<p class="msg warn">Compte SerpApi injoignable pour cette clé ({{ b.error }}) : clé invalide ou réseau.</p>{% endif %}
+    <span class="muted" style="display:block">{% if b.users %}{{ _("Utilisée par :") }} {% for u in b.users %}{{ tr(u) }}{{ ", " if not loop.last }}{% endfor %}{% else %}{{ _("Libre") }}{% endif %}</span>
+    {% if b.missing %}<p class="msg warn">{{ _("Cette clé n'est ni dans le fichier .env de la NUC ni dans « Bots et clés » : les alertes qui l'utilisent sont ignorées.") }}</p>{% endif %}
+    {% if b.pending %}<p class="muted">{{ _("Clé ajoutée depuis l'interface : compteurs SerpApi lus dans les 5 prochaines minutes.") }}</p>{% endif %}
+    {% if b.error %}<p class="msg warn">{{ _("Compte SerpApi injoignable pour cette clé ({error}) : clé invalide ou réseau.", error=b.error) }}</p>{% endif %}
   </div>
   {% endfor %}
   <details style="margin-top:16px">
-    <summary>Ajouter une clé SerpApi</summary>
-    <p class="muted">Le plus simple : <a href="/keys/new">l'ajouter depuis l'interface</a>. Ou dans .env :</p>
+    <summary>{{ _("Ajouter une clé SerpApi") }}</summary>
+    <p class="muted">{{ _("Le plus simple : <a href=\"/keys/new\">l'ajouter depuis l'interface</a>. Ou dans .env :") }}</p>
     <ol class="muted">
-      <li>Sur la NUC, ouvre <code>C:\Users\salon\flight-deal-agregator-oslo\.env</code> avec le Bloc-notes.</li>
-      <li>Ajoute une ligne <code>SERPAPI_KEY_3=ta_clé</code> (le nom doit contenir <code>SERPAPI_KEY</code>), enregistre.</li>
-      <li>Dans PowerShell, dans ce dossier : <code>docker compose up -d</code> (relit .env, ne déclenche aucun run).</li>
-      <li>Recharge cette page : la clé apparaît ici et dans le choix de clé des alertes.</li>
+      <li>{{ _("Sur la NUC, ouvre <code>C:\\Users\\salon\\flight-deal-agregator-oslo\\.env</code> avec le Bloc-notes.") }}</li>
+      <li>{{ _("Ajoute une ligne <code>SERPAPI_KEY_3=ta_clé</code> (le nom doit contenir <code>SERPAPI_KEY</code>), enregistre.") }}</li>
+      <li>{{ _("Dans PowerShell, dans ce dossier : <code>docker compose up -d</code> (relit .env, ne déclenche aucun run).") }}</li>
+      <li>{{ _("Recharge cette page : la clé apparaît ici et dans le choix de clé des alertes.") }}</li>
     </ol>
-    <p class="muted">La valeur de la clé ne passe jamais par cette interface.</p>
+    <p class="muted">{{ _("La valeur de la clé ne passe jamais par cette interface.") }}</p>
   </details>
 </section>
 {% endblock %}

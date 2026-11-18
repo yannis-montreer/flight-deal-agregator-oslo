@@ -1,5 +1,5 @@
 {% extends "base.html" %}
 {% block content %}
-<p><a href="/">← Retour</a></p>
-<p class="msg err">{{ message }}</p>
+<p><a href="/">{{ _("← Retour") }}</a></p>
+<p class="msg err">{{ tr(message) }}</p>
 {% endblock %}

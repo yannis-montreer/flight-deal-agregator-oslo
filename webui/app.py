@@ -26,6 +26,8 @@ from trip_watch.tracker import departure_dates
 from flightdeals import secret_store
 from webui import bots as bots_mod
 from webui import costs as cost_mod
+from webui import i18n
+from webui.i18n import Msg, exc_msg
 from webui import projection as proj_mod
 from webui.currencies import CURRENCIES
 from trip_watch.config import DEFAULT_API_KEY_ENV, ENV_NAME_RE
@@ -38,7 +40,17 @@ from webui.store import (
 MAIN_DEAL_ID = "main"
 DEFAULT_DEAL_KEY_ENV = "SERPAPI_KEY"
 
-TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"))
+def _i18n_context(request: Request) -> dict:
+    """Langue choisie (cookie) : `_`, `tr`, `month_label` et `lang` pour tous les gabarits."""
+    lang = i18n.lang_of(request)
+    return {
+        "lang": lang, "_": i18n.gettext(lang), "tr": lambda value: i18n.tr(value, lang),
+        "month_label": lambda month, today=None: month_label(month, today, lang),
+        "current_path": request.url.path,
+    }
+
+
+TEMPLATES = Jinja2Templates(directory=str(Path(__file__).parent / "templates"), context_processors=[_i18n_context])
 WATCH_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,40}$")
 
 MONTHS_FR = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août",
@@ -102,7 +114,7 @@ def parse_region(value: str) -> Optional[str]:
         return area_id
     if RAW_ID_RE.match(value):
         return value
-    raise FormError(f"Région « {value} » inconnue : choisis un pays ou une région dans la liste proposée.")
+    raise FormError(Msg("Région « {value} » inconnue : choisis un pays ou une région dans la liste proposée.", value=value))
 
 
 def month_year(month: int, today: Optional[date] = None) -> int:
@@ -112,10 +124,22 @@ def month_year(month: int, today: Optional[date] = None) -> int:
     return today.year if month >= today.month else today.year + 1
 
 
-def month_label(month: Optional[int], today: Optional[date] = None) -> str:
+def month_label(month: Optional[int], today: Optional[date] = None, lang: str = "fr") -> str:
     if month is None:
-        return "6 prochains mois"
-    return f"{MONTHS_FR[month - 1]} {month_year(month, today)}"
+        return "6 prochains mois" if lang == "fr" else "next 6 months"
+    return f"{i18n.MONTHS[lang][month - 1]} {month_year(month, today)}"
+
+
+class MonthLabel(Msg):
+    """Mois cite dans un message : traduit a l'affichage (voir i18n.tr)."""
+
+    def __new__(cls, month: int, today: Optional[date] = None):
+        obj = Msg.__new__(cls, month_label(month, today).capitalize())
+        obj.month, obj.today = month, today
+        return obj
+
+    def render(self, lang: str) -> str:
+        return month_label(self.month, self.today, lang).capitalize()
 
 
 CONFIG_ERRORS = (FlightDealsConfigError, TripWatchConfigError)
@@ -138,27 +162,27 @@ class WatchView:
 def _int(form: dict, name: str, label: str, minimum: int = 0, maximum: int = 100000) -> int:
     raw = (form.get(name) or "").strip()
     if not re.fullmatch(r"-?\d+", raw):
-        raise FormError(f"{label} : nombre entier attendu.")
+        raise FormError(Msg("{label} : nombre entier attendu.", label=label))
     value = int(raw)
     if not minimum <= value <= maximum:
-        raise FormError(f"{label} : doit être entre {minimum} et {maximum}.")
+        raise FormError(Msg("{label} : doit être entre {minimum} et {maximum}.", label=label, minimum=minimum, maximum=maximum))
     return value
 
 
 def _text(form: dict, name: str, label: str) -> str:
     value = (form.get(name) or "").strip()
     if not value:
-        raise FormError(f"{label} : obligatoire.")
+        raise FormError(Msg("{label} : obligatoire.", label=label))
     return value
 
 
 def _iata(form: dict, name: str, label: str) -> str:
     value = _text(form, name, label).upper()
     if not re.fullmatch(r"[A-Z]{3}", value):
-        raise FormError(f"{label} : tape le nom de la ville et choisis l'aéroport dans la liste (code de 3 lettres, ex : OSL).")
+        raise FormError(Msg("{label} : tape le nom de la ville et choisis l'aéroport dans la liste (code de 3 lettres, ex : OSL).", label=label))
     if value not in AIRPORT_BY_CODE:
-        raise FormError(f"{label} : le code « {value} » ne correspond à aucun aéroport à vols réguliers. "
-                        "Tape le nom de la ville et choisis dans la liste.")
+        raise FormError(Msg("{label} : le code « {value} » ne correspond à aucun aéroport à vols réguliers. "
+                            "Tape le nom de la ville et choisis dans la liste.", label=label, value=value))
     return value
 
 
@@ -188,10 +212,10 @@ def set_notify(doc, ids: list[str]) -> None:
 def parse_notify_form(form: dict, bot_ids: Optional[list[str]]) -> list[str]:
     ids = [i for i in (form.get("notify") or []) if isinstance(i, str)]
     if not ids:
-        raise FormError("Envoyer à : coche au moins un bot.")
+        raise FormError(Msg("Envoyer à : coche au moins un bot."))
     for bot_id in ids:
         if not secret_store.BOT_ID_RE.match(bot_id) or (bot_ids is not None and bot_id not in bot_ids):
-            raise FormError(f"Envoyer à : bot « {bot_id} » inconnu (voir « Bots et clés »).")
+            raise FormError(Msg("Envoyer à : bot « {bot_id} » inconnu (voir « Bots et clés »).", bot_id=bot_id))
     return list(dict.fromkeys(ids))
 
 
@@ -416,6 +440,15 @@ def create_app(
 
     # ---------- pages ----------
 
+    @app.get("/lang/{code}")
+    def set_language(code: str, next: str = "/"):
+        # Retour seulement vers une page de cette interface (jamais une autre adresse).
+        target = next if next.startswith("/") and not next.startswith("//") and "\\" not in next else "/"
+        response = RedirectResponse(target, status_code=303)
+        if code in i18n.LANGS:
+            response.set_cookie(i18n.COOKIE, code, max_age=10 * 365 * 24 * 3600, samesite="lax", httponly=True)
+        return response
+
     @app.get("/", response_class=HTMLResponse)
     def index(request: Request, saved: str = "", deleted: str = ""):
         watches = load_watches()
@@ -443,7 +476,7 @@ def create_app(
     def deal_new_form(request: Request):
         fd_config, fd_error = load_flightdeals()
         if fd_config is None:
-            return _page_error(request, f"La veille principale est invalide (sert de modèle) : {fd_error}")
+            return _page_error(request, Msg("La veille principale est invalide (sert de modèle) : {error}", error=fd_error))
         registry = read_registry()
         values = flightdeals_form_values(fd_config)
         totals = cost_mod.totals_by_key(all_costs())
@@ -462,7 +495,7 @@ def create_app(
         registry = read_registry()
         try:
             if deals_dir is None:
-                raise FormError("Veilles multiples non configurées (WEBUI_DEALS_DIR absent).")
+                raise FormError(Msg("Veilles multiples non configurées (WEBUI_DEALS_DIR absent)."))
             name = _text(form, "name", "Nom de la veille")
             base = slugify(name)
             veille_id, n = base, 2
@@ -479,7 +512,7 @@ def create_app(
                 check=lambda cfg: budget_check(registry, cost_mod.deal_cost_id(veille_id), cost_mod.flightdeals_cost(cfg, veille_id)),
             )
         except (FormError, cost_mod.BudgetError, FileExistsError, *CONFIG_ERRORS) as exc:
-            return _render_flightdeals(request, None, form, str(exc), registry, status_code=400)
+            return _render_flightdeals(request, None, form, exc_msg(exc), registry, status_code=400)
         return RedirectResponse(f"/?saved={veille_id}", status_code=303)
 
     @app.get("/deals/{veille_id}", response_class=HTMLResponse)
@@ -491,7 +524,7 @@ def create_app(
         try:
             config = load_flightdeals_config(path, require_secrets=False)
         except CONFIG_ERRORS as exc:
-            return _page_error(request, f"Le fichier actuel est invalide, à corriger à la main : {exc}")
+            return _page_error(request, Msg("Le fichier actuel est invalide, à corriger à la main : {error}", error=str(exc)))
         return _render_flightdeals(request, veille_id, flightdeals_form_values(config), None, read_registry())
 
     @app.post("/deals/{veille_id}", response_class=HTMLResponse)
@@ -517,7 +550,7 @@ def create_app(
                 check=lambda cfg: budget_check(registry, cost_mod.deal_cost_id(veille_id), cost_mod.flightdeals_cost(cfg, veille_id)),
             )
         except (FormError, cost_mod.BudgetError, *CONFIG_ERRORS) as exc:
-            return _render_flightdeals(request, veille_id, form, str(exc), registry, status_code=400)
+            return _render_flightdeals(request, veille_id, form, exc_msg(exc), registry, status_code=400)
         return RedirectResponse(f"/?saved={veille_id}", status_code=303)
 
     @app.get("/deals/{veille_id}/delete", response_class=HTMLResponse)
@@ -576,7 +609,7 @@ def create_app(
                 check=lambda cfg: budget_check(registry, watch_id, cost_mod.trip_watch_cost(watch_id, cfg)),
             )
         except (FormError, cost_mod.BudgetError, FileExistsError, *CONFIG_ERRORS) as exc:
-            return _render_watch(request, None, form, str(exc), registry, status_code=400)
+            return _render_watch(request, None, form, exc_msg(exc), registry, status_code=400)
         return RedirectResponse(f"/?saved={watch_id}", status_code=303)
 
     @app.get("/watches/{watch_id}", response_class=HTMLResponse)
@@ -588,7 +621,7 @@ def create_app(
         try:
             config = load_trip_watch_config(path, require_secrets=False)
         except CONFIG_ERRORS as exc:
-            return _page_error(request, f"Le fichier actuel est invalide, à corriger à la main : {exc}")
+            return _page_error(request, Msg("Le fichier actuel est invalide, à corriger à la main : {error}", error=str(exc)))
         return _render_watch(request, watch_id, watch_form_values(config), None, read_registry())
 
     @app.post("/watches/{watch_id}", response_class=HTMLResponse)
@@ -615,7 +648,7 @@ def create_app(
                 check=lambda cfg: budget_check(registry, watch_id, cost_mod.trip_watch_cost(watch_id, cfg)),
             )
         except (FormError, cost_mod.BudgetError, *CONFIG_ERRORS) as exc:
-            return _render_watch(request, watch_id, form, str(exc), registry, status_code=400)
+            return _render_watch(request, watch_id, form, exc_msg(exc), registry, status_code=400)
         return RedirectResponse(f"/?saved={watch_id}", status_code=303)
 
     @app.get("/watches/{watch_id}/delete", response_class=HTMLResponse)
@@ -654,7 +687,7 @@ def create_app(
             "v": values, "error": error, "durations": TRAVEL_DURATIONS,
             # Ordre chronologique a partir du mois en cours (novembre 2026, decembre 2026, janvier 2027...).
             "month_options": [
-                (m, month_label(m)) for m in sorted(range(1, 13), key=lambda m: (month_year(m), m))
+                (m, month_label(m, lang=i18n.lang_of(request))) for m in sorted(range(1, 13), key=lambda m: (month_year(m), m))
             ],
             "regions": REGIONS, "bot_options": bot_options(),
         }, status_code=status_code)
@@ -723,14 +756,14 @@ def apply_flightdeals_form(doc, form: dict, key_names: Optional[list[str]] = Non
     `is_main` : veille historique (nom facultatif ; sans nom, ses messages restent inchanges)."""
     name = (form.get("name") or "").strip()
     if not is_main and not name:
-        raise FormError("Nom de la veille : obligatoire (il apparaît dans les messages Telegram).")
+        raise FormError(Msg("Nom de la veille : obligatoire (il apparaît dans les messages Telegram)."))
     if len(name) > 60:
-        raise FormError("Nom de la veille : 60 caractères maximum.")
+        raise FormError(Msg("Nom de la veille : 60 caractères maximum."))
     key_env = (form.get("api_key_env") or "").strip() or DEFAULT_DEAL_KEY_ENV
     if not ENV_NAME_RE.match(key_env):
-        raise FormError("Clé SerpApi : nom de variable invalide.")
+        raise FormError(Msg("Clé SerpApi : nom de variable invalide."))
     if key_names is not None and key_env not in key_names:
-        raise FormError(f"Clé SerpApi : « {key_env} » n'est pas présente dans le fichier .env de la NUC.")
+        raise FormError(Msg("Clé SerpApi : « {key} » n'est ni dans .env ni dans « Bots et clés ».", key=key_env))
     enabled = bool(form.get("enabled"))
     schedule = _text(form, "schedule", "Heure du run")
     month_raw = (form.get("month") or "").strip()
@@ -738,7 +771,7 @@ def apply_flightdeals_form(doc, form: dict, key_names: Optional[list[str]] = Non
     area = parse_region(form.get("region") or "")
     durations = sorted({_int({"d": d}, "d", "Durées", 1, 3) for d in form.get("travel_durations") or []})
     if not durations:
-        raise FormError("Durées de séjour : coche au moins une case.")
+        raise FormError(Msg("Durées de séjour : coche au moins une case."))
     min_n = _int(form, "min_trip_length_nights", "Séjour minimum (nuits)", 0, 365)
     max_n = _int(form, "max_trip_length_nights", "Séjour maximum (nuits)", 0, 365)
     discount = _int(form, "minimum_discount", "Baisse minimale (%)", 1, 99)
@@ -811,23 +844,23 @@ def parse_watch_form(form: dict, key_names: Optional[list[str]], bot_ids: Option
     try:
         date.fromisoformat(center_raw)
     except ValueError as exc:
-        raise FormError("Date de départ centrale : format AAAA-MM-JJ attendu.") from exc
+        raise FormError(Msg("Date de départ centrale : format AAAA-MM-JJ attendu.")) from exc
     currency = _text(form, "currency", "Devise").upper()
     if currency not in CURRENCIES:
-        raise FormError(f"Devise : « {currency} » n'est pas dans la liste. Tape le nom (ex : « euro ») et choisis.")
+        raise FormError(Msg("Devise : « {currency} » n'est pas dans la liste. Tape le nom (ex : « euro ») et choisis.", currency=currency))
     key_env = _text(form, "api_key_env", "Clé SerpApi")
     if not ENV_NAME_RE.match(key_env):
-        raise FormError("Clé SerpApi : nom de variable invalide.")
+        raise FormError(Msg("Clé SerpApi : nom de variable invalide."))
     if key_names is not None and key_env not in key_names:
-        raise FormError(f"Clé SerpApi : « {key_env} » n'est pas présente dans le fichier .env de la NUC.")
+        raise FormError(Msg("Clé SerpApi : « {key} » n'est ni dans .env ni dans « Bots et clés ».", key=key_env))
     stops_raw = (form.get("required_stops") or "").strip()
     if stops_raw not in STOPS_OPTIONS:
-        raise FormError("Escales : choisis une valeur dans la liste.")
+        raise FormError(Msg("Escales : choisis une valeur dans la liste."))
     stops_rule = "at_most" if stops_raw.startswith("max") else "exact"
     required_stops = int(stops_raw.removeprefix("max"))
     schedule = _text(form, "schedule", "Heure du run")
     if not re.fullmatch(r"([01]\d|2[0-3]):[0-5]\d", schedule):
-        raise FormError("Heure du run : format HH:MM attendu.")
+        raise FormError(Msg("Heure du run : format HH:MM attendu."))
     return {
         "api_key_env": key_env,
         "enabled": bool(form.get("enabled")),
@@ -875,16 +908,16 @@ def flightdeals_warnings(config, today: Optional[date] = None) -> list[str]:
     area_id = config.serpapi.arrival_area_id
     if area_id and area_id not in VERIFIED_AREA_IDS:
         warnings.append(
-            f"La zone « {region_label(area_id)} » n'a encore jamais été testée avec cette recherche : "
-            "vérifie que le récap Telegram du lendemain contient bien des vols."
+            Msg("La zone « {zone} » n'a encore jamais été testée avec cette recherche : "
+                "vérifie que le récap Telegram du lendemain contient bien des vols.", zone=region_label(area_id))
         )
     month = config.serpapi.month
     if month is not None and month == today.month:
-        warnings.append(f"Le mois surveillé ({month_label(month, today)}) est en cours : pense à choisir le suivant.")
+        warnings.append(Msg("Le mois surveillé ({month}) est en cours : pense à choisir le suivant.", month=MonthLabel(month, today)))
     elif month is not None and month < today.month:
         warnings.append(
-            f"{month_label(month, today).capitalize()} est un mois de l'année prochaine : cas jamais observé "
-            "jusqu'ici, vérifie les dates des vols dans le récap Telegram du lendemain."
+            Msg("{month} est un mois de l'année prochaine : cas jamais observé "
+                "jusqu'ici, vérifie les dates des vols dans le récap Telegram du lendemain.", month=MonthLabel(month, today))
         )
     return warnings
 
@@ -893,9 +926,9 @@ def watch_warnings(config, today: Optional[date] = None) -> list[str]:
     today = today or date.today()
     dates = departure_dates(config.departure_center, config.departure_tolerance_days)
     if dates[-1] < today:
-        return ["Toutes les dates de départ sont passées : cette veille ne sert plus à rien."]
+        return [Msg("Toutes les dates de départ sont passées : cette veille ne sert plus à rien.")]
     if dates[0] < today:
-        return ["Une partie des dates de départ est déjà passée."]
+        return [Msg("Une partie des dates de départ est déjà passée.")]
     return []
 
 

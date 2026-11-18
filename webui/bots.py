@@ -20,8 +20,14 @@ from flightdeals.secret_store import BOT_ID_RE, CHAT_ID_RE, MAIN_BOT_ALIAS, MAIN
 from trip_watch.keys import KEY_NAME_RE
 
 from webui import telegram_tools
+from webui.i18n import Msg, exc_msg
 
 KEY_SUFFIX_RE = re.compile(r"^[A-Z0-9_]{1,30}$")
+ERRORS = {
+    "test-failed": "Échec du test : {who}",
+    "bot-in-use": "Bot encore utilisé par : {who}. Décoche-le d’abord dans ces alertes.",
+    "key-in-use": "Clé encore utilisée par : {who}. Change d’abord leur clé.",
+}
 MESSAGES = {
     "bot-saved": "Bot enregistré. Coche-le dans « Envoyer à » des alertes concernées.",
     "bot-deleted": "Bot supprimé.",
@@ -65,11 +71,11 @@ def register(
     # ---------- liste ----------
 
     @app.get("/bots", response_class=HTMLResponse)
-    def bots_page(request: Request, msg: str = "", err: str = ""):
+    def bots_page(request: Request, msg: str = "", err: str = "", who: str = ""):
         try:
             data = store()
         except secret_store.StoreError as exc:
-            return error_page(request, f"Fichier de secrets illisible ({exc}) : à corriger à la main.", 500)
+            return error_page(request, Msg("Fichier de secrets illisible ({error}) : à corriger à la main.", error=str(exc)), 500)
         used = usage()
         bots = [{"id": MAIN_BOT_ID, "alias": MAIN_BOT_ALIAS, "username": "", "chat_id": "", "masked": "dans .env",
                  "main": True, "users": used["bots"].get(MAIN_BOT_ID, [])}]
@@ -82,7 +88,8 @@ def register(
         keys = [{"name": name, "added_at": "", "users": used["keys"].get(name, [])}
                 for name in sorted(data["serpapi_keys"])]
         return render(request, "bots.html", {
-            "bots": bots, "keys": keys, "message": MESSAGES.get(msg, ""), "error": err[:300],
+            "bots": bots, "keys": keys, "message": MESSAGES.get(msg, ""),
+            "error": Msg(ERRORS[err], who=who[:300]) if err in ERRORS else "",
             "env_keys": known_env_keys() or [],
         })
 
@@ -118,28 +125,28 @@ def register(
         token = values["token"] or (str(existing.get("token", "")) if existing else "")
         try:
             if not token:
-                raise FormError("Token du bot : obligatoire (fourni par @BotFather).")
+                raise FormError(Msg("Token du bot : obligatoire (fourni par @BotFather)."))
             if not TOKEN_RE.match(token):
-                raise FormError("Token du bot : format inattendu. Il ressemble à 123456789:AAH… (copie-le en entier depuis @BotFather).")
+                raise FormError(Msg("Token du bot : format inattendu. Il ressemble à 123456789:AAH… (copie-le en entier depuis @BotFather)."))
             if form.get("action") == "detect":
                 chats = tg.find_chats(token)
                 if not chats:
-                    raise FormError("Aucune conversation trouvée : demande à ton ami d'ouvrir son bot dans Telegram et "
-                                    "d'envoyer un message (ex : « bonjour »), puis réessaie.")
+                    raise FormError(Msg("Aucune conversation trouvée : demande à ton ami d'ouvrir son bot dans Telegram et "
+                                        "d'envoyer un message (ex : « bonjour »), puis réessaie."))
                 if len(chats) == 1:
                     values["chat_id"] = chats[0].chat_id
                 return bot_form(request, bot_id, values, chats=chats)
             alias = values["alias"]
             if not alias or len(alias) > 40:
-                raise FormError("Nom du bot : obligatoire, 40 caractères maximum.")
+                raise FormError(Msg("Nom du bot : obligatoire, 40 caractères maximum."))
             if not CHAT_ID_RE.match(values["chat_id"]):
-                raise FormError("Chat ID : nombre attendu (ex : 123456789). Utilise « Trouver le chat ID ».")
+                raise FormError(Msg("Chat ID : nombre attendu (ex : 123456789). Utilise « Trouver le chat ID »."))
             if any(isinstance(e, dict) and str(e.get("alias", "")).casefold() == alias.casefold()
                    for i, e in data["bots"].items() if i != bot_id) or alias.casefold() == MAIN_BOT_ALIAS.casefold():
-                raise FormError(f"Nom du bot : « {alias} » existe déjà.")
+                raise FormError(Msg("Nom du bot : « {alias} » existe déjà.", alias=alias))
             username = tg.bot_username(token) if (values["token"] or not existing) else existing.get("username", "")
         except (FormError, telegram_tools.TelegramToolError) as exc:
-            return bot_form(request, bot_id, values, str(exc), status_code=400)
+            return bot_form(request, bot_id, values, exc_msg(exc), status_code=400)
 
         if bot_id is None:
             base = slug(alias)
@@ -170,7 +177,7 @@ def register(
         try:
             tg.send_test(str(entry.get("token", "")), str(entry.get("chat_id", "")), str(entry.get("alias", bot_id)))
         except telegram_tools.TelegramToolError as exc:
-            return RedirectResponse(f"/bots?err={_q(str(exc))}", status_code=303)
+            return RedirectResponse(f"/bots?err=test-failed&who={_q(str(exc))}", status_code=303)
         return RedirectResponse("/bots?msg=bot-tested", status_code=303)
 
     @app.post("/bots/{bot_id}/delete")
@@ -180,7 +187,7 @@ def register(
             return error_page(request, "Bot introuvable.", 404)
         users = usage()["bots"].get(bot_id, [])
         if users:
-            return RedirectResponse(f"/bots?err={_q('Bot encore utilisé par : ' + ', '.join(users) + '. Décoche-le d’abord dans ces alertes.')}", status_code=303)
+            return RedirectResponse(f"/bots?err=bot-in-use&who={_q(', '.join(users))}", status_code=303)
         del data["bots"][bot_id]
         save(data)
         return RedirectResponse("/bots?msg=bot-deleted", status_code=303)
@@ -199,22 +206,22 @@ def register(
         name = f"SERPAPI_KEY_{suffix}"
         try:
             if not KEY_SUFFIX_RE.match(suffix):
-                raise FormError("Nom : lettres, chiffres ou _ uniquement (ex : ANNA).")
+                raise FormError(Msg("Nom : lettres, chiffres ou _ uniquement (ex : ANNA)."))
             if not KEY_NAME_RE.match(name):
-                raise FormError("Nom de clé invalide.")
+                raise FormError(Msg("Nom de clé invalide."))
             data = store()
             if name in data["serpapi_keys"] or name in (known_env_keys() or []):
-                raise FormError(f"La clé {name} existe déjà.")
+                raise FormError(Msg("La clé {name} existe déjà.", name=name))
             if not re.fullmatch(r"[A-Za-z0-9]{20,100}", value):
-                raise FormError("Clé : copie-la en entier depuis serpapi.com/manage-api-key (lettres et chiffres).")
+                raise FormError(Msg("Clé : copie-la en entier depuis serpapi.com/manage-api-key (lettres et chiffres)."))
             try:
                 account = fetch_account(value)  # account.json : gratuit, ne consomme aucune recherche
             except Exception as exc:  # noqa: BLE001 - jamais str(exc) : l'URL contient la clé
-                raise FormError(f"SerpApi refuse cette clé ou est injoignable ({type(exc).__name__}).") from None
+                raise FormError(Msg("SerpApi refuse cette clé ou est injoignable ({error}).", error=type(exc).__name__)) from None
             if not isinstance(account, dict) or "searches_per_month" not in account:
-                raise FormError("SerpApi n'a pas reconnu cette clé.")
+                raise FormError(Msg("SerpApi n'a pas reconnu cette clé."))
         except FormError as exc:
-            return render(request, "key.html", {"v": {"suffix": suffix, "value": ""}, "error": str(exc)}, 400)
+            return render(request, "key.html", {"v": {"suffix": suffix, "value": ""}, "error": exc_msg(exc)}, 400)
         data["serpapi_keys"][name] = value
         save(data)
         return RedirectResponse("/bots?msg=key-saved", status_code=303)
@@ -226,7 +233,7 @@ def register(
             return error_page(request, "Clé introuvable (seules les clés ajoutées ici se suppriment ici).", 404)
         users = usage()["keys"].get(name, [])
         if users:
-            return RedirectResponse(f"/bots?err={_q('Clé encore utilisée par : ' + ', '.join(users) + '. Change d’abord leur clé.')}", status_code=303)
+            return RedirectResponse(f"/bots?err=key-in-use&who={_q(', '.join(users))}", status_code=303)
         del data["serpapi_keys"][name]
         save(data)
         return RedirectResponse("/bots?msg=key-deleted", status_code=303)

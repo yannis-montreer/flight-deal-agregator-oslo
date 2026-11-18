@@ -1,97 +1,97 @@
 {% extends "base.html" %}
-{% set title = "Nouvelle veille bons plans" if is_new else (v.name or "Bons plans (flightdeals)") %}
-{% block title %}{{ title }} — Veilles{% endblock %}
+{% set title = _("Nouvelle veille bons plans") if is_new else (v.name or _("Bons plans (flightdeals)")) %}
+{% block title %}{{ title }} — {{ _("Veilles") }}{% endblock %}
 {% block content %}
-<p><a href="/">← Retour</a></p>
+<p><a href="/">{{ _("← Retour") }}</a></p>
 <h1>{{ title }}</h1>
 <p class="sub">
-  {% if is_new %}Exploration d'une zone : Google propose chaque jour les destinations les moins chères, et une alerte part quand un prix est anormalement bas par rapport à l'historique de la veille.
-  Les réglages avancés sont copiés depuis la veille principale. Il faut environ 7 jours d'historique avant les premiers vrais deals.
-  {% else %}Fichier <code>{{ "config/config.yaml" if is_main else "deals/" ~ veille_id ~ ".yaml" }}</code>. Les réglages avancés (score, dédoublonnage, journaux) restent dans ce fichier.{% endif %}
+  {% if is_new %}{{ _("Exploration d'une zone : Google propose chaque jour les destinations les moins chères, et une alerte part quand un prix est anormalement bas par rapport à l'historique de la veille.") }}
+  {{ _("Les réglages avancés sont copiés depuis la veille principale. Il faut environ 7 jours d'historique avant les premiers vrais deals.") }}
+  {% else %}{{ _("Fichier <code>{path}</code>. Les réglages avancés (score, dédoublonnage, journaux) restent dans ce fichier.", path=("config/config.yaml" if is_main else "deals/" ~ veille_id ~ ".yaml")) }}{% endif %}
 </p>
-{% if error %}<p class="msg err">{{ error }}</p>{% endif %}
+{% if error %}<p class="msg err">{{ tr(error) }}</p>{% endif %}
 <form method="post" action="{{ '/deals/new' if is_new else '/deals/' ~ veille_id }}" class="card">
   <div class="grid">
     <div>
-      <label for="name">Nom de la veille <span class="hint">{{ "facultatif pour la veille principale ; " if is_main else "" }}affiché dans les messages Telegram</span></label>
-      <input type="text" id="name" name="name" maxlength="60" value="{{ v.name }}" placeholder="{{ 'ex : Italie au printemps' if not is_main else '' }}">
+      <label for="name">{{ _("Nom de la veille") }} <span class="hint">{{ _("facultatif pour la veille principale ; affiché dans les messages Telegram") if is_main else _("affiché dans les messages Telegram") }}</span></label>
+      <input type="text" id="name" name="name" maxlength="60" value="{{ v.name }}" placeholder="{{ _('ex : Italie au printemps') if not is_main else '' }}">
     </div>
     <div>
-      <label for="api_key_env">Clé SerpApi <span class="hint">celle dont le quota paiera les recherches</span></label>
+      <label for="api_key_env">{{ _("Clé SerpApi") }} <span class="hint">{{ _("celle dont le quota paiera les recherches") }}</span></label>
       <select id="api_key_env" name="api_key_env">
-        {% for k in key_options %}<option value="{{ k.name }}" {% if v.api_key_env == k.name %}selected{% endif %}>{{ k.name }} — {{ k.used }}/{{ k.quota }} déjà réservées</option>{% endfor %}
+        {% for k in key_options %}<option value="{{ k.name }}" {% if v.api_key_env == k.name %}selected{% endif %}>{{ k.name }} — {{ _("{used}/{quota} déjà réservées", used=k.used, quota=k.quota) }}</option>{% endfor %}
       </select>
-      {% if not registry_ok %}<span class="hint">Liste des clés de .env pas encore publiée par le service des alertes.</span>{% endif %}
+      {% if not registry_ok %}<span class="hint">{{ _("Liste des clés de .env pas encore publiée par le service des alertes.") }}</span>{% endif %}
     </div>
     <div>
-      <label>État</label>
-      <div class="checks"><label><input type="checkbox" name="enabled" {% if v.enabled %}checked{% endif %}> Active <span class="hint">(décoché = en pause, aucun coût)</span></label></div>
+      <label>{{ _("État") }}</label>
+      <div class="checks"><label><input type="checkbox" name="enabled" {% if v.enabled %}checked{% endif %}> {{ _("Active") }} <span class="hint">{{ _("(décoché = en pause, aucun coût)") }}</span></label></div>
     </div>
     <div>
-      <label>Envoyer à <span class="hint">bots Telegram qui reçoivent les résultats (<a href="/bots">gérer les bots</a>)</span></label>
+      <label>{{ _("Envoyer à") }} <span class="hint">{{ _("bots Telegram qui reçoivent les résultats (<a href=\"/bots\">gérer les bots</a>)") }}</span></label>
       <input type="hidden" name="notify_shown" value="1">
-      <div class="checks">{% for b in bot_options %}<label><input type="checkbox" name="notify" value="{{ b.id }}" {% if b.id in (v.notify if v.notify is defined and v.notify is not none else ['main']) %}checked{% endif %}> {{ b.alias }}</label>{% endfor %}</div>
+      <div class="checks">{% for b in bot_options %}<label><input type="checkbox" name="notify" value="{{ b.id }}" {% if b.id in (v.notify if v.notify is defined and v.notify is not none else ['main']) %}checked{% endif %}> {{ tr(b.alias) }}</label>{% endfor %}</div>
     </div>
     <div>
-      <label for="region">Destination (pays ou région)
-        <span class="hint">Efface le champ, tape les premières lettres (ex : « Ita ») et choisis dans la liste ; vide = partout</span></label>
-      <input type="text" id="region" name="region" value="{{ v.region }}" list="regions" autocomplete="off" placeholder="Partout">
+      <label for="region">{{ _("Destination (pays ou région)") }}
+        <span class="hint">{{ _("Efface le champ, tape les premières lettres (ex : « Ita ») et choisis dans la liste ; vide = partout") }}</span></label>
+      <input type="text" id="region" name="region" value="{{ v.region }}" list="regions" autocomplete="off" placeholder="{{ _('Partout') }}">
       <datalist id="regions">{% for r in regions %}<option value="{{ r.name }}">{{ r.kind }}</option>{% endfor %}</datalist>
     </div>
     <div>
-      <label for="month">Mois de départ
-        <span class="hint">Le retour peut tomber le mois suivant ; Google ne prend qu'un mois, le prochain à venir</span></label>
+      <label for="month">{{ _("Mois de départ") }}
+        <span class="hint">{{ _("Le retour peut tomber le mois suivant ; Google ne prend qu'un mois, le prochain à venir") }}</span></label>
       <select id="month" name="month">
-        <option value="" {% if v.month == "" %}selected{% endif %}>6 prochains mois</option>
+        <option value="" {% if v.month == "" %}selected{% endif %}>{{ month_label(None) }}</option>
         {% for value, label in month_options %}<option value="{{ value }}" {% if v.month == value|string %}selected{% endif %}>{{ label }}</option>{% endfor %}
       </select>
     </div>
     <div>
-      <label>Durées recherchées <span class="hint">1 recherche par jour et par case</span></label>
+      <label>{{ _("Durées recherchées") }} <span class="hint">{{ _("1 recherche par jour et par case") }}</span></label>
       <div class="checks">
         {% for value, name in durations.items() %}
-        <label><input type="checkbox" name="travel_durations" value="{{ value }}" {% if value|string in v.travel_durations %}checked{% endif %}> {{ name }}</label>
+        <label><input type="checkbox" name="travel_durations" value="{{ value }}" {% if value|string in v.travel_durations %}checked{% endif %}> {{ _(name) }}</label>
         {% endfor %}
       </div>
     </div>
     <div>
-      <label for="min_trip_length_nights">Séjour minimum (nuits)</label>
+      <label for="min_trip_length_nights">{{ _("Séjour minimum (nuits)") }}</label>
       <input type="number" id="min_trip_length_nights" name="min_trip_length_nights" min="0" value="{{ v.min_trip_length_nights }}">
     </div>
     <div>
-      <label for="max_trip_length_nights">Séjour maximum (nuits)</label>
+      <label for="max_trip_length_nights">{{ _("Séjour maximum (nuits)") }}</label>
       <input type="number" id="max_trip_length_nights" name="max_trip_length_nights" min="0" value="{{ v.max_trip_length_nights }}">
     </div>
     <div>
-      <label for="minimum_discount">Baisse minimale (%) <span class="hint">par rapport au prix habituel</span></label>
+      <label for="minimum_discount">{{ _("Baisse minimale (%)") }} <span class="hint">{{ _("par rapport au prix habituel") }}</span></label>
       <input type="number" id="minimum_discount" name="minimum_discount" min="1" max="99" value="{{ v.minimum_discount }}">
     </div>
     <div>
-      <label for="schedule">Heure du run <span class="hint">heure d'Oslo</span></label>
+      <label for="schedule">{{ _("Heure du run") }} <span class="hint">{{ _("heure d'Oslo") }}</span></label>
       <input type="time" id="schedule" name="schedule" value="{{ v.schedule }}">
     </div>
     <div>
-      <label for="monthly_budget">Budget interne (recherches/mois)
-        <span class="hint">au-delà, les runs sont sautés</span></label>
+      <label for="monthly_budget">{{ _("Budget interne (recherches/mois)") }}
+        <span class="hint">{{ _("au-delà, les runs sont sautés") }}</span></label>
       <input type="number" id="monthly_budget" name="monthly_budget" min="1" value="{{ v.monthly_budget }}">
     </div>
     <div>
-      <label>Démarrage à froid <span class="hint">avis de Google tant que l'historique est insuffisant</span></label>
-      <div class="checks"><label><input type="checkbox" name="cold_start_enabled" {% if v.cold_start_enabled %}checked{% endif %}> Activé</label></div>
+      <label>{{ _("Démarrage à froid") }} <span class="hint">{{ _("avis de Google tant que l'historique est insuffisant") }}</span></label>
+      <div class="checks"><label><input type="checkbox" name="cold_start_enabled" {% if v.cold_start_enabled %}checked{% endif %}> {{ _("Activé") }}</label></div>
     </div>
     <div>
-      <label for="max_candidates_per_run">Vérifications Google max par run</label>
+      <label for="max_candidates_per_run">{{ _("Vérifications Google max par run") }}</label>
       <input type="number" id="max_candidates_per_run" name="max_candidates_per_run" min="0" max="20" value="{{ v.max_candidates_per_run }}">
     </div>
     <div>
-      <label>Récap quotidien Telegram</label>
-      <div class="checks"><label><input type="checkbox" name="daily_summary_enabled" {% if v.daily_summary_enabled %}checked{% endif %}> Envoyé chaque jour</label></div>
+      <label>{{ _("Récap quotidien Telegram") }}</label>
+      <div class="checks"><label><input type="checkbox" name="daily_summary_enabled" {% if v.daily_summary_enabled %}checked{% endif %}> {{ _("Envoyé chaque jour") }}</label></div>
     </div>
   </div>
   <div class="actions">
-    <button class="btn" type="submit">{{ "Créer la veille" if is_new else "Enregistrer" }}</button>
-    <a class="btn secondary" href="/">Annuler</a>
-    {% if not is_new and not is_main %}<a class="btn danger" href="/deals/{{ veille_id }}/delete">Supprimer…</a>{% endif %}
+    <button class="btn" type="submit">{{ _("Créer la veille") if is_new else _("Enregistrer") }}</button>
+    <a class="btn secondary" href="/">{{ _("Annuler") }}</a>
+    {% if not is_new and not is_main %}<a class="btn danger" href="/deals/{{ veille_id }}/delete">{{ _("Supprimer…") }}</a>{% endif %}
   </div>
 </form>
 {% endblock %}

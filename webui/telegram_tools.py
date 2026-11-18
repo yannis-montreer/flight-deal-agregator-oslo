@@ -9,6 +9,8 @@ from dataclasses import dataclass
 
 import httpx
 
+from webui.i18n import Msg
+
 API = "https://api.telegram.org"
 
 
@@ -26,16 +28,16 @@ def _call(token: str, method: str, data: dict | None = None, timeout: float = 10
     try:
         response = httpx.post(f"{API}/bot{token}/{method}", data=data or {}, timeout=timeout)
     except httpx.HTTPError as exc:
-        raise TelegramToolError(f"Telegram injoignable ({type(exc).__name__})") from None
+        raise TelegramToolError(Msg("Telegram injoignable ({error})", error=type(exc).__name__)) from None
     try:
         payload = response.json()
     except ValueError:
-        raise TelegramToolError(f"Réponse Telegram illisible (HTTP {response.status_code})") from None
+        raise TelegramToolError(Msg("Réponse Telegram illisible (HTTP {status})", status=response.status_code)) from None
     if not isinstance(payload, dict) or not payload.get("ok"):
         description = str(payload.get("description", "")) if isinstance(payload, dict) else ""
         if response.status_code == 401:
-            raise TelegramToolError("Token refusé par Telegram : vérifie qu'il est copié en entier depuis @BotFather.")
-        raise TelegramToolError(f"Telegram a refusé la demande : {description[:200] or response.status_code}")
+            raise TelegramToolError(Msg("Token refusé par Telegram : vérifie qu'il est copié en entier depuis @BotFather."))
+        raise TelegramToolError(Msg("Telegram a refusé la demande : {reason}", reason=description[:200] or str(response.status_code)))
     return payload.get("result")
 
 

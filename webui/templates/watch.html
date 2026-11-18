@@ -1,93 +1,93 @@
 {% extends "base.html" %}
-{% block title %}{{ "Nouvelle alerte" if is_new else v.destination_name }} — Veilles{% endblock %}
+{% block title %}{{ _("Nouvelle alerte") if is_new else v.destination_name }} — {{ _("Veilles") }}{% endblock %}
 {% block content %}
-<p><a href="/">← Retour</a></p>
-<h1>{{ "Nouvelle alerte" if is_new else v.destination_name }}</h1>
+<p><a href="/">{{ _("← Retour") }}</a></p>
+<h1>{{ _("Nouvelle alerte") if is_new else v.destination_name }}</h1>
 <p class="sub">
-  {% if is_new %}Suivi quotidien d'un trajet précis (dates, classe, escales). Elle démarre à sa prochaine heure de run, sans redémarrage.
-  {% else %}Fichier <code>watches/{{ watch_id }}.yaml</code>.{% endif %}
-  Coût : (2 × tolérance départ + 1) recherches par jour.
+  {% if is_new %}{{ _("Suivi quotidien d'un trajet précis (dates, classe, escales). Elle démarre à sa prochaine heure de run, sans redémarrage.") }}
+  {% else %}{{ _("Fichier <code>watches/{id}.yaml</code>.", id=watch_id) }}{% endif %}
+  {{ _("Coût : (2 × tolérance départ + 1) recherches par jour.") }}
 </p>
-{% if error %}<p class="msg err">{{ error }}</p>{% endif %}
+{% if error %}<p class="msg err">{{ tr(error) }}</p>{% endif %}
 <form method="post" action="{{ '/watches/new' if is_new else '/watches/' ~ watch_id }}" class="card">
   <div class="grid">
     <div>
-      <label for="destination_name">Nom de l'alerte <span class="hint">affiché dans Telegram</span></label>
-      <input type="text" id="destination_name" name="destination_name" value="{{ v.destination_name }}" placeholder="ex : Lima en famille">
+      <label for="destination_name">{{ _("Nom de l'alerte") }} <span class="hint">{{ _("affiché dans Telegram") }}</span></label>
+      <input type="text" id="destination_name" name="destination_name" value="{{ v.destination_name }}" placeholder="{{ _('ex : Lima en famille') }}">
     </div>
     <div>
-      <label for="api_key_env">Clé SerpApi <span class="hint">celle dont le quota paiera les recherches</span></label>
+      <label for="api_key_env">{{ _("Clé SerpApi") }} <span class="hint">{{ _("celle dont le quota paiera les recherches") }}</span></label>
       <select id="api_key_env" name="api_key_env">
-        {% for k in key_options %}<option value="{{ k.name }}" {% if v.api_key_env == k.name %}selected{% endif %}>{{ k.name }} — {{ k.used }}/{{ k.quota }} déjà réservées</option>{% endfor %}
+        {% for k in key_options %}<option value="{{ k.name }}" {% if v.api_key_env == k.name %}selected{% endif %}>{{ k.name }} — {{ _("{used}/{quota} déjà réservées", used=k.used, quota=k.quota) }}</option>{% endfor %}
       </select>
-      {% if not registry_ok %}<span class="hint">Liste des clés de .env pas encore publiée par le service des alertes.</span>{% endif %}
+      {% if not registry_ok %}<span class="hint">{{ _("Liste des clés de .env pas encore publiée par le service des alertes.") }}</span>{% endif %}
     </div>
     <div>
-      <label>État</label>
-      <div class="checks"><label><input type="checkbox" name="enabled" {% if v.enabled %}checked{% endif %}> Active <span class="hint">(décoché = en pause, aucun coût)</span></label></div>
+      <label>{{ _("État") }}</label>
+      <div class="checks"><label><input type="checkbox" name="enabled" {% if v.enabled %}checked{% endif %}> {{ _("Active") }} <span class="hint">{{ _("(décoché = en pause, aucun coût)") }}</span></label></div>
     </div>
     <div>
-      <label>Envoyer à <span class="hint">bots Telegram qui reçoivent les résultats (<a href="/bots">gérer les bots</a>)</span></label>
+      <label>{{ _("Envoyer à") }} <span class="hint">{{ _("bots Telegram qui reçoivent les résultats (<a href=\"/bots\">gérer les bots</a>)") }}</span></label>
       <input type="hidden" name="notify_shown" value="1">
-      <div class="checks">{% for b in bot_options %}<label><input type="checkbox" name="notify" value="{{ b.id }}" {% if b.id in (v.notify if v.notify is defined and v.notify is not none else ['main']) %}checked{% endif %}> {{ b.alias }}</label>{% endfor %}</div>
+      <div class="checks">{% for b in bot_options %}<label><input type="checkbox" name="notify" value="{{ b.id }}" {% if b.id in (v.notify if v.notify is defined and v.notify is not none else ['main']) %}checked{% endif %}> {{ tr(b.alias) }}</label>{% endfor %}</div>
     </div>
     <div>
-      <label for="origin">Aéroport de départ <span class="hint">efface, tape la ville (ex : « Oslo ») et choisis</span></label>
+      <label for="origin">{{ _("Aéroport de départ") }} <span class="hint">{{ _("efface, tape la ville (ex : « Oslo ») et choisis") }}</span></label>
       <input type="text" id="origin" name="origin" list="airports" autocomplete="off" value="{{ v.origin }}">
       <span class="hint">{{ airport_label(v.origin|upper) if v.origin else "" }}</span>
     </div>
     <div>
-      <label for="destination">Aéroport d'arrivée <span class="hint">efface, tape la ville (ex : « Lyon ») et choisis</span></label>
+      <label for="destination">{{ _("Aéroport d'arrivée") }} <span class="hint">{{ _("efface, tape la ville (ex : « Lyon ») et choisis") }}</span></label>
       <input type="text" id="destination" name="destination" list="airports" autocomplete="off" value="{{ v.destination }}">
       <span class="hint">{{ airport_label(v.destination|upper) if v.destination else "" }}</span>
     </div>
     <datalist id="airports">{% for a in airports %}<option value="{{ a[0] }}">{{ a[2] }} — {{ a[1] ~ ", " if a[1] }}{{ a[3] }}</option>{% endfor %}</datalist>
     <div>
-      <label for="departure_center">Date de départ centrale</label>
+      <label for="departure_center">{{ _("Date de départ centrale") }}</label>
       <input type="date" id="departure_center" name="departure_center" value="{{ v.departure_center }}">
     </div>
     <div>
-      <label for="departure_tolerance_days">Tolérance départ (± jours)
-        <span class="hint">toutes ces dates sont testées chaque jour</span></label>
+      <label for="departure_tolerance_days">{{ _("Tolérance départ (± jours)") }}
+        <span class="hint">{{ _("toutes ces dates sont testées chaque jour") }}</span></label>
       <input type="number" id="departure_tolerance_days" name="departure_tolerance_days" min="0" max="30" value="{{ v.departure_tolerance_days }}">
     </div>
     <div>
-      <label for="duration_center_days">Durée du séjour (jours)</label>
+      <label for="duration_center_days">{{ _("Durée du séjour (jours)") }}</label>
       <input type="number" id="duration_center_days" name="duration_center_days" min="1" value="{{ v.duration_center_days }}">
     </div>
     <div>
-      <label for="duration_tolerance_days">Tolérance durée (± jours)
-        <span class="hint">une durée testée par jour, en rotation</span></label>
+      <label for="duration_tolerance_days">{{ _("Tolérance durée (± jours)") }}
+        <span class="hint">{{ _("une durée testée par jour, en rotation") }}</span></label>
       <input type="number" id="duration_tolerance_days" name="duration_tolerance_days" min="0" value="{{ v.duration_tolerance_days }}">
     </div>
     <div>
-      <label for="required_stops">Escales <span class="hint">« Direct ou 1 escale » : sans recherche en plus</span></label>
+      <label for="required_stops">{{ _("Escales") }} <span class="hint">{{ _("« Direct ou 1 escale » : sans recherche en plus") }}</span></label>
       <select id="required_stops" name="required_stops">
-        {% for value, label in stops_options.items() %}<option value="{{ value }}" {% if v.required_stops == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        {% for value, label in stops_options.items() %}<option value="{{ value }}" {% if v.required_stops == value %}selected{% endif %}>{{ _(label) }}</option>{% endfor %}
       </select>
     </div>
     <div>
-      <label for="travel_class">Classe</label>
+      <label for="travel_class">{{ _("Classe") }}</label>
       <select id="travel_class" name="travel_class">
-        {% for value, name in classes.items() %}<option value="{{ value }}" {% if v.travel_class == value|string %}selected{% endif %}>{{ name }}</option>{% endfor %}
+        {% for value, name in classes.items() %}<option value="{{ value }}" {% if v.travel_class == value|string %}selected{% endif %}>{{ _(name) }}</option>{% endfor %}
       </select>
-      {% if not is_new %}<span class="hint">À ne pas changer sur une alerte en cours : le « nouveau minimum » ne distingue pas les classes. Crée plutôt une nouvelle alerte.</span>{% endif %}
+      {% if not is_new %}<span class="hint">{{ _("À ne pas changer sur une alerte en cours : le « nouveau minimum » ne distingue pas les classes. Crée plutôt une nouvelle alerte.") }}</span>{% endif %}
     </div>
     <div>
-      <label for="currency">Devise <span class="hint">efface, tape le nom (ex : « euro ») et choisis</span></label>
+      <label for="currency">{{ _("Devise") }} <span class="hint">{{ _("efface, tape le nom (ex : « euro ») et choisis") }}</span></label>
       <input type="text" id="currency" name="currency" list="currencies" autocomplete="off" value="{{ v.currency }}">
       <span class="hint">{{ currencies.get(v.currency|upper, "") }}</span>
       <datalist id="currencies">{% for code, name in currencies.items() %}<option value="{{ code }}">{{ name }}</option>{% endfor %}</datalist>
     </div>
     <div>
-      <label for="schedule">Heure du run <span class="hint">heure d'Oslo</span></label>
+      <label for="schedule">{{ _("Heure du run") }} <span class="hint">{{ _("heure d'Oslo") }}</span></label>
       <input type="time" id="schedule" name="schedule" value="{{ v.schedule }}">
     </div>
   </div>
   <div class="actions">
-    <button class="btn" type="submit">{{ "Créer l'alerte" if is_new else "Enregistrer" }}</button>
-    <a class="btn secondary" href="/">Annuler</a>
-    {% if not is_new %}<a class="btn danger" href="/watches/{{ watch_id }}/delete">Supprimer…</a>{% endif %}
+    <button class="btn" type="submit">{{ _("Créer l'alerte") if is_new else _("Enregistrer") }}</button>
+    <a class="btn secondary" href="/">{{ _("Annuler") }}</a>
+    {% if not is_new %}<a class="btn danger" href="/watches/{{ watch_id }}/delete">{{ _("Supprimer…") }}</a>{% endif %}
   </div>
 </form>
 {% endblock %}

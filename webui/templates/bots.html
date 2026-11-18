@@ -1,50 +1,49 @@
 {% extends "base.html" %}
-{% block title %}Bots et clés — Veilles{% endblock %}
+{% block title %}{{ _("Bots et clés") }} — {{ _("Veilles") }}{% endblock %}
 {% block content %}
-<p><a href="/">← Retour</a></p>
-<h1>Bots et clés</h1>
-<p class="sub">Les bots Telegram reçoivent les résultats des alertes qui les ont cochés dans « Envoyer à ».
-  Le bot principal (le tien, dans .env) reçoit en plus les messages techniques : récap quotidien, budget, quota.</p>
-{% if message %}<p class="msg ok">{{ message }}</p>{% endif %}
-{% if error %}<p class="msg err">{{ error }}</p>{% endif %}
+<p><a href="/">{{ _("← Retour") }}</a></p>
+<h1>{{ _("Bots et clés") }}</h1>
+<p class="sub">{{ _("Les bots Telegram reçoivent les résultats des alertes qui les ont cochés dans « Envoyer à ». Le bot principal (le tien, dans .env) reçoit en plus les messages techniques : récap quotidien, budget, quota.") }}</p>
+{% if message %}<p class="msg ok">{{ tr(message) }}</p>{% endif %}
+{% if error %}<p class="msg err">{{ tr(error) }}</p>{% endif %}
 
 <div class="card-head" style="margin: 24px 0 12px">
-  <h2>Bots Telegram</h2>
-  <a class="btn" href="/bots/new">+ Ajouter un bot</a>
+  <h2>{{ _("Bots Telegram") }}</h2>
+  <a class="btn" href="/bots/new">{{ _("+ Ajouter un bot") }}</a>
 </div>
 {% for b in bots %}
 <section class="card">
   <div class="card-head">
-    <h2>{{ b.alias }} {% if b.username %}<span class="muted">@{{ b.username }}</span>{% endif %}</h2>
+    <h2>{{ tr(b.alias) }} {% if b.username %}<span class="muted">@{{ b.username }}</span>{% endif %}</h2>
     {% if not b.main %}
     <div class="actions" style="margin:0">
-      <form method="post" action="/bots/{{ b.id }}/test"><button class="btn secondary" type="submit">Envoyer un test</button></form>
-      <a class="btn secondary" href="/bots/{{ b.id }}">Modifier</a>
-      <form method="post" action="/bots/{{ b.id }}/delete" onsubmit="return confirm('Supprimer ce bot ?')"><button class="btn danger" type="submit">Supprimer</button></form>
+      <form method="post" action="/bots/{{ b.id }}/test"><button class="btn secondary" type="submit">{{ _("Envoyer un test") }}</button></form>
+      <a class="btn secondary" href="/bots/{{ b.id }}">{{ _("Modifier") }}</a>
+      <form method="post" action="/bots/{{ b.id }}/delete" onsubmit="return confirm(this.dataset.q)" data-q="{{ _('Supprimer ce bot ?') }}"><button class="btn danger" type="submit">{{ _("Supprimer") }}</button></form>
     </div>
     {% endif %}
   </div>
   <dl>
-    <dt>Token</dt><dd><code>{{ b.masked }}</code></dd>
-    {% if b.chat_id %}<dt>Chat ID</dt><dd><code>{{ b.chat_id }}</code></dd>{% endif %}
-    <dt>Utilisé par</dt><dd>{{ b.users | join(", ") if b.users else "aucune alerte" }}</dd>
+    <dt>{{ _("Token") }}</dt><dd><code>{{ tr(b.masked) }}</code></dd>
+    {% if b.chat_id %}<dt>{{ _("Chat ID") }}</dt><dd><code>{{ b.chat_id }}</code></dd>{% endif %}
+    <dt>{{ _("Utilisé par") }}</dt><dd>{{ b.users | join(", ") if b.users else _("aucune alerte") }}</dd>
   </dl>
 </section>
 {% endfor %}
 
 <div class="card-head" style="margin: 24px 0 12px">
-  <h2>Clés SerpApi ajoutées ici</h2>
-  <a class="btn" href="/keys/new">+ Ajouter une clé</a>
+  <h2>{{ _("Clés SerpApi ajoutées ici") }}</h2>
+  <a class="btn" href="/keys/new">{{ _("+ Ajouter une clé") }}</a>
 </div>
 <section class="card">
   {% for k in keys %}
   <div class="card-head" style="margin-bottom:8px">
-    <span><code>{{ k.name }}</code> <span class="muted">— {{ "utilisée par " ~ (k.users | join(", ")) if k.users else "libre" }}</span></span>
-    <form method="post" action="/keys/{{ k.name }}/delete" onsubmit="return confirm('Supprimer cette clé ?')"><button class="btn danger" type="submit">Supprimer</button></form>
+    <span><code>{{ k.name }}</code> <span class="muted">— {{ _("utilisée par {who}", who=k.users | join(", ")) if k.users else _("libre") }}</span></span>
+    <form method="post" action="/keys/{{ k.name }}/delete" onsubmit="return confirm(this.dataset.q)" data-q="{{ _('Supprimer cette clé ?') }}"><button class="btn danger" type="submit">{{ _("Supprimer") }}</button></form>
   </div>
   {% else %}
-  <p class="muted">Aucune. Les clés de .env{% if env_keys %} ({{ env_keys | join(", ") }}){% endif %} se gèrent dans .env.</p>
+  <p class="muted">{{ _("Aucune.") }} {{ _("Les clés de .env ({keys}) se gèrent dans .env.", keys=env_keys | join(", ")) if env_keys else _("Les clés de .env se gèrent dans .env.") }}</p>
   {% endfor %}
-  <p class="muted">La valeur d'une clé n'est jamais réaffichée. Son quota et sa date de réinitialisation apparaissent sur l'accueil.</p>
+  <p class="muted">{{ _("La valeur d'une clé n'est jamais réaffichée. Son quota et sa date de réinitialisation apparaissent sur l'accueil.") }}</p>
 </section>
 {% endblock %}
