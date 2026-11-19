@@ -15,10 +15,12 @@ from flightdeals.notify.telegram import TelegramError
 from trip_watch import keys
 from trip_watch import tracker
 from trip_watch.config import ConfigError, load_config
+from webui import master
 from webui import telegram_tools
 from webui.app import create_app
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+MASTER = "test-master-pw"
 TOKEN = "123456789:AAHfakefakefakefakefakefakefakefake1234"
 SERP = "a" * 64
 
@@ -145,6 +147,7 @@ def ui(tmp_path, secrets, monkeypatch):
     (tmp_path / "status" / "keys.json").write_text(json.dumps({"updated_at": "x", "keys": [
         {"name": n, "searches_per_month": 250} for n in ("SEARCH_SERPAPI_KEY", "SERPAPI_KEY")]}), encoding="utf-8")
     fake = FakeTelegram()
+    master.set_password(secrets, MASTER)
     client = TestClient(create_app(tmp_path / "config" / "config.yaml", tmp_path / "watches",
                                    status_dir=tmp_path / "status", secrets_dir=secrets,
                                    fetch_account=lambda k: {"searches_per_month": 250}, telegram=fake),
@@ -194,15 +197,16 @@ def test_alert_with_two_bots_and_store_key(ui):
     home = c.get("/").text
     assert "Anna, Principal (moi)" in home
     # bot utilise : suppression refusee ; cle utilisee : idem
-    assert "encore utilis" in c.post("/bots/anna/delete").text
-    assert "encore utilis" in c.post("/keys/SERPAPI_KEY_ANNA/delete").text
+    assert "encore utilis" in c.post("/bots/anna/delete", data={"master": MASTER}).text
+    assert "encore utilis" in c.post("/keys/SERPAPI_KEY_ANNA/delete", data={"master": MASTER}).text
     # decocher tous les bots est refuse
     r = c.post("/watches/malaga-bob", data=_watch_form(notify=[]))
     assert r.status_code == 400 and "au moins un bot" in r.text
     # repasser au seul bot principal
     c.post("/watches/malaga-bob", data=_watch_form(notify=["main"]))
     assert load_config(path, require_secrets=False).notify == ("main",)
-    assert c.post("/bots/anna/delete", follow_redirects=False).status_code == 303
+    assert c.post("/bots/anna/delete", data={"master": MASTER}, follow_redirects=False).status_code == 303
+    assert "anna" not in secret_store.read_store(tmp / "secrets")["bots"]
 
 
 def test_existing_alert_file_untouched_by_notify(ui):

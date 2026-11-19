@@ -19,6 +19,7 @@ from flightdeals import secret_store
 from flightdeals.secret_store import BOT_ID_RE, CHAT_ID_RE, MAIN_BOT_ALIAS, MAIN_BOT_ID, TOKEN_RE
 from trip_watch.keys import KEY_NAME_RE
 
+from webui import master as master_mod
 from webui import telegram_tools
 from webui.i18n import Msg, exc_msg
 
@@ -27,6 +28,9 @@ ERRORS = {
     "test-failed": "Échec du test : {who}",
     "bot-in-use": "Bot encore utilisé par : {who}. Décoche-le d’abord dans ces alertes.",
     "key-in-use": "Clé encore utilisée par : {who}. Change d’abord leur clé.",
+    "master-wrong": "Mot de passe maître incorrect : rien n'a été supprimé.",
+    "master-locked": "Trop d'essais faux : suppressions bloquées pendant {who} min.",
+    "master-unset": "Aucun mot de passe maître défini : les suppressions sont bloquées. Sur la NUC : python -I webui\\master.py",
 }
 MESSAGES = {
     "bot-saved": "Bot enregistré. Coche-le dans « Envoyer à » des alertes concernées.",
@@ -55,6 +59,17 @@ def register(
 ) -> None:
     """`usage()` -> {"bots": {id: [libellés]}, "keys": {nom: [libellés]}} : qui utilise quoi.
     `known_env_keys()` : clés de .env (registre du service des alertes), None si inconnu."""
+
+    guard = master_mod.Guard(secrets_dir)
+
+    async def master_refusal(request: Request) -> Optional[RedirectResponse]:
+        """None si le mot de passe maître est bon, sinon la redirection avec l'erreur."""
+        form = await request.form()
+        result = guard.check(str(form.get("master") or ""))
+        if result == "ok":
+            return None
+        who = f"&who={guard.minutes_left()}" if result == "locked" else ""
+        return RedirectResponse(f"/bots?err=master-{result}{who}", status_code=303)
 
     def store() -> dict:
         return secret_store.read_store(secrets_dir)
@@ -181,7 +196,10 @@ def register(
         return RedirectResponse("/bots?msg=bot-tested", status_code=303)
 
     @app.post("/bots/{bot_id}/delete")
-    def bot_delete(request: Request, bot_id: str):
+    async def bot_delete(request: Request, bot_id: str):
+        refusal = await master_refusal(request)
+        if refusal:
+            return refusal
         data = store()
         if bot_id not in data["bots"]:
             return error_page(request, "Bot introuvable.", 404)
@@ -227,7 +245,10 @@ def register(
         return RedirectResponse("/bots?msg=key-saved", status_code=303)
 
     @app.post("/keys/{name}/delete")
-    def key_delete(request: Request, name: str):
+    async def key_delete(request: Request, name: str):
+        refusal = await master_refusal(request)
+        if refusal:
+            return refusal
         data = store()
         if name not in data["serpapi_keys"]:
             return error_page(request, "Clé introuvable (seules les clés ajoutées ici se suppriment ici).", 404)

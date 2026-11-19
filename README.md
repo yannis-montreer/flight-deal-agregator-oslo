@@ -159,3 +159,10 @@ normal.
 Restaurer (services arretes avec `docker compose stop`, jamais `down -v`) : recopier les
 fichiers du dossier date voulu a leur place, verifier les empreintes dans `manifest.json`,
 puis `docker compose start`.
+
+## Mot de passe maître
+
+Supprimer un bot Telegram ou une clé SerpApi depuis l'interface demande le mot de passe maître.
+Seule son empreinte scrypt est gardée, dans `secrets\master.json` (hors git, sauvegardée la nuit
+avec les secrets). Après 5 essais faux, les suppressions sont bloquées 15 minutes. Pour le
+définir ou le changer, sur la NUC : `python -I webui\master.py` (puis rien à redémarrer).
