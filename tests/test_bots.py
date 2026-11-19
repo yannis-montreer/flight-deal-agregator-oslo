@@ -176,7 +176,7 @@ def test_add_bot_detect_then_save_token_never_shown(ui):
     assert "@bob_flights_bot" in listing and TOKEN not in listing and "••••1234" in listing
     assert TOKEN not in c.get("/bots/bob").text  # edition : token jamais renvoye
     # edition sans token : le token est conserve
-    c.post("/bots/bob", data={"alias": "Bobby", "token": "", "chat_id": "778", "action": "save"})
+    c.post("/bots/bob", data={"alias": "Bobby", "token": "", "chat_id": "778", "action": "save", "master": MASTER})
     stored = secret_store.read_store(tmp / "secrets")["bots"]["bob"]
     assert (stored["alias"], stored["token"], stored["chat_id"]) == ("Bobby", TOKEN, "778")
     assert c.post("/bots/bob/test", follow_redirects=False).status_code == 303 and fake.tests == [("778", "Bobby")]

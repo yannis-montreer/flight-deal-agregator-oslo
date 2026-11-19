@@ -32,6 +32,11 @@ ERRORS = {
     "master-locked": "Trop d'essais faux : suppressions bloquées pendant {who} min.",
     "master-unset": "Aucun mot de passe maître défini : les suppressions sont bloquées. Sur la NUC : python -I webui\\master.py",
 }
+EDIT_REFUSALS = {
+    "wrong": "Mot de passe maître incorrect : rien n'a été modifié.",
+    "locked": "Trop d'essais faux : modifications bloquées pendant {minutes} min.",
+    "unset": "Aucun mot de passe maître défini : les modifications de bot sont bloquées. Sur la NUC : python -I webui\\master.py",
+}
 MESSAGES = {
     "bot-saved": "Bot enregistré. Coche-le dans « Envoyer à » des alertes concernées.",
     "bot-deleted": "Bot supprimé.",
@@ -151,6 +156,10 @@ def register(
                 if len(chats) == 1:
                     values["chat_id"] = chats[0].chat_id
                 return bot_form(request, bot_id, values, chats=chats)
+            if bot_id is not None:  # modifier un bot existant : mot de passe maitre exige
+                result = guard.check(str(form.get("master") or ""))
+                if result != "ok":
+                    raise FormError(Msg(EDIT_REFUSALS[result], minutes=guard.minutes_left()))
             alias = values["alias"]
             if not alias or len(alias) > 40:
                 raise FormError(Msg("Nom du bot : obligatoire, 40 caractères maximum."))

@@ -64,3 +64,28 @@ def test_cli_stdin_sets_hash_only(tmp_path, monkeypatch):
     assert master.check_password(tmp_path / "secrets", "s3cret")
     assert not master.check_password(tmp_path / "secrets", "s3cre")
     assert "s3cret" not in (tmp_path / "secrets" / "master.json").read_text(encoding="utf-8")
+
+
+def test_bot_edit_needs_master_password(ui):
+    c, tmp, _ = ui
+    page = c.get("/bots/anna").text
+    assert 'name="master"' in page
+    assert 'name="master"' not in c.get("/bots/new").text  # ajouter un bot reste libre
+    form = {"alias": "Hacked", "token": "", "chat_id": "999", "action": "save"}
+    for pw in ("", "nope"):
+        r = c.post("/bots/anna", data={**form, "master": pw})
+        assert r.status_code == 400 and "Mot de passe maître incorrect" in r.text
+    stored = secret_store.read_store(tmp / "secrets")["bots"]["anna"]
+    assert (stored["alias"], stored["chat_id"]) == ("Anna", "42")
+    assert c.post("/bots/anna", data={**form, "master": MASTER}, follow_redirects=False).status_code == 303
+    stored = secret_store.read_store(tmp / "secrets")["bots"]["anna"]
+    assert (stored["alias"], stored["chat_id"]) == ("Hacked", "999")
+
+
+def test_bot_edit_shares_lockout_with_delete(ui):
+    c, tmp, _ = ui
+    for _ in range(4):
+        c.post("/bots/anna/delete", data={"master": "x"})
+    r = c.post("/bots/anna", data={"alias": "X", "token": "", "chat_id": "1", "action": "save", "master": "x"})
+    assert "modifications bloquées pendant 15 min" in r.text
+    assert secret_store.read_store(tmp / "secrets")["bots"]["anna"]["alias"] == "Anna"

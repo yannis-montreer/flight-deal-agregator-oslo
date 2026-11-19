@@ -30,6 +30,12 @@
       {% endif %}
     </div>
   </div>
+  {% if not is_new %}
+  <div style="max-width:16em">
+    <label for="master">{{ _("Mot de passe maître") }} <span class="hint">{{ _("exigé pour enregistrer") }}</span></label>
+    <input type="password" id="master" name="master" autocomplete="off" inputmode="numeric">
+  </div>
+  {% endif %}
   <div class="actions">
     <button class="btn secondary" type="submit" name="action" value="detect">{{ _("Trouver le chat ID") }}</button>
     <button class="btn" type="submit" name="action" value="save">{{ _("Ajouter le bot") if is_new else _("Enregistrer") }}</button>
