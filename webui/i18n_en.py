@@ -276,4 +276,8 @@ EN: dict[str, str] = {
     "État": "Status",
     "← Bots et clés": "← Bots & keys",
     "← Retour": "← Back",
+    "Dernière sauvegarde : {when}": "Last backup: {when}",
+    "Aucune sauvegarde réussie pour l'instant.": "No successful backup yet.",
+    "dernier essai en échec : {reason}": "last attempt failed: {reason}",
+    "plus de 2 jours : vérifie la clé USB et la tâche planifiée.": "over 2 days ago: check the USB stick and the scheduled task.",
 }

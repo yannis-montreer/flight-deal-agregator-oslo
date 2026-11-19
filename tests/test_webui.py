@@ -450,3 +450,33 @@ def test_works_without_registry(tmp_path, monkeypatch):
     client = TestClient(create_app(tmp_path / "config" / "config.yaml", tmp_path / "watches"), base_url="http://127.0.0.1")
     assert client.get("/").status_code == 200
     assert "pas encore publiée" in client.get("/watches/new").text
+
+
+def test_backup_line_on_home(env, tmp_path):
+    client = env[0]
+    assert "Dernière sauvegarde" not in client.get("/").text
+    (tmp_path / "status" / "backup.json").write_text(json.dumps(
+        {"last_success": None, "ok": False, "message": "destination D: absente (cle USB debranchee ?)"}))
+    page = client.get("/").text
+    assert "Aucune sauvegarde réussie" in page and "cle USB debranchee" in page and 'msg err' in page
+
+
+def test_backup_state_ok_failed_and_stale(tmp_path):
+    from datetime import datetime, timezone
+    from webui.app import backup_state
+
+    now = datetime(2026, 11, 20, 9, 0, tzinfo=timezone.utc)
+    path = tmp_path / "backup.json"
+    path.write_text(json.dumps({"last_success": "2026-11-20T03:00:05+01:00", "ok": True, "message": ""}))
+    state = backup_state(tmp_path, now)
+    assert state["last_success"] == "20/11 03:00" and not state["alert"]
+
+    path.write_text(json.dumps({"last_success": "2026-11-20T03:00:05+01:00", "ok": False,
+                                "message": "destination D: absente"}))
+    assert backup_state(tmp_path, now)["alert"]
+
+    path.write_text(json.dumps({"last_success": "2026-11-17T03:00:05+01:00", "ok": True, "message": ""}))
+    assert backup_state(tmp_path, now)["alert"]
+
+    path.write_text("not json")
+    assert backup_state(tmp_path, now) is None

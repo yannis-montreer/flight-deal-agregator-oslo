@@ -3,6 +3,9 @@
 <div class="card-head"><h1>{{ _("Veilles") }}</h1>{% if bots_enabled %}<a class="btn secondary" href="/bots">{{ _("Bots et clés") }}</a>{% endif %}</div>
 <p class="sub">{{ _("Les modifications sont prises en compte sans redémarrage : en quelques minutes pour les alertes, au run suivant pour les bons plans.") }}</p>
 
+{% if backup %}<p class="msg {{ 'err' if backup.alert else 'ok' }}">
+  {%- if backup.last_success %}{{ _("Dernière sauvegarde : {when}", when=backup.last_success) }}{% if not backup.alert %} ✓{% endif %}{% else %}{{ _("Aucune sauvegarde réussie pour l'instant.") }}{% endif %}
+  {%- if not backup.ok %} — {{ _("dernier essai en échec : {reason}", reason=backup.message) }}{% elif backup.alert %} — {{ _("plus de 2 jours : vérifie la clé USB et la tâche planifiée.") }}{% endif %}</p>{% endif %}
 {% if saved %}<p class="msg ok">{{ _("Modification enregistrée. L'ancienne version est conservée dans <code>.history/</code>.") }}</p>{% endif %}
 {% if deleted %}<p class="msg ok">{{ _("« {name} » supprimée (fichier rangé dans <code>.archive/</code>, historique conservé).", name=deleted) }}</p>{% endif %}
 

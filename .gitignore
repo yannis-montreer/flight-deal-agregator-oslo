@@ -47,3 +47,6 @@ deals/.archive/
 # Secrets ajoutes depuis l'interface (bots Telegram des amis, cles SerpApi) : jamais commites
 secrets/*
 !secrets/.gitkeep
+
+# Sauvegarde nocturne (ops/backup.py) : journal local
+logs/

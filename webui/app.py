@@ -244,6 +244,38 @@ def new_watch_text(watch_id: str, form: dict, key_env: str) -> str:
     )
 
 
+BACKUP_STALE_AFTER = timedelta(days=2)
+
+
+def backup_state(status_dir: Optional[Path], now: Optional[datetime] = None) -> Optional[dict]:
+    """Etat de la sauvegarde nocturne (ops/backup.py ecrit status/backup.json). None si elle
+    n'a encore jamais tourne. `alert` : derniere tentative en echec ou derniere reussite trop
+    ancienne (cle USB debranchee, tache arretee...)."""
+    if status_dir is None:
+        return None
+    try:
+        data = json.loads((status_dir / "backup.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    if not isinstance(data, dict):
+        return None
+    now = now or datetime.now(timezone.utc)
+
+    def parse(value):
+        try:
+            return datetime.fromisoformat(value) if value else None
+        except (TypeError, ValueError):
+            return None
+
+    success = parse(data.get("last_success"))
+    stale = success is None or now - success > BACKUP_STALE_AFTER
+    return {
+        "last_success": success.strftime("%d/%m %H:%M") if success else None,
+        "ok": bool(data.get("ok")), "message": str(data.get("message") or "")[:300],
+        "alert": stale or not data.get("ok"),
+    }
+
+
 def create_app(
     flightdeals_path: Path, watches_dir: Path, allowed_hosts: Optional[list[str]] = None,
     status_dir: Optional[Path] = None, deals_dir: Optional[Path] = None,
@@ -461,6 +493,7 @@ def create_app(
             "month_label": month_label, "region_label": region_label, "classes": TRAVEL_CLASSES,
             "stops_text": stops_text,
             "airport_city": airport_city, "bot_alias": bot_alias, "bots_enabled": secrets_dir is not None,
+            "backup": backup_state(status_dir),
         })
 
     @app.get("/flightdeals")

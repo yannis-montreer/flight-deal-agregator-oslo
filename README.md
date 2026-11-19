@@ -141,3 +141,21 @@ monté en lecture seule dans les services) : ce fichier n'est pas dans la sauveg
 `spike/serpapi_spike.py` a validé le GO initial (voir `spike/SPIKE_NOTES.md`) avant que le
 reste du système ne soit construit. Conservé pour référence, plus utilisé en fonctionnement
 normal.
+
+## Sauvegarde nocturne
+
+`ops/backup.py` copie chaque nuit (tache planifiee Windows « flight-deals backup », 03:00) vers
+`D:\flight-deals-backup\AAAA-MM-JJ\` : les bases `data\*.db`, `.env`, `secrets\store.json`,
+`config\`, `watches\` et `deals\` (avec leurs `.history\`). 30 jours conserves.
+
+- Les bases sont copiees octet par octet, jamais ouvertes : empreinte SHA-256 identique avant
+  et apres la copie (sinon nouvel essai), puis `integrity_check` sur la COPIE uniquement.
+- Cle absente, pleine ou base manquante : rien n'est ecrit, l'echec va dans `logsackup.log`
+  et la page d'accueil de l'interface affiche la ligne « Derniere sauvegarde » en rouge (aussi
+  apres 2 jours sans sauvegarde reussie).
+- La cle contient les secrets en clair : en cas de perte, revoquer les tokens (BotFather) et
+  les cles SerpApi.
+
+Restaurer (services arretes avec `docker compose stop`, jamais `down -v`) : recopier les
+fichiers du dossier date voulu a leur place, verifier les empreintes dans `manifest.json`,
+puis `docker compose start`.
