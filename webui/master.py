@@ -88,7 +88,8 @@ def main(argv: Optional[list[str]] = None) -> int:
     args = sys.argv[1:] if argv is None else argv
     secrets_dir = Path(__file__).resolve().parent.parent / "secrets"
     if "--stdin" in args:
-        password = sys.stdin.readline().rstrip("\r\n")
+        # PowerShell peut prefixer l'entree d'une marque BOM invisible : on l'ignore.
+        password = sys.stdin.readline().rstrip("\r\n").lstrip("﻿")
     else:
         password = getpass.getpass("Nouveau mot de passe maître : ")
         if getpass.getpass("Encore une fois : ") != password:

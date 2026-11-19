@@ -59,7 +59,7 @@ def test_guard_unlocks_after_delay(tmp_path):
 
 def test_cli_stdin_sets_hash_only(tmp_path, monkeypatch):
     monkeypatch.setattr(master, "__file__", str(tmp_path / "webui" / "master.py"))
-    monkeypatch.setattr("sys.stdin", io.StringIO("s3cret\n"))
+    monkeypatch.setattr("sys.stdin", io.StringIO("﻿s3cret\r\n"))
     assert master.main(["--stdin"]) == 0
     assert master.check_password(tmp_path / "secrets", "s3cret")
     assert not master.check_password(tmp_path / "secrets", "s3cre")
