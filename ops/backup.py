@@ -191,10 +191,11 @@ def main(argv: Optional[list[str]] = None) -> int:
 
     root = args.root.resolve()
     (root / "logs").mkdir(exist_ok=True)
-    logging.basicConfig(
-        level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s",
-        handlers=[logging.FileHandler(root / "logs" / "backup.log", encoding="utf-8"),
-                  logging.StreamHandler(sys.stdout)], force=True)
+    handlers: list[logging.Handler] = [logging.FileHandler(root / "logs" / "backup.log", encoding="utf-8")]
+    if sys.stdout is not None:  # pythonw.exe (tache planifiee, sans fenetre) n'a pas de console
+        handlers.append(logging.StreamHandler(sys.stdout))
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s",
+                        handlers=handlers, force=True)
     try:
         return _run(root, args)
     finally:
